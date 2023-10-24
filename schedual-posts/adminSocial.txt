@@ -1,0 +1,470 @@
+<?php
+
+namespace App\Http\Controllers;
+use Carbon\Carbon;
+use App\Models\Api;
+use Facebook\Facebook;
+use App\Models\Instagram;
+use App\Models\time_think;
+use Illuminate\Support\Str;
+use App\Models\Publish_Post;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
+use Facebook\Exceptions\FacebookSDKException;
+use Facebook\Exceptions\FacebookResponseException;
+use Illuminate\Support\Facades\Redirect;
+
+class AdminSocialController extends Controller
+{
+    public function index(){
+        // $date = Carbon::today()->subDays(10)->format('Y-m-d H:i');
+        // $data = DB::table('Publish_Post')->where('scheduledTime', '>=', $date);
+        // dd($data);
+
+        return view('AdminSocialMedia.index');
+    }
+    public function services(){
+        return view('AdminSocialMedia.services');
+    }
+
+    public function socialStatusFacebook(){
+        if(Api::count() > 0){
+            Api::truncate();
+        }
+        return response()->json(['status' => 'success']);
+    }
+
+    public function socialStatusInsta()
+    {
+        if(Instagram::count() > 0)
+        {
+            Instagram::truncate();
+        }
+        return response()->json(['status' => 'success']);
+    }
+    
+    public function updatePostsTime()
+    {
+        return view('AdminSocialMedia.updatePostsTime');
+    }
+    
+    public function schedualPosts()
+    {
+        return view('AdminSocialMedia.schedualPosts');
+    }
+
+    public function updatePostsNow()
+    {
+        return view('AdminSocialMedia.updatePostsNow');
+    }
+    
+    public function historyPosts()
+    {
+        $columns =  Schema::getColumnListing('publish__posts');
+        return view('AdminSocialMedia.historyPosts',compact('columns'));
+    }
+
+    public function publishPostServices()
+    {
+        return view('AdminSocialMedia.publishPostServices');
+    }
+
+    public function removeSocialPost($id)
+    {
+        $post = Publish_Post::findOrFail($id);
+        $post->delete();
+        return Redirect()->back()->with('postDeleted','post deleted successfully');
+    }
+    
+    public function repostEdit($id) {
+        $post = Publish_Post::findOrFail($id);
+        return view('AdminSocialMedia.repost',compact('post'));
+    }
+
+    public function update(Request $request,$id)
+    {
+        Publish_Post::where('id',$id)->update([
+            // update all except image
+        ]);
+
+        if($request->hasfile('image')){
+            $file = $request->file('image');
+            $ext = $file->getClientOriginalExtension();
+            $filename = time().'.'.$ext;
+            $img = $file->move('postImages/',$filename);
+           
+            Publish_Post::where('id',$id)->update([
+                'image'=> $img
+            ]);
+        }
+    }
+
+    public function chooseApp(Request $request) 
+    {
+        $faceToken = ''; 
+        $instaToken = '';
+        $pages = '';
+
+        if($request->facebook){
+            if(Api::count() != 0){
+                $checkFaceAcountExist = Api::get()->last();
+                $faceToken = $checkFaceAcountExist['token'];
+
+                $response = Http::get("https://graph.facebook.com/v12.0/me/accounts?access_token={$faceToken}");
+                $pages = $response->json()['data'];
+            }
+        }
+        if($request->instagram){
+            if(Instagram::count() != 0){
+                $checkInstaAcountExist = Instagram::get()->last();
+                $instaToken = $checkInstaAcountExist['insta_token'];
+            }
+        }
+
+        if(!$request->facebook && !$request->instagram){
+            return redirect()->back()->with('publishError', 'Choose at least one app');
+        }
+
+        return view('AdminSocialMedia.publishPost',compact('faceToken','instaToken','pages'));
+    }
+
+    public function schedualPost(Request $request) 
+    {   
+        $img = null;
+        
+        if ($request->hasfile('image')) {
+            $file = $request->file('image');
+            $ext = $file->getClientOriginalExtension();
+            $filename = time().'.'.$ext;
+            $img = $file->move('postImages/',$filename);             
+        }
+
+        if($request->scheduledTime){
+            $postTime =  Carbon::parse($request->scheduledTime)->format('Y-m-d H:i');
+            $status = 'pending';
+        }
+        else{
+            $now = Carbon::now(); 
+            $diff_time = time_think::first()->time;
+            $postTime = $now->copy()->addHours($diff_time)->format('Y-m-d H:i');
+            $status = 'published';
+            $this->publishPost($request,$img);
+        }
+
+        if($request->faceToken && $request->instaToken)
+        {
+            $data = [
+                [
+                    'type'=> 'facebook',
+                    'status' => $status,
+                    'pageName' => $request->page,
+                    'postData'=> $request->postData,
+                    'link'=> $request->link,
+                    'image'=> $img,
+                    'scheduledTime'=> $postTime,
+                    'tokenApp' => $request->faceToken,
+                ],
+                [
+                    'type'=> 'instagram',
+                    'status' => $status,
+                    'pageName' => null,
+                    'postData'=>  $request->postData,
+                    'link'=> $request->link,
+                    'image'=> $img,
+                    'scheduledTime'=> $postTime,
+                    'tokenApp' => $request->instaToken,
+                ],
+            ];
+        }
+        else if($request->faceToken) 
+        { 
+            $data = [
+                [
+                    'type'=> 'facebook',
+                    'status' => $status,
+                    'pageName' => $request->page,
+                    'postData'=> $request->postData,
+                    'link'=> $request->link,
+                    'image'=> $img,
+                    'scheduledTime'=> $postTime,
+                    'tokenApp' => $request->faceToken,
+                ],
+            ];
+        }
+        else //instagram
+        { 
+            $data = [
+                [
+                    'type'=> 'instagram',
+                    'status' => $status,
+                    'pageName' => null,
+                    'postData'=> $request->postData,
+                    'link'=> $request->link,
+                    'image'=> $img,
+                    'scheduledTime'=> $postTime,
+                    'tokenApp' => $request->instaToken,
+                ],
+            ];
+        }
+
+        Publish_Post::insert($data);
+
+        return view('AdminSocialMedia.publishPostServices');
+    }
+
+    public function publishPost($requestData,$img) 
+    {
+        // dd($requestData);
+
+        if($requestData->faceToken && $requestData->instaToken){
+            $facePublish = $this->facePublish($requestData,$img);
+            if($facePublish == 'postCreated'){
+                $instaPublish = $this->instaPublish($requestData);
+
+                if($instaPublish == 'postCreated'){
+                    return redirect()->route('adminSocail')->with('postCreated', 'The post created successfully');
+                }
+            }
+        }
+
+        if($requestData->faceToken){
+            $facePublish = $this->facePublish($requestData,$img);
+
+            if($facePublish == 'postCreated'){
+                return redirect()->route('adminSocail')->with('postCreated', 'The post created successfully');
+            }
+            else{
+                return redirect()->route('adminSocail')->with('publishError', $facePublish);
+            }
+        }
+
+        if($requestData->instaToken){
+           $insta = $this->instaPublish($requestData);
+
+            if($insta == 'postCreated'){
+                return redirect()->route('adminSocail')->with('postCreated', 'The post created successfully');
+            }
+            else{
+                return redirect()->route('adminSocail')->with('publishError', $insta);
+            }
+        }
+    }
+
+
+    public function facePublish($requestData,$img)
+    {
+        $pageName = $requestData->page;
+        $pageToken = null; 
+        $pageId = null;
+        $urlImage = '';
+
+        $response = Http::get("https://graph.facebook.com/v12.0/me/accounts?access_token={$requestData->faceToken}");
+        $pages = $response->json()['data'];
+
+        $desiredPage = null;
+
+        foreach ($pages as $page) {
+            if ($page['name'] === $pageName) {
+                $desiredPage = $page;
+                $pageToken = $desiredPage['access_token'];
+                $pageId = $desiredPage['id'];
+                break;
+            }
+        }
+
+        $fb = new Facebook([
+            'app_id' => config('services.facebook.client_id'),
+            'app_secret' => config('services.facebook.client_secret'),
+            'default_graph_version' => 'v12.0', // Use the appropriate version
+        ]);
+        
+        $fb->setDefaultAccessToken($pageToken);
+        
+        $permissions = ['pages_manage_posts','pages_manage_ads','pages_manage_cta','pages_manage_metadata'];
+        
+        try {
+
+            $url = "https://graph.facebook.com/v12.0/{$pageId}/feed";
+
+            // if ($requestData->hasfile('image')) {
+            if ($img) {
+                $filename = Str::replace('postImages\\', '', $img);
+                // $file = $requestData->file('image');
+                // $ext = $file->getClientOriginalExtension();
+                // $filename = time().'.'.$ext;
+                // $img = $file->move('postImages/',$filename); 
+                
+                if ($requestData->scheduledTime) {
+                    // If you want to schedule the post
+                    $scheduledTime = Carbon::parse($requestData->scheduledTime)->timestamp;
+    
+                    $response = Http::attach(
+                        'source',
+                        file_get_contents($img),
+                        $filename
+                    )->post("https://graph.facebook.com/v12.0/{$pageId}/photos", [
+                        'published' => false,
+                        'scheduled_publish_time' => $scheduledTime,
+                        'caption' => $requestData->postData,
+                        'access_token' => $pageToken,
+                    ]);
+                }
+                else{
+                    $response = Http::attach(
+                        'source',
+                        file_get_contents($img),
+                        $filename
+                    )->post("https://graph.facebook.com/v12.0/{$pageId}/photos", [
+                        'caption' => $requestData->postData,
+                        'access_token' => $pageToken,
+                    ]);
+                }
+
+                $imageData = $response->json();
+            }
+            else {
+                if ($requestData->scheduledTime) {
+                    $scheduledTime = Carbon::parse($requestData->scheduledTime)->timestamp;
+        
+                    $response = Http::post($url, [
+                        'message' => $requestData->postData,
+                        'link' => $requestData->link,
+                        'published' => false, // Set to false to schedule the post
+                        'scheduled_publish_time' => $scheduledTime, // Set the scheduled time
+                        'access_token' => $pageToken,
+                    ]);
+                }
+                else{
+                    $response = Http::post($url, [
+                        'message' => $requestData->postData,
+                        'link' => $requestData->link,
+                        'access_token' => $pageToken,
+                    ]);
+                }
+            }
+            
+            $responseData = $response->json();
+
+            return 'postCreated';
+
+        } catch(FacebookResponseException $e) {
+            return 'Graph returned an error: ' . $e->getMessage();
+        } catch(FacebookSDKException $e) {
+            return 'Facebook SDK returned an error: ' . $e->getMessage();
+        }
+    }
+
+
+    public function instaPublish($requestData)
+    {
+        // 17841458134934475 -> id evolve
+        // 17841453423356345/media?image_url=https://i.ibb.co/j5jStSm/photo2.png
+        // 17841453423356345/media_publish?creation_id=17981660207374630
+        $accessToken = 'EAAS9OZAZBDis4BOZBz8ncmvFsdcvwFSBVckXlZBhrQBwM3EkPfGKmzKxRON1eUZCsk6EXHHl0Q7caoIFkocvjTriNos2hhmUfYew6jhZAdTdbaFvLsDBV0V3VEEnGZCYdfCwgsYDCpCCATqtKlfLiRix2bprsvZBP0ktjpSlTleqCQVYRPnJI0ktK7iWhvEJDKHtoPPA1mDp4FibLFb402wZD'; // Replace with your actual access token
+        $pageId = '17841453423356345';
+        $imageUrl = 'https://i.ibb.co/j5jStSm/photo2.png';
+        $caption = $requestData->postData;
+
+        try {
+
+            if ($requestData->hasfile('image')) {
+                $file = $requestData->file('image');
+                $ext = $file->getClientOriginalExtension();
+                $filename = time().'.'.$ext;
+                // $img = $file->move('postImages/',$filename); 
+
+                $mediaResponse = Http::post("https://graph.facebook.com/v17.0/{$pageId}/media", [
+                    'image_url' => $imageUrl,
+                    'caption' => $caption,
+                    'access_token' => $accessToken,
+                ]);
+
+                // $mediaResponse = Http::attach(
+                //     'image',
+                //     file_get_contents($file->path()),
+                //     $file->getClientOriginalName()
+                // )->post("https://graph.facebook.com/v12.0/{$pageId}/media", [
+                //     'caption' => $caption,
+                //     'access_token' => $accessToken,
+                // ]);
+
+                
+                if ($mediaResponse->successful()) {
+                    $mediaData = $mediaResponse->json();
+                    $mediaId = $mediaData['id'];
+                    
+                    if ($requestData->scheduledTime) {
+                        // If you want to schedule the post
+                        $scheduledTime = Carbon::parse($requestData->scheduledTime)->timestamp;
+                        // Step 2: Publish media
+                        $publishResponse = Http::post("https://graph.facebook.com/v17.0/{$pageId}/media_publish", [
+                            'published' => false,
+                            'scheduled_publish_time' => $scheduledTime,
+                            'creation_id' => $mediaId,
+                            'access_token' => $accessToken,
+                        ]);
+                        dd($publishResponse);
+                    }
+                    else{
+                        $publishResponse = Http::post("https://graph.facebook.com/v17.0/{$pageId}/media_publish", [
+                            'creation_id' => $mediaId,
+                            'access_token' => $accessToken,
+                        ]);
+                    }    
+    
+                    if ($publishResponse->successful()) {
+                        return 'postCreated';
+                    } else {
+                        return $publishResponse->status();
+                    }
+                } else {
+                    return $mediaResponse->status();
+                }
+            }
+            else {
+                return'should choose image for instagram';
+            }
+
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+    }
+
+
+    // public function instaPublish($requestData)
+    // {
+    //     $accessToken = 'EAAS9OZAZBDis4BO11LOZBmZAsfJRb1ZB7X0XgLOjJbP2aoZAdjjVWnonOREEVsi9CTV5WRIGVPi5WQJxUZBwNZBisLrWbVtxuojjQBgNAZC2sApJunxhPCPDzQwMhQ5bDLNkmQImq1kFH1iZBb3l8ANHFnidSMBNUIXjBj1k5ZAHLw1HRGZBns2qyLe9PifFkVagZAs8ESqveB3LXq0E20J3oNghktWG2URWgQOdQkHx3uhDhsr85hvB4X1WZCIb5d8huIZBAZDZD';
+    //     $pageId = '17841453423356345';
+    //     $caption = $requestData->postData;
+
+    //     try {
+    //         if ($requestData->hasFile('image')) {
+    //             $file = $requestData->file('image');
+    //             $mediaResponse = Http::attach(
+    //                 'image',
+    //                 file_get_contents($file->path()),
+    //                 $file->getClientOriginalName()
+    //             )->post("https://graph.facebook.com/v12.0/{$pageId}/photos", [
+    //                 'caption' => $caption,
+    //                 'access_token' => $accessToken,
+    //             ]);
+
+    //             // dd($mediaResponse);
+    //             if ($mediaResponse->successful()) {
+    //                 return 'postCreated';
+    //             } else {
+    //                 return redirect()->route('adminSocail')->with('publishError', $mediaResponse->status());
+    //             }
+    //         } else {
+    //             return redirect()->route('adminSocail')->with('publishError', 'You should choose an image for Instagram');
+    //         }
+    //     } catch (\Exception $e) {
+    //         return redirect()->route('adminSocail')->with('publishError', $e->getMessage());
+    //     }
+    // }
+
+}
+
+

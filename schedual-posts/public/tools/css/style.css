@@ -1,0 +1,177 @@
+/* ==================== principles =========== */
+/* card header */
+.card-info:not(.card-outline)>.card-header {
+    background-color: #79DAE8;
+    border-color: #79DAE8;
+}
+/* table number */
+.page-item.active .page-link {background-color: #79dae8;border-color: #79dae8;}
+
+.dropdown-item.active, .dropdown-item:active {background-color: transparent;}
+
+.bg-primary {background-color: #007bff !important;}
+:is(.bg-info, .btn-info){background-color: #79DAE8 !important;border-color: #79DAE8 !important;}
+
+/* ============= side bar ========= */
+.main-sidebar:hover{overflow-y: auto;}
+.main-sidebar::-webkit-scrollbar {width: 7px;}
+.main-sidebar::-webkit-scrollbar-track {box-shadow: inset 0 0 5px #e5e5e5;border-radius: 10px;}
+.main-sidebar::-webkit-scrollbar-thumb {background: #BEBEBE;border-radius: 10px;}
+
+.main-sidebar .user-panel {
+    border-bottom: 0px solid #dee2e6 !important; 
+    border-top: 1px solid #dee2e6 !important;
+}
+[class*=sidebar-light-] .sidebar a {color: #06283d96;font-size: 18px}
+.nav-treeview a{font-size: 16px !important;}
+
+[class*=sidebar-light-] .nav-sidebar>.nav-item.menu-open>.nav-link, [class*=sidebar-light-] .nav-sidebar>.nav-item:hover>.nav-link {
+    background-color: transparent;
+}
+.sidebar-dark-primary .nav-sidebar>.nav-item>.nav-link.active, .sidebar-light-primary .nav-sidebar>.nav-item>.nav-link.active {
+    /* background-color: #79DAE8; */
+    background-color: transparent;
+    color: #06283D;
+    box-shadow: 0 0 0 0 !important;
+}
+.main-sidebar .active_mandatory{color: #06283D !important;font-size: 20px !important;}
+
+/* ==============pages================= */
+
+.adminSocail .small-box p{font-size: 16px;}
+
+.publishPostContainer .file{
+    top: 0px;
+    left: -38px;
+    width: 32px;
+    height: 30px;
+    overflow: hidden;
+    cursor: pointer;
+}
+.publishPostContainer .file input[type='file']{opacity: 0;cursor: pointer;}
+.publishPostContainer .postLink{cursor:pointer}
+.publishPostContainer .photoSec img{width: 50px; margin: 10px 0 -20px;border-radius: 6px;}
+
+.servicesPage .config span{font-weight: bold;font-size: 15px}
+.servicesPage .config li{line-height: 1.8;}
+.servicesPage .verificationMsg :is(.verify, .enable){display: none;border-width: 2px !important;}
+
+.servicesPage .config .nav-link{color: #06283D;}
+.servicesPage .config .active{border: 0;color: #fff;}
+.servicesPage .config .active#nav-facebook-tab{background: #007bff;}
+.servicesPage .config .active#nav-instagram-tab{background: #d63384;}
+.servicesPage .config .active#nav-twitter-tab{background: #00acee;}
+
+@media (max-width:767px) {
+    .servicesPage .verificationMsg{width: 100% !important;}
+}
+
+.postsPage #nav-tab{border-bottom: 0;}
+.postsPage .nav-tabs .nav-link {
+    border: 0;
+    border-bottom: 2px solid #dfdfdf;
+    padding-left: 0;
+    padding-right: 0;
+    margin-right: 20px;
+    font-size: 18px;
+    color: #06283D;
+}
+.postsPage .nav-tabs .nav-item.show .nav-link,
+.postsPage .nav-tabs .nav-link.active {
+    color: #6610f2;
+    background-color: transparent;
+    border-color: #6610f2;
+}
+
+.socialAccounts .user-info img{border: 2px solid #000;width: 70px;}
+.socialAccounts .user-info p{font-weight: bold;font-size: 16px;}
+.socialAccounts .user-info .info-box-icon{height: 120px}
+.socialAccounts .user-info i{font-size: 20px;background: #fff;}
+.socialAccounts #connectAccount{cursor: pointer;}
+.socialAccounts #appAccount{
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 999999999;
+    background: #25232282;
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+.socialAccounts #appAccount .box{width: 450px;box-shadow: 0 0 1px #000;}
+.socialAccounts #appAccount .appIcon{
+    font-size: 27px;
+    background: #fff;
+    padding: 10px;
+    border-radius: 38%;
+}
+.socialAccounts #userData{
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 999999999;
+    background: #25232282;
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+.socialAccounts #userData img{width: 50px !important;}
+.socialAccounts #userData .icon{left: 30px;bottom: 0; background:#fff}
+.socialAccounts :is(#appAccount, #userData) .cancel{color:#6c757d !important;font-weight: bold;}
+
+/* .test{
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 999999999;
+    background: #25232282;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.test img{width: 50px !important;}
+.test .icon{left: 30px;bottom: 0; background:#fff}
+.test .cancel{color:#6c757d !important;font-weight: bold;} */
+
+.terms-policy p{line-height: 2}
+.terms-policy li{line-height: 1.8}
+
+.allUsers .card .dt-buttons button{background-color: #79dae8;border-color: #79dae8;}
+.allUsers .card .dt-buttons button:not(:disabled):not(.disabled):active{
+    background-color: #06283D;
+    border-color: #06283D;
+}
+
+/* ====== history page (calender in footer) ======== */
+#calendar .event-content .socialLogo{
+    width: 22px;
+    height: 22px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    font-size: 13px;
+}
+.event-popup{
+    z-index: 999;
+    background: #f7f7f7;
+    border: 1px solid #dee2e6;
+    width: 30%;
+}
+.event-popup .socialLogo{top:32px;left:38px;}
+.fc-direction-ltr .fc-daygrid-event.fc-event-end, .fc-direction-rtl .fc-daygrid-event.fc-event-start{background-color:#ebebeb}
+
+@media (max-width:767px) {
+    #calendar .event-content .socialLogo{width: 18px;height: 18px;font-size: 11px;}
+    #calendar .event-content img{max-width:30px !important}
+    .event-popup :is(.postData, .postLink, .accountName){font-size: 14px;}
+    .event-popup .accountInfo img{width: 40px !important;}
+    .event-popup .socialLogo {top: 25px;left: 30px;}
+}
+

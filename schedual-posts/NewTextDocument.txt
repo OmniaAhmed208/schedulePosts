@@ -1,0 +1,521 @@
+<script>
+  $(function () {
+    var posts = <?php echo $allPosts; ?>;
+    var popupDiv; // Declare a variable for the popup div
+
+    /* initialize the calendar
+     -----------------------------------------------------------------*/
+    //Date for the calendar events (dummy data)
+    var date = new Date()
+    var d    = date.getDate(),
+        m    = date.getMonth(),
+        y    = date.getFullYear()
+
+    var Calendar = FullCalendar.Calendar;
+
+    var calendarEl = document.getElementById('calendar');
+
+    var calendar = new Calendar(calendarEl, {
+      headerToolbar: {
+        left  : 'prev,next today',
+        center: 'title',
+        right : 'dayGridMonth,timeGridWeek,timeGridDay'
+      },
+      themeSystem: 'bootstrap',
+      //Random default events
+      events: (function () {
+        var eventsArray = [];
+
+        for (let i = 0; i < posts.length; i++) {
+          var post = posts[i];
+          var color = '#ddd';
+          // if(post.status == 'pending') { color = '#f39c12' }
+          var scheduledTime = new Date(post.scheduledTime);
+
+          eventsArray.push({
+            title: post.pageName, 
+            start: scheduledTime,
+            backgroundColor: color,
+            borderColor: color,
+            allDay: true,
+            image: post.image,
+            id: post.id,
+            type: post.type,
+            status: post.status
+          });
+        }
+
+        return eventsArray;
+      })(),
+      eventContent: function (arg) {
+        
+        var imageHtml = arg.event.extendedProps.image
+          ? '<img src="' + arg.event.extendedProps.image + '" class="event-image img-fluid rounded" style="max-width:50px" />'
+          : '';
+
+        var typeIconHtml = '';
+        if (arg.event.extendedProps.type === 'facebook') {
+          typeIconHtml = '<i class="fab fa-facebook rounded-circle socialLogo" style="background:#007bff"></i>';
+        } else if (arg.event.extendedProps.type === 'instagram') {
+          typeIconHtml = '<i class="fab fa-instagram rounded-circle socialLogo" style="background:#d63384"></i>';
+        } else '';
+
+        if (arg.event.extendedProps.status === 'pending') {
+          return {
+            html: '<div class="event-content position-relative d-flex justify-content-between align-items-center p-1" style="border-left:3px solid #f39c12">' +
+              '<div class="event-title">' + typeIconHtml  + '</div>' +
+              imageHtml +
+              '</div>'
+          };
+        } else {
+          return {
+            html: '<div class="event-content position-relative d-flex justify-content-between align-items-center p-1" style="border-left:3px solid #01b954">' +
+              '<div class="event-title">' + typeIconHtml  + '</div>' +
+              imageHtml +
+              '</div>'
+          };
+        } 
+      },
+      editable: false,
+      droppable: true,
+    
+      // Add eventMouseEnter and eventMouseLeave callbacks
+      eventMouseEnter: function (event) {
+        // Create a small popup div for event details if it doesn't exist
+        if (!popupDiv) {
+          popupDiv = document.createElement('div');
+          popupDiv.className = 'event-popup position-absolute';
+          document.body.appendChild(popupDiv);
+        }
+
+        var postId = parseInt(event.event.id);
+
+
+        var post = posts.find(function (p) {
+          return p.id === postId;
+        });
+
+        if (post) {
+          var scheduledTime = post.scheduledTime.split(' ')[1];
+          var popupContent = `
+            <div class="accountInfo bg-white p-2 px-4">
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="info position-relative">
+                  <img src="{{ asset('tools/dist/img/avatar5.png') }}" class="rounded-circle" style="width:50px" alt="">
+                  
+                  ${post.type === 'facebook' ? `
+                    <i class="fab fa-facebook rounded-circle position-absolute bg-white socialLogo" style="color:#007bff !important"></i>
+                  ` : post.type === 'instagram' ? `
+                    <i class="fab fa-instagram rounded-circle position-absolute bg-white socialLogo" style="color:#d63384 !important"></i>
+                  ` : '' }
+
+                  <span class="ml-3 accountName" style="font-weight: bold">${post.pageName}</span>
+                </div>
+                <div class="text-dark p-1 text-end">  ${scheduledTime}  </div>
+              </div>
+            </div>
+
+            <div class="row p-3 px-4">
+              <div class="col-7">
+                <div class="postData">${post.postData}</div>
+              </div>
+              <div class="col-5">
+                ${post.image ? `<div><img src="${post.image}" alt="Image" class="popup-image img-fluid"/></div>` : ''}
+              </div>
+            </div>
+
+            <div class="p-3 px-4 d-flex justify-content-end bg-white" style="border-top: 1px solid #dee2e6;">
+              <a href="${post.link ? post.link: '#'}" target="_blank" class="postLink" style="font-weight: bold;color:#6c757d !important">View Post</a>
+            </div>
+          `;
+
+          // Set the content of the popupDiv
+          popupDiv.innerHTML = popupContent;
+          
+
+          var eventElement = event.el;
+          var rect = eventElement.getBoundingClientRect();
+          popupDiv.style.top = rect.bottom + 'px'; // Position below the event
+          popupDiv.style.left = rect.left + 50 + 'px'; // Align with the left of the event
+
+          // Show the popup
+          popupDiv.style.display = 'block';
+        }
+      },
+
+      eventMouseLeave: function () {
+        if (popupDiv) 
+        {
+          popupDiv.addEventListener('mouseenter',()=>{
+            popupDiv.style.display = 'block';
+          });
+
+          popupDiv.addEventListener('mouseleave',()=>{
+            popupDiv.style.display = 'none';
+          });
+
+          if (popupDiv.hasMouseEnterListener) {
+            popupDiv.style.display = 'block';
+          } else {
+            popupDiv.style.display = 'none';
+          }
+        }
+      }
+
+    });
+
+    calendar.render();
+  });
+
+</script>
+
+
+________________________________________
+
+
+
+@php
+    $allPosts = App\Models\Publish_Post::where('creator_id', Auth::user()->id)->get();
+@endphp
+
+<script>
+    $(function () {
+        var posts = <?php echo $allPosts; ?>;
+
+        var date = new Date();
+        var d = date.getDate(),
+            m = date.getMonth(),
+            y = date.getFullYear();
+
+        var Calendar = FullCalendar.Calendar;
+        var calendarEl = document.getElementById('calendar');
+
+        // Create an empty array to hold the events
+        var eventsArray = [];
+        var popupDiv;
+
+        for (let i = 0; i < posts.length; i++) {
+            var post = posts[i];
+            var dateStr = post.scheduledTime;
+            var color = '#ddd';
+
+            var parts = dateStr.split(' ');
+            var datePart = parts[0];
+            var timePart = parts[1];
+            var dateParts = datePart.split('-');
+            var timeParts = timePart.split(':');
+            var year = parseInt(dateParts[0]);
+            var month = parseInt(dateParts[1]) - 1;
+            var day = parseInt(dateParts[2]);
+            var hours = parseInt(timeParts[0]);
+            var minutes = parseInt(timeParts[1]);
+            var jsDate = new Date(year, month, day, hours, minutes);
+
+            var event = {
+                title: post.pageName,
+                start: jsDate, 
+                allDay: false, 
+                backgroundColor: color,
+                borderColor: color,
+                image: post.image,
+                id: post.id,
+                type: post.type,
+                status: post.status
+            };
+
+            // Push the event to the eventsArray
+            eventsArray.push(event);
+        }
+
+        var calendar = new Calendar(calendarEl, {
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            themeSystem: 'bootstrap',
+            events: eventsArray, 
+            eventContent: function (arg) {
+        
+                var imageHtml = arg.event.extendedProps.image
+                ? '<img src="' + arg.event.extendedProps.image + '" class="event-image img-fluid rounded" style="max-width:50px" />'
+                : '';
+
+                var typeIconHtml = '';
+                if (arg.event.extendedProps.type === 'facebook') {
+                typeIconHtml = '<i class="fab fa-facebook rounded-circle socialLogo" style="background:#007bff"></i>';
+                } else if (arg.event.extendedProps.type === 'instagram') {
+                typeIconHtml = '<i class="fab fa-instagram rounded-circle socialLogo" style="background:#d63384"></i>';
+                } else '';
+
+                if (arg.event.extendedProps.status === 'pending') {
+                return {
+                    html: '<div class="event-content position-relative d-flex justify-content-between align-items-center p-1" style="border-left:3px solid #f39c12">' +
+                    '<div class="event-title">' + typeIconHtml  + '</div>' +
+                    imageHtml +
+                    '</div>'
+                };
+                } else {
+                return {
+                    html: '<div class="event-content position-relative d-flex justify-content-between align-items-center p-1" style="border-left:3px solid #01b954">' +
+                    '<div class="event-title">' + typeIconHtml  + '</div>' +
+                    imageHtml +
+                    '</div>'
+                };
+                } 
+            },
+            editable: false,
+            droppable: false,
+            // Add eventMouseEnter and eventMouseLeave callbacks
+            eventMouseEnter: function (event) {
+                // Create a small popup div for event details if it doesn't exist
+                if (!popupDiv) {
+                popupDiv = document.createElement('div');
+                popupDiv.className = 'event-popup position-absolute';
+                document.body.appendChild(popupDiv);
+                }
+
+                var postId = parseInt(event.event.id);
+
+
+                var post = posts.find(function (p) {
+                return p.id === postId;
+                });
+
+                if (post) {
+                var scheduledTime = post.scheduledTime.split(' ')[1];
+                var popupContent = `
+                    <div class="accountInfo bg-white p-2 px-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="info position-relative">
+                        <img src="{{ asset('tools/dist/img/avatar5.png') }}" class="rounded-circle" style="width:50px" alt="">
+                        
+                        ${post.type === 'facebook' ? `
+                            <i class="fab fa-facebook rounded-circle position-absolute bg-white socialLogo" style="color:#007bff !important"></i>
+                        ` : post.type === 'instagram' ? `
+                            <i class="fab fa-instagram rounded-circle position-absolute bg-white socialLogo" style="color:#d63384 !important"></i>
+                        ` : '' }
+
+                        <span class="ml-3 accountName" style="font-weight: bold">${post.pageName}</span>
+                        </div>
+                        <div class="text-dark p-1 text-end">  ${scheduledTime}  </div>
+                    </div>
+                    </div>
+
+                    <div class="row p-3 px-4">
+                    <div class="col-7">
+                        <div class="postData">${post.postData}</div>
+                    </div>
+                    <div class="col-5">
+                        ${post.image ? `<div><img src="${post.image}" alt="Image" class="popup-image img-fluid"/></div>` : ''}
+                    </div>
+                    </div>
+
+                    <div class="p-3 px-4 d-flex justify-content-end bg-white" style="border-top: 1px solid #dee2e6;">
+                    <a href="${post.link ? post.link: '#'}" target="_blank" class="postLink" style="font-weight: bold;color:#6c757d !important">View Post</a>
+                    </div>
+                `;
+
+                // Set the content of the popupDiv
+                popupDiv.innerHTML = popupContent;
+                
+
+                var eventElement = event.el;
+                var rect = eventElement.getBoundingClientRect();
+                popupDiv.style.top = rect.bottom + 'px'; // Position below the event
+                popupDiv.style.left = rect.left + 50 + 'px'; // Align with the left of the event
+
+                // Show the popup
+                popupDiv.style.display = 'block';
+                }
+            },
+
+            eventMouseLeave: function () {
+                if (popupDiv) 
+                {
+                popupDiv.addEventListener('mouseenter',()=>{
+                    popupDiv.style.display = 'block';
+                });
+
+                popupDiv.addEventListener('mouseleave',()=>{
+                    popupDiv.style.display = 'none';
+                });
+
+                if (popupDiv.hasMouseEnterListener) {
+                    popupDiv.style.display = 'block';
+                } else {
+                    popupDiv.style.display = 'none';
+                }
+                }
+            }
+        });
+
+        calendar.render();
+    });
+</script>
+
+
+
+
+
+
+
+_____________________________________________________________________________ post page to make all scheduled in 1 row
+
+
+@extends('layouts.layoutAdminSocial')
+
+@section('content')
+
+  @php
+    $Allpost = App\Models\Publish_Post::all()->where('creator_id', Auth::user()->id);
+    $published_post = App\Models\Publish_Post::all()->where('status', 'published')->where('creator_id', Auth::user()->id);
+    $scheduled_post = App\Models\Publish_Post::all()->where('status', 'pending')->where('creator_id', Auth::user()->id);
+
+    $groupedPosts = $Allpost->groupBy('scheduledTime'); 
+    // foreach ($groupedPosts as $items) {
+    //   echo(count($items));
+    // }
+    
+  @endphp
+
+                                    <tbody>
+                                      {{-- @foreach ($Allpost as $post)
+                                      <tr class="post-row">
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $post['id'] }}</td>
+                                        <td>{{ $post['status'] }}</td>
+                                        <td>{{ $post['postData'] }}</td>
+                                        <td>
+                                          @if ($post['image'] != null)
+                                          <img src="{{ asset($post['image']) }}" class="rounded" style="width: 70px" alt="">                                              
+                                          @endif
+                                          @if ($post['link'] != null)
+                                            {{ $post['link'] }}                                        
+                                          @endif
+                                        </td>
+                                        <td>{{ $post['scheduledTime'] }}</td>
+                                        <td>
+                                          @if ($post['type'] == 'facebook')
+                                            <span class="info-box-icon bg-primary py-1 px-2 rounded-circle {{ $post['type'] }}"><i class="fab fa-facebook-f"></i></span>                                              
+                                          @elseif ($post['type'] == 'twitter')
+                                            <span class="info-box-icon bg-white py-1 px-2 rounded-circle {{ $post['type'] }}" style="color: #00acee !important"><i class="fab fa-twitter"></i></span>                                              
+                                          @else
+                                            <span class="info-box-icon text-white py-1 px-2 rounded-circle {{ $post['type'] }}" style="background-color: #d63384"><i class="fab fa-instagram"></i></span>
+                                          @endif
+                                        </td>
+                                      </tr>
+                                      @endforeach --}}
+
+
+                                      @foreach ($groupedPosts as $items)
+                                        @if (count($items) > 1)
+                                          <tr class="post-row">
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $items[0]['status'] }}</td>
+                                            <td>{{ $items[0]['postData'] }}</td>
+                                            <td>
+                                              @if ($items[0]['image'] != null)
+                                              <img src="{{ asset($items[0]['image']) }}" class="rounded" style="width: 70px" alt="">                                              
+                                              @endif
+                                              @if ($items[0]['link'] != null)
+                                                {{ $items[0]['link'] }}                                        
+                                              @endif
+                                            </td>
+                                            <td>{{ $items[0]['scheduledTime'] }}</td>
+                                            <td>
+                                              @foreach ($items as $item)
+                                                @if ($item['type'] == 'facebook')
+                                                  <span class="info-box-icon bg-primary py-1 px-2 rounded-circle {{ $item['type'] }}"><i class="fab fa-facebook-f"></i></span>                                              
+                                                @elseif ($item['type'] == 'twitter')
+                                                  <span class="info-box-icon bg-white py-1 px-2 rounded-circle {{ $item['type'] }}" style="color: #00acee !important"><i class="fab fa-twitter"></i></span>                                              
+                                                @else
+                                                  <span class="info-box-icon text-white py-1 px-2 rounded-circle {{ $item['type'] }}" style="background-color: #d63384"><i class="fab fa-instagram"></i></span>
+                                                @endif
+                                              @endforeach
+                                            </td>
+                                          </tr>
+                                        @else
+                                          @foreach ($items as $item)
+                                          <tr class="post-row">
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $item['status'] }}</td>
+                                            <td>{{ $item['postData'] }}</td>
+                                            <td>
+                                              @if ($item['image'] != null)
+                                              <img src="{{ asset($items[0]['image']) }}" class="rounded" style="width: 70px" alt="">                                              
+                                              @endif
+                                              @if ($item['link'] != null)
+                                                {{ $item['link'] }}                                        
+                                              @endif
+                                            </td>
+                                            <td>{{ $item['scheduledTime'] }}</td>
+                                            <td>
+                                                @if ($item['type'] == 'facebook')
+                                                  <span class="info-box-icon bg-primary py-1 px-2 rounded-circle {{ $item['type'] }}"><i class="fab fa-facebook-f"></i></span>                                              
+                                                @elseif ($item['type'] == 'twitter')
+                                                  <span class="info-box-icon bg-white py-1 px-2 rounded-circle {{ $item['type'] }}" style="color: #00acee !important"><i class="fab fa-twitter"></i></span>                                              
+                                                @else
+                                                  <span class="info-box-icon text-white py-1 px-2 rounded-circle {{ $item['type'] }}" style="background-color: #d63384"><i class="fab fa-instagram"></i></span>
+                                                @endif
+                                            </td>
+                                          </tr>
+                                          @endforeach
+                                        @endif
+                                        
+                                      @endforeach
+
+                                    </tbody>
+                                    
+___________________ twitter
+
+EvolveTeck
+EvolveTeck
+twitter
+1708817086653386752
+1708817086653386752-I5T0SOOuTVbdKyzcxuMH4uo447cxbO
+bezBWI84njJsosFC4zb4b5mBlhPAKX37BwHIfnxuXwJyg
+
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        let roleBtns = document.querySelectorAll('[data-toggle="modal"]');
+        var form = document.getElementById('addRolePermissionUserForm');
+        var userId;
+
+        const userRoles = <?php echo json_encode($user_roles); ?>;
+        const allUsers = <?php echo json_encode($allUsers); ?>;
+        const roles = <?php echo json_encode($roles); ?>;
+        
+        roleBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                userId = btn.getAttribute('data-userId');
+                var url = "{{ route('rolePermissionUser', ['userId' => '__id__']) }}";
+                var finalUrl = url.replace('__id__', userId);
+                form.action = finalUrl;
+
+                const user = allUsers.find(user => user.id == userId);
+
+                if (user) {
+                    checkboxes.forEach(function (checkbox) {
+                        userRoles.forEach(userRole => {
+                            if (userRole.user_id == userId) {
+                                roles.forEach(role => {
+                                    if (role.id == userRole.role_id) {
+                                        checkbox.checked = true;
+                                    }
+                                });
+                            }
+                        });
+                    });
+                }
+
+            });
+        });
+
+    });
+</script>
