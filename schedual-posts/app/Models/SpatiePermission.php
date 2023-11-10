@@ -2,10 +2,16 @@
 
 namespace App\Models;
 
-use Spatie\Permission\Models\Role as SpatieRole;
+use Spatie\Permission\Models\Role;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class SpatiePermission extends SpatieRole
+class SpatiePermission extends Role
 
 {
     protected $fillable = ['role_color'];
+
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class);
+    }
 }

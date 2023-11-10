@@ -1,11 +1,7 @@
 @extends('layouts.layoutAdminSocial')
 
 @section('content')
-  
-@php
-    $posts = App\Models\Publish_Post::all()->where('creator_id', Auth::user()->id);
-    $postsCount = App\Models\Publish_Post::where('creator_id', Auth::user()->id)->count();
-@endphp
+
 
 <div class="content-wrapper history_posts">
   <div class="content-header">
@@ -19,7 +15,7 @@
                 Add New Post
             </a>
           </div>
-            
+
             @if (session('postDeleted'))
               <div class="alert alert-success mt-4" role="alert">
                 {{ session('postDeleted') }}

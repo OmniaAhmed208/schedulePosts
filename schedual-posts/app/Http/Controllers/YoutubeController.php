@@ -14,19 +14,20 @@ use Illuminate\Support\Facades\Config;
 
 class YoutubeController extends Controller
 {
-    public function youtube($channelId)
+    public function show($channelId)
     {
-        $youtubePosts = social_posts::where('page_id',$channelId)->get();
-        if($youtubePosts->isEmpty())
-        {
-            $this->youtubeData($channelId);
-        }
+        // $youtubePosts = social_posts::where('page_id',$channelId)->get();
+        $api_id = Api::where('account_id',$channelId)->where('creator_id', Auth::user()->id)->first();
+        $youtubePosts = Api::find($api_id['id'])->social_posts()->get();
+        
         return view('social.youtube',compact('channelId'));
     }
 
     public function youtubeData($channelId)
     {
-        $key = Config::get('services.youtube.api_key');
+        $youtubeSettings = settingsApi::where('appType', 'youtube')->first();
+        $key = $youtubeSettings['apiKey'];
+        // $key = Config::get('services.youtube.api_key');
         $base_url = 'https://www.googleapis.com/youtube/v3/';
         $maxResults = 10;
 
@@ -38,10 +39,11 @@ class YoutubeController extends Controller
         }
         catch(Exception $e){
             // $url = https://www.googleapis.com/youtube/v3/search?order=date&part=snippet&maxResults=3&channelId=UCRi9XQdahkIxtdlx4CawKhQ&key=AIzaSyCZhW13YQV1En4FEtVET312rRwIbAj3Rp4
-            return redirect()->route('socialAccounts')->with('channelConnect', 'The limit of access of youtube channel has been finished');
+            return redirect()->route('socialAccounts')->with('error', 'The limit of access of youtube channel has been finished');
         }
 
         $data = [];
+        $account_id = '';
 
         if (isset($videos->items)) 
         {
@@ -52,24 +54,25 @@ class YoutubeController extends Controller
 
                 if ($index !== array_keys($videos->items)[$lastIndex])
                 {
+                    $account_id = $item->snippet->channelId;
+                    $apiAccount = Api::where('account_id', $account_id)->where('creator_id', Auth::user()->id)->first();
+                    $postDate = date('Y-m-d H:i:s', strtotime($item->snippet->publishTime));
                     $videoData = [
-                        'type' => 'youtube',
-                        'page_id' => $item->snippet->channelId,
-                        'page_name' => $item->snippet->channelTitle,
-                        'page_link' => 'https://www.youtube.com/channel/' . $item->snippet->channelId,
-                        'page_img' => Api::where('user_account_id',$item->snippet->channelId)->first()->user_pic,
+                        'api_account_id' => $apiAccount->id,
                         'post_id' => $item->id->videoId,
-                        'post_img' => $item->snippet->thumbnails->high->url,
+                        'post_video' => $item->snippet->thumbnails->high->url,
                         'post_link' => "https://www.youtube.com/watch?v=" . $item->id->videoId,
-                        'post_caption' => $item->snippet->title,
-                        'post_date' => $item->snippet->publishTime,
-                        // 'desc' => $item->snippet->description
+                        'post_title' => $item->snippet->title,
+                        'content' => $item->snippet->description,
+                        'post_date' => $postDate,
                     ];
                     $data[] = $videoData; 
                 }
-            }
+            }        
 
-            $existingChannel = social_posts::where('page_id', $channelId)->get(); // if channel exist?
+            $existingAccount = Api::where('account_id',$account_id)->where('creator_id', Auth::user()->id)->first(); // if channel exist?
+            $existingChannel = social_posts::where('api_account_id', $existingAccount['id'])->get(); // this channel has posts
+            // $existingChannel = Api::find($existingAccount['id'])->social_posts()->get();
 
             if($existingChannel->isNotEmpty()) // channel exist
             {   
@@ -78,7 +81,9 @@ class YoutubeController extends Controller
                     $existingPost = social_posts::where('post_id', $post['post_id'])->first();
                     
                     if (!$existingPost) {
-                        social_posts::insert($post);
+                        foreach($data as $post){
+                            social_posts::create($post);
+                        }  
                     }
                     else
                     {
@@ -88,13 +93,16 @@ class YoutubeController extends Controller
 
                 // if i remove video from channel manually .. i don't it here in db ... (when save data to db .. found videos not remaing exist in original channel)
                 $postIdsInDataArr = array_column($data, 'post_id'); // Step 1: Get all post_ids from the $data array
-                $postsToDelete = social_posts::where('type','youtube')->whereNotIn('post_id', $postIdsInDataArr)->get(); // Step 2: Find the records in the database that need to be deleted
+                // $postsToDelete = social_posts::where('type','youtube')->whereNotIn('post_id', $postIdsInDataArr)->get(); // Step 2: Find the records in the database that need to be deleted
+                $postsToDelete = Api::find($existingAccount['id'])->social_posts()->whereNotIn('post_id', $postIdsInDataArr)->get();
                 $postsToDelete->each->delete(); 
             }
             else
             {   //channel not exist
                 if (!empty($data) ) {
-                    social_posts::insert($data);
+                    foreach($data as $post){
+                        social_posts::create($post);
+                    }   
                 }
             }
             
@@ -183,19 +191,21 @@ class YoutubeController extends Controller
                         $channelId = $data['items'][0]['id'];
                         $channelName = $data['items'][0]['snippet']['title'];
                         $channelImageUrl = $data['items'][0]['snippet']['thumbnails']['default']['url'];
+                        $channelLink = "https://www.youtube.com/channel/{$channelId}";
 
                         $userData = [
                             'creator_id'=> Auth::user()->id,
-                            'user_name' => $channelName,
+                            'account_type' => 'youtube',
+                            'account_id' => $channelId,
+                            'account_name' => $channelName,
                             'email' => $channelName,
-                            'user_pic' => $channelImageUrl,
-                            'social_type' => 'youtube',
-                            'user_account_id' => $channelId,
+                            'account_pic' => $channelImageUrl,
+                            'account_link' => $channelLink,
                             'token' => $access_token,
                             'token_secret' => $refresh_token
                         ];
             
-                        $existingApp = api::where('user_account_id',$channelId)->where('creator_id', Auth::user()->id)->first();
+                        $existingApp = Api::where('account_id',$channelId)->where('creator_id', Auth::user()->id)->first();
             
                         if ($existingApp) {
                             $existingApp->update($userData);
@@ -206,7 +216,7 @@ class YoutubeController extends Controller
 
                         return redirect()->route('socialAccounts');
                     } else {
-                        return redirect()->route('socialAccounts')->with('channelConnect', 'No YouTube channel found for this account.');
+                        return redirect()->route('socialAccounts')->with('error', 'No YouTube channel found for this account.');
                     }
                     
                 } else {
@@ -219,7 +229,7 @@ class YoutubeController extends Controller
             }
         } catch (\Exception $e) {
             dd($e->getMessage());
-            // return redirect()->route('socialAccounts')->with('channelConnect', $e->getMessage());
+            // return redirect()->route('socialAccounts')->with('error', $e->getMessage());
         } 
         
     }
@@ -228,9 +238,12 @@ class YoutubeController extends Controller
     public function videosList() {
         $to_show_videoLink = 'https://www.youtube.com/watch?v=videoId';
 
+        $youtubeSettings = settingsApi::where('appType', 'youtube')->first();
+        $apiKey = $youtubeSettings['apiKey'];
+
         $part = 'snippet';
         $country = 'BD';
-        $apiKey = 'AIzaSyCZhW13YQV1En4FEtVET312rRwIbAj3Rp4';
+        // $apiKey = 'AIzaSyCZhW13YQV1En4FEtVET312rRwIbAj3Rp4';
         $maxResults = 10;
         $youtube_endPoint = 'https://www.googleapis.com/youtube/v3/search/';
         // $type = 'video,playlist,channel';

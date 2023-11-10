@@ -169,7 +169,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         Laravel\Socialite\SocialiteServiceProvider::class,
         App\Providers\FacebookServiceProvider::class,
-        Omnia\Oalivechat\LiveChatServiceProvider::class, 
+        Omnia\Oalivechat\LiveChatServiceProvider::class,
         ProtoneMedia\LaravelFFMpeg\Support\ServiceProvider::class,
         Spatie\Permission\PermissionServiceProvider::class,
     ])->toArray(),

@@ -75,10 +75,14 @@
 .publishPostContainer .postLink{cursor:pointer}
 .publishPostContainer .previewSec img{width: 50px; margin: 10px 0 -20px;border-radius: 6px;}
 .publishPostContainer .previewSec video{width:50px;height:50px;margin-bottom: -33px;}
+.publishPostContainer .socialAccounts label{cursor: pointer;}
+.publishPostContainer .socialAccounts input[type="checkbox"]:not(:checked) + label img {border-color: #ced7df !important;filter: grayscale(1);}
+.publishPostContainer .socialAccounts input[type="checkbox"]:not(:checked) + label span{color: #646464 !important;filter: grayscale(1);}
+
+
 .servicesPage .config span{font-weight: bold;font-size: 15px}
 .servicesPage .config li{line-height: 1.8;}
 .servicesPage .verificationMsg :is(.verify, .enable){display: none;border-width: 2px !important;}
-
 .servicesPage .config .nav-link{color: #06283D;}
 .servicesPage .config .active{border: 0;color: #fff;}
 .servicesPage .config .active#nav-facebook-tab{background: #007bff;}

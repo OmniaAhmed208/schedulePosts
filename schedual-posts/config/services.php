@@ -53,9 +53,9 @@ return [
     ],
 
     'twitter' => [
-        'client_id' => env('Twitter_CLIENT_ID'),
-        'client_secret' => env('Twitter_CLIENT_SECRET'),
-        'redirect' => 'http://localhost:8000/twitter/callback',
+        // 'client_id' => 'kzHeMTrIkGLh02wajZChgisoz', // apiKey
+        // 'client_secret' => 'BgZeEGpCd4tBeXzIMWNXueLv9uN9ToBACf5jiRsmepFM4Bfssu', // apiSecret
+        'redirect' => 'http://localhost/schedulePosts/schedual-posts/auth/twitter/callback',
     ],
 
     'youtube' => [

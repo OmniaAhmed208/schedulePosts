@@ -3,9 +3,11 @@
 @section('content')
 
 @php
-    $userInfo = App\Models\Api::all()->where('creator_id', Auth::user()->id)->where('user_account_id',$channelId); 
-    $videosData = App\Models\social_posts::all()->where('page_id',$channelId);
+    $userInfo = App\Models\Api::where('creator_id', Auth::user()->id)->where('account_id',$channelId)->first(); 
+    $videosData = App\Models\Api::find($userInfo->id)->social_posts()->get();
 @endphp
+
+{{-- @dd($videosData); --}}
 <div class="container">
     <div class="container mt-5">
 
@@ -15,18 +17,16 @@
                     <div class="col">
                         <div class="card">
                             <div class="user-block d-flex m-3">
-                                @foreach ($userInfo as $user)
-                                    <img class="img-circle img-bordered-sm rounded-pill" src="{{ $user['user_pic'] }}" alt="User Image">
-                                    <span class="username mx-3 d-flex flex-column justify-content-center">
-                                        <a href="{{ $video['page_link'] }}" target="_blank">{{ $user['user_name'] }}</a>
-                                        <span class="description m-0">{{ $user['social_type'] }}</span>
-                                    </span>
-                                @endforeach
+                                <img class="img-circle img-bordered-sm rounded-pill" src="{{ $userInfo->account_pic }}" alt="User Image">
+                                <span class="username mx-3 d-flex flex-column justify-content-center">
+                                    <a href="{{ $userInfo->account_link }}" target="_blank">{{ $userInfo->account_name }}</a>
+                                    <span class="description m-0">{{ $userInfo->account_type }}</span>
+                                </span>
                             </div>
 
                             <div class="card-body">
                                 {{-- <p>{{ \Illuminate\Support\Str::limit($video['post_caption'], $limit = 50, $end = '...') }}</p> --}}
-                                <p>{{ $video['post_caption'] }}</p>
+                                <p>{{ $video['content'] }}</p>
 
                                 <iframe src="https://www.youtube.com/embed/{{ $video['post_id'] }}" allowfullscreen></iframe>
                                 {{-- <img src="{{ $video['post_img'] }}" class="img-fluid mb-2" alt="" style="padding: 8px 8px;border: 1px solid #ddd;"> --}}

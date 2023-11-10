@@ -2,32 +2,6 @@
 
 @section('content')
 
-  @php
-    $Allpost = App\Models\Publish_Post::all()->where('creator_id', Auth::user()->id);
-    $published_post = App\Models\Publish_Post::all()->where('status', 'published')->where('creator_id', Auth::user()->id);
-    $scheduled_post = App\Models\Publish_Post::all()->where('status', 'pending')->where('creator_id', Auth::user()->id);
-    $allApps = App\Models\settingsApi::all();
-    $groupedPosts = $Allpost->groupBy('scheduledTime'); 
-    // foreach ($groupedPosts as $items) {
-    //   echo(count($items));
-    // }
-
-    // $scheduledTimeCounts = $posts->countBy(function ($post) {
-    //   return $post->scheduledTime;
-    // });
-
-    // foreach ($scheduledTimeCounts as $scheduledTime => $count) {
-    //   if ($count > 1) {
-    //     // If scheduledTime appears more than once, add it to the array
-    //     $scheduledTimeDuplicates[] = [
-    //         'scheduledTime' => $scheduledTime,
-    //         'count' => $count,
-    //     ];
-    //   }
-    // }
-  @endphp
-
-
  <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
@@ -86,29 +60,48 @@
                                     <th>Media</th>
                                     <th>Schedule time</th>
                                     <th>Accounts</th>
+                                    <th>Actions</th>
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  @foreach ($Allpost as $post)
+                                  @foreach ($allPosts as $post)
                                   <tr class="post-row">
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $post['id'] }}</td>
-                                    {{-- <td>{{ $post['status'] }}</td> --}}
                                     <td>
                                       <span class="badge @if($post['status'] === 'published') bg-label-success @elseif($post['status'] === 'pending') bg-label-warning @else bg-label-danger @endif">{{ $post['status'] }}</span>
                                     </td>
-                                    <td>{{ $post['postData'] }}</td>
+                                    <td>{{ $post['content'] }}</td>
+
                                     <td>
-                                      @if ($post['image'] != null)
-                                      <img src="{{ asset($post['image']) }}" class="rounded" style="width: 70px" alt="">                                              
+                                      @if ($post->postImages->isNotEmpty())
+                                          <img src="{{ url($post->postImages[0]->image) }}" class="rounded" style="width: 70px" alt="">                                              
                                       @endif
-                                      @if ($post['link'] != null)
-                                        {{ $post['link'] }}                                        
+                                      @if ($post->postVideos->isNotEmpty())
+                                          <video src="{{ url($post->postVideos[0]->video) }}" class="rounded" style="width: 70px" alt=""></video>                                              
                                       @endif
                                     </td>
+                                  
                                     <td>{{ $post['scheduledTime'] }}</td>
                                     <td>
-                                      <span class="info-box-icon py-1 px-2 rounded-circle {{ $post['type'] }} {{ $post['type'] }}App"><i class="fab fa-{{ $post['type'] }}"></i></span>
+                                      <span class="info-box-icon py-1 px-2 rounded-circle {{ $post['account_type'] }} {{ $post['account_type'] }}App"><i class="fab fa-{{ $post['account_type'] }}"></i></span>
+                                    </td>
+                                    <td >
+                                      @if ($post->status == 'pending')
+                                        <div class="d-flex">
+                                          <a href="{{ route('posts.edit', $post->id) }}" style="background:transparent;border:none">
+                                            <i class="fa fa-edit text-success"></i>
+                                          </a>
+                                          <form action="{{ route('posts.destroy',$post->id) }}" method="post">
+                                            @csrf
+                                            @method('delete')
+                                              <button type="submit" onclick="return confirm('are you sure?')" style="background:transparent;border:none">
+                                                <i class="fa fa-trash text-danger"></i>
+                                              </button>
+                                          </form>
+                                        </div>
+                                        {{-- @else  <a class="btn btn border"> share again </a> --}}
+                                      @endif
                                     </td>
                                   </tr>
                                   @endforeach
@@ -122,6 +115,7 @@
                                   <th>Media</th>
                                   <th>Schedule time</th>
                                   <th>Accounts</th>
+                                  <th>Actions</th>
                                 </tr>
                                 </tfoot>
                               </table>
@@ -154,25 +148,54 @@
                                   <th>Status</th>
                                   <th>Content</th>
                                   <th>Media</th>
+                                  <th>Schedule time</th>
                                   <th>Accounts</th>
+                                  <th>Actions</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                  @foreach ($scheduled_post as $index=>$post)
-                                  <tr class="post-row">
-                                    <td>{{ $index+1 }}</td>
-                                    <td>{{ $post['id'] }}</td>
-                                    <td>{{ $post['status'] }}</td>
-                                    <td>{{ $post['postData'] }}</td>
-                                    <td>
-                                      @if ($post['image'] != null)
-                                      <img src="{{ asset($post['image']) }}" class="rounded" style="width: 70px" alt="">                                              
-                                      @endif
-                                    </td>
-                                    <td>
-                                      <span class="info-box-icon py-1 px-2 rounded-circle {{ $post['type'] }} {{ $post['type'] }}App"><i class="fab fa-{{ $post['type'] }}"></i></span>
-                                    </td>
-                                  </tr>
+                                  @foreach ($allPosts as $index=>$post)
+                                    @if($post->status === "pending")
+                                      <tr class="post-row">
+                                        {{-- <td>{{ $index+1 }}</td> --}}
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $post['id'] }}</td>
+                                        <td>
+                                          <span class="badge @if($post['status'] === 'published') bg-label-success @elseif($post['status'] === 'pending') bg-label-warning @else bg-label-danger @endif">{{ $post['status'] }}</span>
+                                        </td>
+                                        <td>{{ $post['content'] }}</td>
+
+                                        <td>
+                                          @if ($post->postImages->isNotEmpty())
+                                            <img src="{{ url($post->postImages[0]->image) }}" class="rounded" style="width: 70px" alt="">                                                  
+                                          @endif
+                                          @if ($post->postVideos->isNotEmpty())
+                                              <video src="{{ url($post->postVideos[0]->video) }}" class="rounded" style="width: 70px" alt=""></video>                                              
+                                          @endif
+                                        </td>
+                                      
+                                        <td>{{ $post['scheduledTime'] }}</td>
+                                        <td>
+                                          <span class="info-box-icon py-1 px-2 rounded-circle {{ $post['account_type'] }} {{ $post['account_type'] }}App"><i class="fab fa-{{ $post['account_type'] }}"></i></span>
+                                        </td>
+                                        <td >
+                                          @if ($post->status == 'pending')
+                                            <div class="d-flex">
+                                              <a href="{{ route('posts.edit', $post->id) }}" style="background:transparent;border:none">
+                                                <i class="fa fa-edit text-success"></i>
+                                              </a>
+                                              <form action="{{ route('posts.destroy',$post->id) }}" method="post">
+                                                @csrf
+                                                @method('delete')
+                                                  <button type="submit" onclick="return confirm('are you sure?')" style="background:transparent;border:none">
+                                                    <i class="fa fa-trash text-danger"></i>
+                                                  </button>
+                                              </form>
+                                            </div>
+                                          @endif
+                                        </td>
+                                      </tr>
+                                    @endif
                                   @endforeach
                                 </tbody>
                                 <tfoot>
@@ -182,7 +205,9 @@
                                   <th>Status</th>
                                   <th>Content</th>
                                   <th>Media</th>
+                                  <th>Schedule time</th>
                                   <th>Accounts</th>
+                                  <th>Actions</th>
                                 </tr>
                                 </tfoot>
                               </table>
@@ -205,30 +230,59 @@
                               <table id="example2" class="table table-bordered table-hover">
                                 <thead>
                                 <tr>
-                                  <th>#</th>
+                                  <<th>#</th>
                                   <th>id</th>
                                   <th>Status</th>
                                   <th>Content</th>
                                   <th>Media</th>
+                                  <th>Schedule time</th>
                                   <th>Accounts</th>
+                                  <th>Actions</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                  @foreach ($published_post as $index=>$post)
-                                  <tr class="post-row">
-                                    <td>{{ $index+1 }}</td>
-                                    <td>{{ $post['id'] }}</td>
-                                    <td>{{ $post['status'] }}</td>
-                                    <td>{{ $post['postData'] }}</td>
-                                    <td>
-                                      @if ($post['image'] != null)
-                                      <img src="{{ asset($post['image']) }}" class="rounded" style="width: 70px" alt="">                                              
-                                      @endif
-                                    </td>
-                                    <td>
-                                      <span class="info-box-icon py-1 px-2 rounded-circle {{ $post['type'] }} {{ $post['type'] }}App"><i class="fab fa-{{ $post['type'] }}"></i></span>
-                                    </td>
-                                  </tr>
+                                  @foreach ($allPosts as $index=>$post)
+                                    @if($post->status === "published")
+                                      <tr class="post-row">
+                                        {{-- <td>{{ $index+1 }}</td> --}}
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $post['id'] }}</td>
+                                        <td>
+                                          <span class="badge @if($post['status'] === 'published') bg-label-success @elseif($post['status'] === 'pending') bg-label-warning @else bg-label-danger @endif">{{ $post['status'] }}</span>
+                                        </td>
+                                        <td>{{ $post['content'] }}</td>
+
+                                        <td>
+                                          @if ($post->postImages->isNotEmpty())
+                                              <img src="{{ url($post->postImages[0]->image) }}" class="rounded" style="width: 70px" alt="">      
+                                          @endif
+                                          @if ($post->postVideos->isNotEmpty())
+                                              <video src="{{ url($post->postVideos[0]->video) }}" class="rounded" style="width: 70px" alt=""></video>                                              
+                                          @endif
+                                        </td>
+                                      
+                                        <td>{{ $post['scheduledTime'] }}</td>
+                                        <td>
+                                          <span class="info-box-icon py-1 px-2 rounded-circle {{ $post['account_type'] }} {{ $post['account_type'] }}App"><i class="fab fa-{{ $post['account_type'] }}"></i></span>
+                                        </td>
+                                        <td >
+                                          @if ($post->status == 'pending')
+                                            <div class="d-flex">
+                                              <a href="{{ route('posts.edit', $post->id) }}" style="background:transparent;border:none">
+                                                <i class="fa fa-edit text-success"></i>
+                                              </a>
+                                              <form action="{{ route('posts.destroy',$post->id) }}" method="post">
+                                                @csrf
+                                                @method('delete')
+                                                  <button type="submit" onclick="return confirm('are you sure?')" style="background:transparent;border:none">
+                                                    <i class="fa fa-trash text-danger"></i>
+                                                  </button>
+                                              </form>
+                                            </div>
+                                          @endif
+                                        </td>
+                                      </tr>
+                                    @endif
                                   @endforeach
                                 </tbody>
                                 <tfoot>
@@ -238,7 +292,9 @@
                                   <th>Status</th>
                                   <th>Content</th>
                                   <th>Media</th>
+                                  <th>Schedule time</th>
                                   <th>Accounts</th>
+                                  <th>Actions</th>
                                 </tr>
                                 </tfoot>
                               </table>

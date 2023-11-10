@@ -2,20 +2,6 @@
 
 @section('content')
 
-@php
-  $allPosts = App\Models\Publish_Post::where('creator_id', $userId)->count();
-  $appCount = App\Models\Api::distinct()->where('creator_id', $userId)->count('social_type');
-  $servicesCount = App\Models\settingsApi::count();
-
-  $user = App\Models\User::where('id', $userId)->get();
-  // $userApps = App\Models\Api::where('creator_id', $userId)->distinct()->pluck('social_type'); // App of user regesterd in
-  $allApps = App\Models\settingsApi::all(); // all App on website
-
-  $startDate = now()->subDays(7);
-  $lastPosts = App\Models\Publish_Post::where('scheduledTime', '>=', $startDate)->where('status', 'published')
-  ->where('creator_id', $userId)->count();
-@endphp
-
 
 <div class="content-wrapper">
   <div class="content-header">
@@ -33,7 +19,7 @@
                   <h3>Services</h3>
                   <h4>{{ $appCount }} / {{ $servicesCount }}</h4> 
 
-                  <a href="{{ route('services') }}" class="small-box-footer text-left text-dark">More <i class="fas fa-arrow-circle-right ml-2"></i></a>
+                  <a href="{{ route('services.index') }}" class="small-box-footer text-left text-dark">More <i class="fas fa-arrow-circle-right ml-2"></i></a>
                 </div>
                 <div class="icon">
                   <i class="ion ion-bag"></i>
@@ -175,12 +161,6 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
-@php
-  $startDate = now()->subDays(9);
-  // Fetch posts from the last 10 days
-  $Publish_Post = App\Models\Publish_Post::where('status', 'published')->where('creator_id', $userId)
-    ->where('scheduledTime', '>=', $startDate)->get();
-@endphp 
 
 <script>
   var currentDate = new Date(); // Get the current date

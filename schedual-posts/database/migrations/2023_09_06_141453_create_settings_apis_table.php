@@ -13,9 +13,12 @@ return new class extends Migration
     {
         Schema::create('settings_apis', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('creator_id');
+            $table->foreign('creator_id')->references('id')->on('users');
             $table->string('appType');
             $table->string('appID');
-            $table->string('appSecret');
+            $table->string('appSecret',1000);
+            $table->string('apiKey',500)->nullable();
             $table->timestamps();
         });
     }

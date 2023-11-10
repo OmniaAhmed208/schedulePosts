@@ -13,16 +13,16 @@ return new class extends Migration
     {
         Schema::create('apis', function (Blueprint $table) {
             $table->id();
-            $table->integer('creator_id');
-            $table->string('user_name');
+            $table->unsignedBigInteger('creator_id');
+            $table->foreign('creator_id')->references('id')->on('users');
+            $table->string('account_type');
+            $table->string('account_id');
+            $table->string('account_name');
             $table->string('email');
-            $table->string('user_pic',1000)->nullable();
-            $table->string('social_type');
-            $table->string('user_account_id');
+            $table->text('account_pic')->nullable();
+            $table->text('account_link');
             $table->string('token',1000);
             $table->string('token_secret',1000)->nullable();
-            $table->string('user_status')->nullable();
-            $table->string('page_name')->nullable();
             $table->integer('update_interval')->default(60);
             $table->timestamps();
         });

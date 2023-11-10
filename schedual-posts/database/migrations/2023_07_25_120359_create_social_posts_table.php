@@ -13,16 +13,15 @@ return new class extends Migration
     {
         Schema::create('social_posts', function (Blueprint $table) {
             $table->id();
-            $table->string('type');
-            $table->string('page_id');
-            $table->string('page_name');
-            $table->string('page_link',1000);
-            $table->string('page_img',1000)->nullable();
+            $table->unsignedBigInteger('api_account_id');
+            $table->foreign('api_account_id')->references('id')->on('apis');
             $table->string('post_id');
-            $table->string('post_img',1000)->nullable();
-            $table->string('post_link',1000);
-            $table->string('post_caption',1000)->nullable();
-            $table->string('post_date');
+            $table->text('post_img')->nullable();
+            $table->text('post_video')->nullable();
+            $table->text('post_link');
+            $table->string('post_title')->nullable();
+            $table->text('content')->nullable();
+            $table->timestamp('post_date');
             $table->timestamps();
         });
     }

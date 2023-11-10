@@ -6,5 +6,5 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Thujohn\\Twitter' => array($vendorDir . '/atymic/twitter/src'),
+    'Thujohn\\Twitter' => array($vendorDir . '/atymic/twitter/src', $vendorDir . '/thujohn/twitter/src'),
 );

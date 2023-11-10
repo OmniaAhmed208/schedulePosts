@@ -10,7 +10,6 @@
     <div class="container mt-5">
 
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"  data-masonry='{"percentPosition": true,  "itemSelector": ".col" }'>
-
             @foreach ($posts as $index => $post)
                     <div class="col">
                         <div class="card">
@@ -44,5 +43,6 @@
         </div>
     </div>
 </div>
+
 
 @endsection

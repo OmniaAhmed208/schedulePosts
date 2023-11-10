@@ -2,12 +2,6 @@
 
 @section('content')
 
-  @php
-    $allUsers = App\Models\User::all();
-    $roles = Spatie\Permission\Models\Role::all();
-    $user_roles = Illuminate\Support\Facades\DB::table('user_has_roles')->get();
-  @endphp
-
  <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
@@ -41,7 +35,7 @@
                                     @foreach ($allUsers as $index=>$user)
                                         <tr>
                                             <td>{{ ++$index }}</td>
-                                            <td><a href="{{ route('userDashboard',$user->id) }}">{{ $user['name'] }}</a></td>
+                                            <td><a href="{{ route('users.show',$user->id) }}">{{ $user['name'] }}</a></td>
                                             <td>{{ $user['email'] }}</td>
                                             <td>
                                                 @foreach ($user_roles as $user_role)

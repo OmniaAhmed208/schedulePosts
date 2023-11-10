@@ -5,6 +5,7 @@
   @php
     $allApps = ['facebook', 'instagram','twitter','youtube'];
     $settingsApiType = App\Models\settingsApi::all();
+    $youtubeCategories = App\Models\youtube_category::all();
   @endphp
 
  <!-- Content Wrapper. Contains page content -->
@@ -28,7 +29,7 @@
               <div class="tab-content" id="nav-tabContent">
                 @foreach ($allApps as $app)
                   <div class="tab-pane fade" id="nav-{{ $app }}" role="tabpanel" aria-labelledby="nav-{{ $app }}-tab">
-                    <form class="form-horizontal bg-white rounded p-4" action="{{route('settingsApi')}}" method="POST" id="setting-form">
+                    <form class="form-horizontal bg-white rounded p-4" action="{{route('services.store')}}" method="POST" id="setting-form">
                       @csrf
                       <div class="form-group row">
   
@@ -49,9 +50,13 @@
                         @if ($app === 'youtube')
                           <label for="appKey" class="col-md-3 col-form-label">Api key</label>
                           <div class="col-md-9 mb-3">
-                            <input type="text" class="form-control" id="appKey" name="appKey">  
-                          </div>    
+                            <input type="text" class="form-control" id="appKey" name="apiKey" required
+                            value="@foreach($settingsApiType as $api)@if($app == $api['appType']){{$api['apiKey']}}@endif @endforeach">  
+                          </div>
+                          <a href="#" data-target="#youtubeCategory" data-toggle="modal">Youtube categories</a>    
                         @endif
+                        {{-- <a href="{{ route('youtubeCategories.show', $category->id) }}">Show Category</a> --}}
+                        {{-- <a href="{{ route('youtubeCategories.edit', $category->id) }}">Edit Category</a> --}}
                         
                       </div>
                       <button type="submit" class="btn btn-info" id="saveChangesBtn">
@@ -70,6 +75,70 @@
 
               </div>
             </div>
+
+
+
+            <!-- Add category Modal -->
+            <div class="modal fade" id="youtubeCategory" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-lg modal-simple modal-dialog-centered modal-add-new-category">
+                  <div class="modal-content p-3 p-md-3">
+                      <div class="modal-body">
+                          <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+                          <div class="text-center mb-4">
+                              <h3 class="category-title">Add New Category</h3>
+                              <p>Categories you may use and assign to youtube video.</p>
+                          </div>
+                          <!-- Add category form -->
+                          <form id="addCategoryForm" class="row g-3" action="{{route('youtubeCategories.store')}}" method="post">
+                              @csrf
+                              <div class="col-6">
+                                <label class="form-label" for="modalCategoryId">Category Id</label>
+                                <input type="number" id="categoryID" name="categoryID" required class="form-control" placeholder="Enter a category id" tabindex="-1" />
+                              </div>
+                              <div class="col-6">
+                                  <label class="form-label" for="modalCategoryName">Category Name</label>
+                                  <input type="text" id="categoryName" name="categoryName" required class="form-control" placeholder="Enter a category name" tabindex="-1" />
+                              </div>
+                              <div class="col-12 text-center">
+                                  <button type="submit" class="btn btn-info me-sm-3 me-1">Create Category</button>
+                                  <button type="reset" class="btn text-white" style="background-color: #BEBEBE">Reset</button>
+                              </div>
+
+                              <div class="categories">
+                                <div class="row p-4">
+                                  <div class="col-12">
+                                      <div class="card">
+                                          <div class="card-body">
+                                              <table id="" class="table table-bordered table-striped">
+                                                  <thead>
+                                                      <tr>
+                                                          <th>Category ID</th>
+                                                          <th>Category Name</th>
+                                                          {{-- <th></th> --}}
+                                                      </tr>
+                                                  </thead>
+                                                  <tbody>
+                                                    @foreach ($youtubeCategories as $category)
+                                                    <tr>
+                                                      <td>{{ $category->category_id }}</td>
+                                                      <td>{{ $category->category_name }}</td>
+                                                      {{-- <td><span data-target="#" data-toggle="modal" data-userId='' style="color: #06283D"><i class="far fa-edit"></i></span></td> --}}
+                                                    </tr>  
+                                                    @endforeach
+                                                  </tbody>
+                                              </table>
+                                          </div>
+                                      </div>
+                                  </div>
+                              </div>
+                              </div>
+                          </form>
+                          <!--/ Add category form -->
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <!--/ Add permission Modal -->
 
         </section>
       </div><!-- /.container-fluid -->

@@ -2,10 +2,7 @@
 
 @section('content')
 
-@php
-  $apiAccounts = App\Models\Api::all()->where('creator_id', Auth::user()->id);
-  $userApps = App\Models\settingsApi::all(); // all App on website
-@endphp
+
 
  <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
@@ -32,14 +29,14 @@
                       <div class="info-box user-info py-3">
                         <div class="info-box-icon w-100 flex-column position-relative">
 
-                          @if ($account['user_pic'])
-                            <img src="{{ asset($account['user_pic']) }}" class="img-circle p-1 {{ $account['social_type'] }}App-border" alt="User Image">
+                          @if ($account['account_pic'])
+                            <img src="{{ asset($account['account_pic']) }}" class="img-circle p-1 {{ $account['account_type'] }}App-border" alt="User Image">
                           @else
-                            <img src="{{ asset('tools/dist/img/user.png') }}" class="img-circle p-1 {{ $account['social_type'] }}App-border" alt="User Image">          
+                            <img src="{{ asset('tools/dist/img/user.png') }}" class="img-circle p-1 {{ $account['account_type'] }}App-border" alt="User Image">          
                           @endif
-                          <p class="mt-3">{{ $account['user_name'] }}</p>
-                          <span class="rounded position-absolute ml-5 {{ $account['social_type'] }}App" style="background: transparent">
-                            <i class="fab fa-{{ $account['social_type'] }} rounded"></i>
+                          <p class="mt-3">{{ $account['account_name'] }}</p>
+                          <span class="position-absolute ml-5 {{ $account['account_type'] }}App" style="background: transparent">
+                            <i class="fab fa-{{ $account['account_type'] }} rounded-circle shadow-sm p-1 position-relative"></i>
                           </span>
 
                         </div>
@@ -50,15 +47,15 @@
                           </svg>  
                           <div class="dropdown-menu dropdown-menu-right px-2">
                             <ul class="list-unstyled m-0">
-                              <li class="my-2 py-1 rounded" style="background-color: #E6F8FE"> 
-                                @if ($account['social_type'] === 'youtube' || 'twitter')
-                                  <a href = "{{ route($account['social_type'],$account['user_account_id']) }}" class="text-dark px-2"> View posts </a> 
+                              {{-- <li class="my-2 py-1 rounded" style="background-color: #E6F8FE"> 
+                                @if ($account['account_type'] === 'youtube' || 'twitter')
+                                  <a href = "{{ route($account['account_type'].'.show',$account['account_id']) }}" class="text-dark px-2"> View posts </a> 
                                 @else                                    
-                                  <a href = "{{ url($account['social_type']) }}" class="text-dark px-2"> View posts </a> 
+                                  <a href = "{{ url($account['account_type']) }}" class="text-dark px-2"> View posts </a> 
                                 @endif
-                              </li>
+                              </li> --}}
                               <li class="my-2 py-1 rounded" style="background-color: #E6F8FE"> 
-                                <form action="{{ route('removeAccount',$account['user_account_id']) }}" method="post">
+                                <form action="{{ route('removeAccount',$account['account_id']) }}" method="post">
                                   @csrf
                                   @method('delete')
                                   <button type="submit" style="border: none;background: transparent;" class="text-dark px-2"

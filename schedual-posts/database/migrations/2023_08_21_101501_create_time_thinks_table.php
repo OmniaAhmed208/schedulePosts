@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('time_thinks', function (Blueprint $table) {
             $table->id();
-            $table->integer('creator_id');
-            $table->string('time');
+            $table->unsignedBigInteger('creator_id');
+            $table->foreign('creator_id')->references('id')->on('users');
+            $table->integer('time');
             $table->timestamps();
         });
     }
