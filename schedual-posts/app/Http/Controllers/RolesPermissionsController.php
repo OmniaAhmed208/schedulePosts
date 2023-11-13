@@ -9,103 +9,128 @@ use Spatie\Permission\Models\Permission;
 
 class RolesPermissionsController extends Controller
 {
-    public function index(Request $request){
-        return view('AdminSocialMedia.rolePermission');
-    }
-
-    public function RoleStore(Request $request)
+    public function __construct()
     {
-        $roleName = $request->newRole;
-        $roleColor = $request->roleColor ? $request->roleColor : 'dark';
-
-        if (Role::where('name', $roleName)->exists()) {
-            return redirect()->back()->with('rolePermission', 'The role is already exists.');
-        }
-
-        $role = Role::create([
-            'name' => $roleName, 
-            'role_color' => $roleColor
-        ]);
-
-        return redirect()->back()->with('rolePermission', 'The role created successfully');
+        $this->middleware('permission:roles.assign_roles_to_user')->only(['assignUserToRoles']);
+        $this->middleware('permission:roles.assign_role_to_permissions')->only(['assignRoleToPermissions']);
     }
+
+    public function index(Request $request)
+    {
+        $roles = Role::all();
+        $permissions = Permission::all();
+        $role_has_permissions = DB::table('role_has_permissions')->get();
+
+        $pages = $permissions->map(function ($permission) {
+            return explode('.', $permission->name)[0];
+        })->unique();
+
+        return view('main.roles.index', compact('roles','permissions','role_has_permissions','pages'));
+    }
+
+    // public function assignRoleToPermissions(Request $request)
+    // {
+    //     // dd($request);
+    //     $permissions = $request->permission;
+    //     $permission_id = '';
+    //     $role_id = '';
+    //     dd($permissions);
+    //     if($permissions){
+    //         foreach ($permissions as $item) {
+    //             $values = explode(',', $item);
+    //             $permission_id = $values[0];
+    //             $role_id = $values[1];
     
-    public function RoleUpdate(Request $request)
-    {
-        $roleID = $request->roleId; 
-        $roleName = $request->roleName;
-        $roleColor = $request->roleColor ? $request->roleColor : 'dark';
+    //             // Check if the entry already exists in the table
+    //             $existingEntry = DB::table('role_has_permissions')
+    //                 ->where('role_id', $role_id)
+    //                 ->where('permission_id', $permission_id)
+    //                 ->first();
+    
+    //             if (!$existingEntry) {
+    //                 // If the entry doesn't exist, insert it
+    //                 DB::table('role_has_permissions')->insert([
+    //                     'role_id' => $role_id,
+    //                     'permission_id' => $permission_id,
+    //                 ]);
+    //             }         
+    //         }
+
+    //         $role_has_permissions = DB::table('role_has_permissions')->get();
+    //         foreach ($role_has_permissions as $row) {
+    //             if($row->role_id == $role_id){
+    //                 $recordKey = $row->permission_id . ',' . $row->role_id;
+    //                 // If the record is in db and not in the permissions array
+    //                 if (!in_array($recordKey, $permissions)) {
+    //                     DB::table('role_has_permissions')
+    //                     ->where('role_id', $row->role_id)
+    //                     ->where('permission_id', $row->permission_id)
+    //                     ->delete(); 
+    //                 }
+    //             }
+    //         }
+    //     }
         
-        Role::where('id', $roleID)->update([
-            'name' => $roleName, 
-            'role_color' => $roleColor
-        ]);
 
-        return redirect()->back()->with('rolePermission', 'The role updated successfully');
-    }
+        
 
-    public function PermissionStore(Request $request)
+    //     return redirect()->back()->with('success', 'The role assigned to permissions successfully');
+    // }
+
+    public function assignRoleToPermissions(Request $request,$role_id)
     {
-        $rolePermission = $request->newPermission;
-
-        if (Permission::where('name', $rolePermission)->exists()) {
-            return redirect()->back()->with('rolePermission', 'The permission is already exists.');
-        }
-        $permission = Permission::create(['name' => $rolePermission]);
-        return redirect()->back()->with('rolePermission', 'The permission created successfully');
-    }
-
-    public function RolePermissionStore(Request $request)
-    {
-        // dd($request);
+        // dd($request,$role_id);
         $permissions = $request->permission;
         $permission_id = '';
-        $role_id = '';
+        // $role_id = '';
+        // dd($permissions);
+        if($permissions){
+            foreach ($permissions as $item) {
+                $values = explode(',', $item);
+                $permission_id = $values[0];
+                // $role_id = $values[1];
+    
+                // Check if the entry already exists in the table
+                $existingEntry = DB::table('role_has_permissions')
+                    ->where('role_id', $role_id)
+                    ->where('permission_id', $permission_id)
+                    ->first();
+    
+                if (!$existingEntry) {
+                    // If the entry doesn't exist, insert it
+                    DB::table('role_has_permissions')->insert([
+                        'role_id' => $role_id,
+                        'permission_id' => $permission_id,
+                    ]);
+                }         
+            }
+
+            $role_has_permissions = DB::table('role_has_permissions')->get();
+            foreach ($role_has_permissions as $row) {
+                if($row->role_id == $role_id){
+                    $recordKey = $row->permission_id . ',' . $row->role_id;
+                    // If the record is in db and not in the permissions array
+                    if (!in_array($recordKey, $permissions)) {
+                        DB::table('role_has_permissions')
+                        ->where('role_id', $row->role_id)
+                        ->where('permission_id', $row->permission_id)
+                        ->delete(); 
+                    }
+                }
+            }
+        }
+        else{
+            DB::table('role_has_permissions')->where('role_id', $role_id)->delete(); 
+        }
         
-        foreach ($permissions as $item) {
-            $values = explode(',', $item);
-            $permission_id = $values[0];
-            $role_id = $values[1];
 
-            // Check if the entry already exists in the table
-            $existingEntry = DB::table('role_has_permissions')
-                ->where('role_id', $role_id)
-                ->where('permission_id', $permission_id)
-                ->first();
+        
 
-            if ($existingEntry) {
-                $roleName = Role::where('id',$role_id)->first()->name;
-                $permissionName = Permission::where('id',$permission_id)->first()->name;
-                // return redirect()->back()->with('rolePermission', "This role '$roleName' assigned to this permission '$permissionName' before");
-            }
-           else{
-                // If the entry doesn't exist, insert it
-                DB::table('role_has_permissions')->insert([
-                    'role_id' => $role_id,
-                    'permission_id' => $permission_id,
-                ]);
-           }
-
-           
-        }
-
-        $role_has_permissions = DB::table('role_has_permissions')->get();
-        foreach ($role_has_permissions as $row) {
-            $recordKey = $row->permission_id . ',' . $row->role_id;
-            
-            // If the record is in db and not in the permissions array
-            if (!in_array($recordKey, $permissions)) {
-                DB::table('role_has_permissions')
-                ->where('role_id', $row->role_id)
-                ->where('permission_id', $row->permission_id)
-                ->delete(); 
-            }
-        }
-
-        return redirect()->back()->with('rolePermission', 'The role assigned to permissions successfully');
+        return redirect()->back()->with('success', 'The role assigned to permissions successfully');
     }
 
-    public function rolePermissionUser(Request $request, $userId)
+
+    public function assignUserToRoles(Request $request, $userId)
     {
         $newRoles = $request->roles;
 
@@ -137,5 +162,4 @@ class RolesPermissionsController extends Controller
 
         return redirect()->back()->with('rolePermission', 'Roles assigned to the user successfully.');
     }
-
 }

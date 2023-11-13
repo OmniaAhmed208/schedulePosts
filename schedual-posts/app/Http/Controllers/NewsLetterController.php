@@ -9,6 +9,13 @@ use Illuminate\Support\Facades\Storage;
 
 class NewsLetterController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:newsletter.create')->only(['store']);
+        $this->middleware('permission:newsletter.edit')->only(['update']);
+        $this->middleware('permission:newsletter.delete')->only('destroy');
+    }
+
     public function index()
     {
         $newsLetter = NewsLetter::all();
@@ -41,7 +48,8 @@ class NewsLetterController extends Controller
             'creator_id' => Auth::user()->id, // admin
             'title' => $request->title,
             'content' => $request->content,
-            'image' => $storageImage
+            'image' => $storageImage,
+            'color' => $request->color
         ]);
 
         return back()->with('success','The post created successfully');
@@ -81,7 +89,7 @@ class NewsLetterController extends Controller
             'creator_id' => Auth::user()->id, // admin
             'title' => $request->title,
             'content' => $request->content,
-            'image' => $storageImage
+            'image' => $storageImage,
         ]);
 
         return back()->with('success','The post updated successfully');

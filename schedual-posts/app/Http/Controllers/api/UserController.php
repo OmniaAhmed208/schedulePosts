@@ -28,14 +28,6 @@ class UserController extends Controller
         ],200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-
-    public function store(Request $request)
-    {
-        //
-    }
 
     public function register(Request $request)
     {
@@ -152,18 +144,8 @@ class UserController extends Controller
     {
         $user = User::find($id);
 
-        $count_all_posts = PublishPost::where('creator_id', $id)->count();
-        $appCount = Api::distinct()->where('creator_id', $id)->count('account_type');
-        $servicesCount = settingsApi::count();
-
-        // $userApps = App\Models\Api::where('creator_id', $userId)->distinct()->pluck('account_type'); // App of user regesterd in
-        // $allApps = settingsApi::all(); // all App on website
-
-        $startDate = now()->subDays(7);
-        $publishPostCount_for_lastWeek = PublishPost::where('scheduledTime', '>=', $startDate)->where('status', 'published')
-        ->where('creator_id', $id)->count();
-
-        $allPosts = PublishPost::all()->where('creator_id', $id);
+        $apiAccounts = Api::all()->where('creator_id', Auth::user()->id);
+        $userApps = settingsApi::all(); // all App on website
 
         if($user == null){
             return response()->json([
@@ -175,12 +157,9 @@ class UserController extends Controller
         return response()->json([
             'message' => 'User found',
             'data' => [
-                'userName'=> $user->name,
-                'registeredAppCount' => $appCount,
-                'servicesCount' => $servicesCount,
-                'publish_post_count_for_lastWeek' => $publishPostCount_for_lastWeek, //count,
-                'count_all_posts' => $count_all_posts,
-                'allPosts' => $allPosts
+                'user'=> $user,
+                'apiAccounts' => $apiAccounts,
+                'userApps' =>  $userApps
             ],
             'status' => true
         ],200);

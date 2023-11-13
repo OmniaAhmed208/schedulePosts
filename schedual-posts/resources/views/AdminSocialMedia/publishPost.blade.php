@@ -25,13 +25,13 @@
                 @endif --}}
 
                 {{-- <video style="width:200px;height:200px" src="{{ url('storage/app/uploads/vecteezy_square-shape-tech-background-hud-small-squares-shape-loop_13449649_472.mp4') }}"></video> --}}
-
+                
                 <div class="card p-3">
                     <div class="card-header border-0">
                         <h3 class="card-title my-3"><b>Create Post</b></h3>
                         <div class="card-tools socialIcons" id="socialIcons"></div>
                     </div>
-
+                
                     <form class="form-horizontal" action="{{ route('posts.store')}}" method="post" enctype="multipart/form-data">
                         @csrf
                         <section class="socialAccounts pl-3">
@@ -41,7 +41,7 @@
                                     @if ($account['account_pic'])
                                         <img src="{{ asset($account['account_pic']) }}" class="img-circle p-1 w-100 {{ $account['account_type'] }}App-border" alt="User Image">
                                     @else
-                                        <img src="{{ asset('tools/dist/img/user.png') }}" class="img-circle p-1 w-100 {{ $account['account_type'] }}App-border" alt="User Image">
+                                        <img src="{{ asset('tools/dist/img/user.png') }}" class="img-circle p-1 w-100 {{ $account['account_type'] }}App-border" alt="User Image">          
                                     @endif
                                     <span class="rounded position-absolute {{ $account['account_type'] }}App" style="background: transparent;left: 33px;top: 29px;">
                                         <i class="fab fa-{{ $account['account_type'] }} rounded" style="font-size: 15px;"></i>
@@ -52,17 +52,18 @@
                             <textarea cols="30" rows="15" maxlength="5000" class="form-control mt-3" name="postData" placeholder="Whta's on your mind?" style="resize: none">{{ old('postData') }}</textarea>
                             <div class="container">
                                 <div class="photoSec previewSec pb-4"></div>
-
+                                
                                 <div class="card py-2 px-4 d-flex flex-row justify-content-between align-items-center">
                                     <p class="m-0">Add to your post</p>
                                     <div class="d-flex position-relative">
                                         <div class="file position-absolute" id="imgFile">
                                             <input type="file" class="form-control position-absolute" name="images[]" onchange="getImagePreview(event)" accept=".jpg, .jpeg, .png, .gif" multiple>
+                                           
                                             <i class="fas fa-photo-video text-success px-2"></i>
                                         </div>
                                         <div class="file position-absolute" id="videoFile">
                                             <input type="file" class="form-control position-absolute" name="video" onchange="getVideoPreview(event)" accept="video/*">
-
+                                            
                                             <i class="fas fa-video text-primary px-2"></i>
                                         </div>
                                         <i class="fas fa-link text-info mx-1 mt-1 postLink" data-toggle="modal" data-target="#modal-default"></i>
@@ -115,7 +116,7 @@
 
                             <div class="d-flex align-items-center mb-2">
                                 <i class="far fa-calendar-times text-info mr-2"></i>
-                                <label class="pt-1">schedule your post</label>
+                                <label class="pt-1">schedule your post</label> 
                                 <i class="far fa-hand-point-right text-info mx-2"></i>
                                 <input type="checkbox" id="checkDate" data-bootstrap-switch onchange="statusChange()">
                             </div>
@@ -126,7 +127,7 @@
                                 </div>
                             </div>
                         </section>
-
+                
                         <div class="rounded">
                             @if (($userApps->isNotEmpty()) && $timeThink)
                                 <button type="submit" class="btn publishBtn float-right border border-info px-4">Publish</button>
@@ -167,13 +168,13 @@
 
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function () {      
         var datePosts = document.getElementById('scheduledTime');
         var today = new Date().toISOString().split('T')[0];
-        datePosts.setAttribute("min", today);
-
-        const allApps = Array.from(document.querySelectorAll('.publishPostContainer input[type="checkbox"]'));
-        const youtubeSelectBlock = document.getElementById('youtubeSelectBlock');
+        datePosts.setAttribute("min", today); 
+        
+        const allApps = Array.from(document.querySelectorAll('.publishPostContainer input[type="checkbox"]')); 
+        const youtubeSelectBlock = document.getElementById('youtubeSelectBlock'); 
         var userAccounts = <?php echo json_encode($userAccounts); ?>;
 
         // Convert userAccounts into an array of its values
@@ -183,17 +184,17 @@
 
         allApps.forEach(app => {
             app.addEventListener('click', () => {
-                checkAppType();
+                checkAppType(); 
             });
         });
 
         function checkAppType() {
             const anyChecked = allApps.some(app => app.checked);
             if (anyChecked) {
-                const youtubeAccounts = userAccounts.filter(account =>
+                const youtubeAccounts = userAccounts.filter(account => 
                     account.account_type === 'youtube' && allApps.some(app => app.checked && app.id === account.account_id)
                 );
-
+                
                 if (youtubeAccounts.length > 0) {
                     youtubeSelectBlock.style.display = 'block';
                     youtubeSelectBlock.querySelector('#videoTitle').setAttribute('required', 'required');
@@ -210,7 +211,7 @@
     });
 
 
-    // show image after choose it
+    // show image after choose it 
     function getImagePreview(event){
         // console.log(event.target.files[0]);
         for(let i = 0; i<event.target.files.length; i++)
@@ -221,7 +222,7 @@
             var html = `<img src="${img}">
             <span aria-hidden="true" style="cursor:pointer;margin-right: 6px;" onclick="closeFile(this)">&times;</span>`;
             container.innerHTML += html;
-        }
+        }  
     }
 
     function getVideoPreview(event){
@@ -232,9 +233,9 @@
             var html = `<video src="${video}"></video>
             <span aria-hidden="true" style="cursor:pointer;margin-right: 6px;" onclick="closeFile(this)">&times;</span>`;
             container.innerHTML += html;
-        }
+        }  
     }
-
+    
     function closeFile(closeButton) {
         var container = document.querySelector('.previewSec'); // Find the parent div
         var file = closeButton.previousElementSibling; // Find the img element next to the clicked span (close button)

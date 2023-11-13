@@ -17,9 +17,9 @@
     <ul class="menu-inner py-1">
       <!-- Dashboards -->
       <li class="menu-item active">
-        <a href="{{ url('home') }}" class="menu-link">
+        <a href="{{ route('dashboard.index') }}" class="menu-link">
           <i class="menu-icon tf-icons bx bx-home-circle"></i>
-          <div data-i18n="Dashboards">Dashboards</div>
+          <div data-i18n="Dashboards">Dashboard</div>
         </a>
       </li>
 
@@ -59,14 +59,17 @@
             </ul>
         </li> --}}
 
-        @if (Auth::user()->user_type === 'admin')
+        {{-- @if (Auth::user()->user_type === 'admin') --}}
+        @can('pages.link')
+
             <li class="menu-item">
                 <a href="{{ route('newsLetter.index') }}" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-copy"></i>
                     <div data-i18n="createPost">Newsletter</div>
                 </a>
             </li>
-        @endif
+        @endcan
+        {{-- @endif --}}
 
         <li class="menu-item">
             <a href="#" class="menu-link">
@@ -77,22 +80,26 @@
 
         <!-- Components -->
         <li class="menu-header small text-uppercase"><span class="menu-header-text">Components</span></li>
-        @if (Auth::user()->user_type === 'admin')
+        @can('pages.link')
             <li class="menu-item">
                 <a href="{{ route('services.index') }}" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-detail"></i>
                     <div data-i18n="createPost">Services</div>
                 </a>
             </li>
+        @endcan
+
+        @can('pages.link')
             <li class="menu-item">
-                <a href="#" class="menu-link">
+                <a href="{{ route('rolePermissions.index') }}" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-lock-open-alt"></i>
                     <div data-i18n="createPost">Roles & Permissions</div>
                 </a>
-            </li>
-        @endif
+            </li>    
+        @endcan
+
         <li class="menu-item">
-            <a href="" class="menu-link">
+            <a href="{{ url('policy') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-list-check"></i>
                 <div data-i18n="createPost">Policy & Terms</div>
             </a>
@@ -104,7 +111,8 @@
             </a>
         </li>
         <!-- Users -->
-        @if (Auth::user()->user_type === 'admin')
+        
+        @can('pages.link')
             <li class="menu-header small text-uppercase"><span class="menu-header-text">Users</span></li>
             <li class="menu-item">
                 <a href="{{route('users.index')}}" class="menu-link">
@@ -112,13 +120,16 @@
                     <div data-i18n="createPost">Users</div>
                 </a>
             </li>
+        @endcan
+
+        @can('pages.link')
             <li class="menu-item">
                 <a href="{{route('subscribers.index')}}" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-group"></i>
                     <div data-i18n="createPost">Subscribers</div>
                 </a>
             </li>
-        @endif
+        @endcan
 
         {{-- <li class="menu-header small text-uppercase"><span class="menu-header-text">Settings</span></li>
         <li class="menu-item">

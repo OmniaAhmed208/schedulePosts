@@ -19,7 +19,7 @@ class SubscriberController extends Controller
             $subscribers = $user;
         }
 
-        return view('AdminSocialMedia.subscribers',compact('subscribers'));
+        return view('main.subscribers.index',compact('subscribers'));
     }
 
 

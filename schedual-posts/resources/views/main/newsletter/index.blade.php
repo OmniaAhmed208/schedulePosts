@@ -11,7 +11,8 @@
 
                 <div class="d-flex justify-content-between align-items-center px-4">
                     <h4 class="my-4 text-dark" style="font-weight: bold">Newsletter</h4>
-                    @if (Auth::user()->user_type == 'admin')
+                    {{-- @if (Auth::user()->user_type == 'admin') --}}
+                    @if(Auth::user()->can('newsletter.create'))
                         <button class="btn btn text-white" style="background: #06283d"
                         type="button" data-bs-toggle="modal" data-bs-target="#addNewsletter">
                             Add newsletter
@@ -22,9 +23,9 @@
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"  data-masonry='{"percentPosition": true,  "itemSelector": ".col" }'>
                     @foreach ($newsLetter as $index => $data)
                         <div class="col">
-                            <div class="card">
+                            <div class="card" style="background-color: {{ $data->color }}">
                                 @if ($data['image'] != null)
-                                    <img class="card-img-top" src="{{url($data['image'])}}" alt="Card image cap" />
+                                    <img class="card-img-top" src="{{url('tools/assets/img/elements/5.jpg')}}" alt="Card image cap" />
                                 @endif
                                 <div class="card-body">
                                     <h5 class="card-title">{{ $data['title'] }}</h5>
@@ -34,11 +35,16 @@
                                     @endif
                                 </div>
 
-                                @if (Auth::user()->user_type == 'admin')
-                                    <div class="d-flex justify-content-end">
+                                {{-- @if (Auth::user()->user_type == 'admin') --}}
+                                <div class="d-flex justify-content-end">
+                                    
+                                    @can('newsletter.edit')
                                         <button type="button" class="btn p-0 mt-2" data-newsletter="{{$data}}" data-bs-toggle="modal" data-bs-target="#editNewsletter">
-                                            <i class="bx bx-edit text-primary"></i>
+                                            <i class="bx bx-edit text-primary mb-1"></i>
                                         </button>
+                                    @endcan
+
+                                    @can('newsletter.delete')
                                         <form action="{{ route('newsLetter.destroy',$data->id) }}" method="post">
                                             @csrf
                                             @method('delete')
@@ -47,107 +53,119 @@
                                                 <i class="bx bx-trash text-danger"></i>
                                             </button>
                                         </form>
-                                    </div>
-                                @endif
+                                    @endcan
+                                </div>
+                                {{-- @endif --}}
                             </div>
                         </div>
                     @endforeach
                 </div>
 
-
                 {{-- add newsletter --}}
                 <div class="modal fade" id="addNewsletter" tabindex="-1" aria-hidden="true">
-                    <form id="addNewsletterForm" action="{{ route('newsLetter.store') }}" method="post" enctype="multipart/form-data">
-                        @csrf
-                        <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
                             <h5 class="modal-title">Add Newsletter</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                            <div class="modal-body">
-                                <div class="row">
-                                    <div class="col mb-3">
-                                        <label for="newsletterTitle" class="form-label">Title</label>
-                                        <input type="text" id="newsletterTitle" required class="form-control" name="title" placeholder="Enter title" />
+
+                            <form id="addNewsletterForm" action="{{ route('newsLetter.store') }}" method="post" enctype="multipart/form-data">
+                                @csrf
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col mb-3">
+                                            <label for="newsletterTitle" class="form-label">Title</label>
+                                            <input type="text" id="newsletterTitle" required class="form-control" name="title" placeholder="Enter title" />
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col mb-3">
-                                        <label for="newsletterContent" class="form-label">Content</label>
-                                        <textarea id="newsletterContent" class="form-control" required name="content"></textarea>
+                                    <div class="row">
+                                        <div class="col mb-3">
+                                            <label for="newsletterContent" class="form-label">Content</label>
+                                            <textarea id="newsletterContent" class="form-control" required name="content"></textarea>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col mb-3">
-                                        <div class="w-50 p-2 pb-0" style="border: 2px dashed #ccc;">
-                                            <div id="imageContainer"></div>
-                                            <label for="newsletterImage" class="form-label position-relative" style="cursor: pointer;">
-                                                <input type="file" id="newsletterImage" class="form-control position-absolute" name="image" style="opacity:0;" accept="image/*" />
-                                                <i class="bx bx-image-add" style="font-size: 24px; top:8px ;color: #333;"></i> Add Image
+                                    <div class="row">
+                                        <div class="col mb-3">
+                                            <label for="newsletterColor" class="form-label">
+                                                <input type="checkbox" id="newsletterColor" hidden name="color"> 
+                                                <span class="ms-2">Color for Box</span>
+                                                <span class="ms-2 position-absolute" id="newsletterColorSpan" style="background-color: #e0f7fc;height: 25px;width: 50px;border: 1px solid #ddd;border-radius:3px"></span>
                                             </label>
                                         </div>
                                     </div>
+                                    <div class="row">
+                                        <div class="col mb-3">
+                                            <div class="w-50 p-2 pb-0" style="border: 2px dashed #ccc;">
+                                                <div id="imageContainer"></div>
+                                                <label for="newsletterImage" class="form-label position-relative" style="cursor: pointer;">
+                                                    <input type="file" id="newsletterImage" class="form-control position-absolute" name="image" style="opacity:0;" accept="image/*" />
+                                                    <i class="bx bx-image-add" style="font-size: 24px; top:8px ;color: #333;"></i> Add Image
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"> Close </button>
-                            <button type="submit" class="btn btn text-white" style="background: #79DAE8">Save</button>
-                            </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"> Close </button>
+                                    <button type="submit" class="btn btn text-white" style="background: #79DAE8">Save</button>
+                                </div>
+                            </form>
+
                         </div>
-                        </div>
-                    </form>
+                    </div>
                 </div>
 
                 {{-- edit newsletter --}}
                 <div class="modal fade" id="editNewsletter" tabindex="-1" aria-hidden="true">
-                    <form id="editNewsletterForm" action="" method="post" enctype="multipart/form-data">
-                        @csrf
-                        @method('put')
-                        <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
                             <h5 class="modal-title">Add Newsletter</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                            <div class="modal-body">
-                                <div class="row">
-                                    <div class="col mb-3">
-                                        <label for="newsletterTitle" class="form-label">Title</label>
-                                        <input type="text" id="newsletterTitle" class="form-control" required name="title" placeholder="Enter title" />
+
+                            <form id="editNewsletterForm" action="" method="post" enctype="multipart/form-data">
+                                @csrf
+                                @method('put')
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col mb-3">
+                                            <label for="newsletterTitle" class="form-label">Title</label>
+                                            <input type="text" id="newsletterTitle" class="form-control" required name="title" placeholder="Enter title" />
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col mb-3">
-                                        <label for="newsletterContent" class="form-label">Content</label>
-                                        <textarea id="newsletterContent" class="form-control" required name="content"></textarea>
+                                    <div class="row">
+                                        <div class="col mb-3">
+                                            <label for="newsletterContent" class="form-label">Content</label>
+                                            <textarea id="newsletterContent" class="form-control" required name="content"></textarea>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col mb-0">
-                                        <div class="w-50 p-2 pb-0" style="border: 2px dashed #ccc;">
-                                            <div id="imageContainer"></div>
-                                            <label for="newsletterImage" class="form-label position-relative" style="cursor: pointer;">
-                                                <input type="file" id="newsletterImage" class="form-control position-absolute" name="image" style="opacity:0;" accept="image/*" />
-                                                <i class="bx bx-image-add" style="font-size: 24px; top:8px ;color: #333;"></i> Add Image
-                                            </label>
+                                    <div class="row">
+                                        <div class="col mb-0">
+                                            <div class="w-50 p-2 pb-0" style="border: 2px dashed #ccc;">
+                                                <div id="imageContainer"></div>
+                                                <label for="newsletterImage" class="form-label position-relative" style="cursor: pointer;">
+                                                    <input type="file" id="newsletterImage" class="form-control position-absolute" name="image" style="opacity:0;" accept="image/*" />
+                                                    <i class="bx bx-image-add" style="font-size: 24px; top:8px ;color: #333;"></i> Add Image
+                                                </label>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"> Close </button>
-                            <button type="submit" class="btn btn text-white" style="background: #79DAE8">Update</button>
-                            </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"> Close </button>
+                                    <button type="submit" class="btn btn text-white" style="background: #79DAE8">Update</button>
+                                </div>
+                            </form>
                         </div>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </section>
         </div>
   </div>
 
-    <script src="tools/assets/vendor/libs/masonry/masonry.js"></script>
+    <script src="{{ asset('tools/assets/vendor/libs/masonry/masonry.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const addButton = document.querySelector('.btn[data-bs-target="#addNewsletter"]');
@@ -166,6 +184,7 @@
 
                     document.querySelector('#editNewsletter #newsletterTitle').value = newsletterData.title;
                     document.querySelector('#editNewsletter #newsletterContent').value = newsletterData.content;
+                    document.querySelector('#editNewsletter #newsletterColor').value = newsletterData.color;
 
                     if (newsletterData.image != null) {
                         const existingImage = document.createElement('img');
@@ -213,6 +232,16 @@
                 //     imageInput.value = ''; // Clear the file input
                 // });
             });
-        });
+
+
+            // color
+            var colorInput = document.querySelector('#addNewsletterForm newsletterColor');
+            var colorSpan = document.querySelector('#addNewsletterForm newsletterColorSpan');
+
+            colorInput.addEventListener('change', ()=>{
+                colorSpan.style.border = '1px solid #03c3ec';
+                colorInput.value = '#e0f7fc';
+            });
+        });   
     </script>
 @endsection

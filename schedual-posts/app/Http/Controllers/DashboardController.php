@@ -29,16 +29,33 @@ class DashboardController extends Controller
         $publishPost = publishPost::where('status', 'published')->where('creator_id', Auth::user()->id)
         ->where('scheduledTime', '>=', $startDate)->get();
 
-        return view('main.dashboard',compact('allPosts','appCount','servicesCount',
+        return view('main.dashboard.index',compact('allPosts','appCount','servicesCount',
         'allApps','startDate','lastPosts','userId','publishPost'));
     }
 
-    public function privacy_policy(){
-        return view('main.privacy');
+    public function show($userId) //dashboard for each user
+    {
+        $allPosts = PublishPost::where('creator_id', $userId)->count();
+        $appCount = Api::distinct()->where('creator_id', $userId)->count('account_type');
+        $servicesCount = settingsApi::count();
+
+        $user = User::where('id', $userId)->get();
+        // $userApps = App\Models\Api::where('creator_id', $userId)->distinct()->pluck('account_type'); // App of user regesterd in
+        $allApps = settingsApi::all(); // all App on website
+
+        $startDate = now()->subDays(7);
+        $lastPosts = PublishPost::where('scheduledTime', '>=', $startDate)->where('status', 'published')
+        ->where('creator_id', $userId)->count();
+
+        $Publish_Post = PublishPost::where('status', 'published')->where('creator_id', $userId)
+        ->where('scheduledTime', '>=', $startDate)->get();
+
+        return view('main.dashboard.show',compact('userId','allPosts','appCount','servicesCount','user',
+        'allApps','startDate','lastPosts','Publish_Post'));
     }
 
-    public function terms_policy(){
-        return view('main.terms');
+    public function policy(){
+        return view('main.policy');
     }
 
 }

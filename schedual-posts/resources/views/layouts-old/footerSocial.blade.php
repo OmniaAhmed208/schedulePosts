@@ -1,29 +1,3 @@
-</div>
-<!-- / Layout page -->
-</div>
-<!-- Overlay -->
-{{-- <div class="layout-overlay layout-menu-toggle"></div> --}}
-</div>
-<!-- / Layout wrapper -->
-
-
-<script src="{{asset('tools/assets/vendor/libs/jquery/jquery.js')}}"></script>
-<script src="{{asset('tools/assets/vendor/libs/popper/popper.js')}}"></script>
-<script src="{{asset('tools/assets/vendor/js/bootstrap.js')}}"></script>
-<script src="{{asset('tools/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js')}}"></script>
-<script src="{{asset('tools/assets/vendor/js/menu.js')}}"></script>
-<!-- Vendors JS -->
-<script src="{{asset('tools/assets/vendor/libs/apex-charts/apexcharts.js')}}"></script>
-
-<!-- Main JS -->
-<script src="{{asset('tools/assets/js/main.js')}}"></script>
-
-<!-- Page JS -->
-<script src="{{asset('tools/assets/js/dashboards-analytics.js')}}"></script>
-
-<!-- Place this tag in your head or just before your close body tag. -->
-<script async defer src="https://buttons.github.io/buttons.js"></script>
-
 
 <!-- jQuery -->
 <script src="{{ asset('tools/plugins/jquery/jquery.min.js') }}"></script>
@@ -77,7 +51,6 @@
 <!-- fullCalendar 2.2.5 -->
 <script src="{{ asset('tools/plugins/moment/moment.min.js') }}"></script>
 <script src="{{ asset('tools/plugins/fullcalendar/main.js') }}"></script>
-
 <!-- Select2 -->
 <script src="{{ asset('tools/plugins/select2/js/select2.full.min.js') }}"></script>
 <!-- Toastr -->
@@ -108,7 +81,7 @@
 {{-- after publish post --}}
 @if(session()->has('postStatusForPublishing'))
   @foreach(session('postStatusForPublishing') as $message)
-    <script>
+    <script>          
       @if(strpos($message, 'successfully') !== false)
           toastr.success('{{ $message }}');
       @elseif(strpos($message, 'pending') !== false)
@@ -133,19 +106,12 @@
 
 <!-- Page specific script DataTables-->
 <script>
-  $(function databaseTable($tableId) 
-  {
+  $(function () {
+    $("#example1").DataTable({
+      "responsive": true, "lengthChange": false, "autoWidth": false,
+      "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+    }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
     $('#example2').DataTable({
-      "paging": true,
-      "lengthChange": false,
-      "searching": false,
-      "ordering": true,
-      "info": true,
-      "autoWidth": false,
-      "responsive": true,
-    });
-
-    $('#permissionTable').DataTable({
       "paging": true,
       "lengthChange": false,
       "searching": false,
@@ -177,17 +143,134 @@
     $websiteColor = "#06283D";
 @endphp
 
-@auth
-  @if (Auth::user()->role_for_messages != 'admin')
-      @include('liveChat::pages.main.chat', ['websiteName' => $websiteName], ['chatColor' => $websiteColor])
-  @endif
-@else
+@auth 
+  @if (Auth::user()->role_for_messages != 'admin') 
+      @include('liveChat::pages.main.chat', ['websiteName' => $websiteName], ['chatColor' => $websiteColor]) 
+  @endif 
+@else 
   @include('liveChat::pages.main.chat', ['websiteName' => $websiteName], ['chatColor' => $websiteColor])
 @endauth
 
+{{-- for selction option in publish post --}}
+@php
+  $userApps = App\Models\Api::where('creator_id', Auth::user()->id)->distinct()->pluck('account_type'); // App of user regesterd in
+@endphp
+{{-- <script>
+  var userApps = <?php echo $userApps; ?>;
+  // for selction option in publish post
+  $(document).ready(function() {
+    const appSelect = document.getElementById('appSelect');
+    const socialIcons = document.getElementById('socialIcons');
+    const facebookPageSelectBlock = document.getElementById('facebookPageSelectBlock');
+    const youtubeSelectBlock = document.getElementById('youtubeSelectBlock');
+
+    $('#appSelect').select2();
+
+    // Add change event handler
+    $('#appSelect').on('change', function() {
+      const selectedValue = $(this).val() || [];
+      updateSocialIcons(selectedValue);
+    });
+
+    // Function to update social icons and attributes
+    function updateSocialIcons(selectedValue) {
+      const icons = {};
+      for (const app of userApps) {
+        iconHTML = `<span class="rounded-circle px-2 py-1 mx-1 ${app}App"><i class="fab fa-${app}"></i></span>`;
+        icons[app] = iconHTML;
+      }
+      socialIcons.innerHTML = selectedValue.filter(app => icons[app]).map(app => icons[app]).join('');
+
+      const isInstagramSelected = selectedValue.includes('instagram');
+      const imageInput = document.querySelector('#imgFile input');
+
+      const isYoutubeSelected = selectedValue.includes('youtube');
+      const videoTitle = document.querySelector('#videoTitle');
+     
+      isInstagramSelected ? imageInput.setAttribute('required', 'required') : imageInput.removeAttribute('required');
+      isYoutubeSelected ? videoTitle.setAttribute('required', 'required') : videoTitle.removeAttribute('required');
+     
+      youtubeSelectBlock.style.display = selectedValue.includes('youtube') ? 'block' : 'none';
+     
+      facebookPageSelectBlock.style.display = selectedValue.includes('facebook') ? 'block' : 'none';
+    }
+  });
+</script> --}}
+
+
+{{-- sidebar for active --}}
+<script>
+  document.addEventListener("DOMContentLoaded", function () 
+  {
+    // Get the element by its class or other selector
+    const outsideLinks = document.querySelectorAll('.nav-sidebar .outsideLinks');
+    const insideLinks = document.querySelectorAll('.nav-sidebar .insideLinks');
+  
+    const urls = [];
+    const urlsInside = [];
+    
+    urlActive(outsideLinks, urls);
+    urlActive(insideLinks, urlsInside);
+
+    function urlActive(links, urlsArr){
+      links.forEach(ele => {
+        const hrefAttributeValue = ele.getAttribute('href');
+        if (hrefAttributeValue) {
+          const match = hrefAttributeValue.match(/\/([^/]+)$/);
+          const word = match && match[1];
+          urlsArr.push(word);
+        }
+      });
+    } 
+
+    var currentUrl = window.location.href;
+    
+    var matchedKeyword = null;
+    var matchedKeywordInside = null;
+    
+    var urlMatch = urls.some(function(urlPart) 
+    {
+      if (currentUrl.includes(urlPart)) 
+      {
+        matchedKeyword = urlPart;
+        return true;
+      }
+      return false;
+    });
+
+    var urlMatchInside = urlsInside.some(function(urlPart) 
+    {
+      if (currentUrl.includes(urlPart)) 
+      {
+        matchedKeywordInside = urlPart;
+        return true;
+      }
+      return false;
+    });
+      
+    // console.log(.attributes)
+    var sidebarLinks = document.querySelectorAll('.sidebar nav .nav-link');
+
+    sidebarLinks.forEach(link => {
+      link.classList.remove('active');
+      var href = link.getAttribute('href');
+      if (href && href.includes(matchedKeyword)) {
+        link.classList.add('active');
+      }
+
+      if (href && href.includes(matchedKeywordInside)) {
+        link.classList.add('active');
+        var parentItem = link.closest('.nav-item');
+        parentItem.parentElement.parentElement.querySelector('.nav-link').classList.add('active');
+      }
+    });
+
+  });
+
+</script>
 
 {{-- calling function of facebookapi every time which selected to get new posted --}}
-{{-- @php
+@php
   $interval = App\Models\Api::all()->last();
   $time = 60;
   if($interval){
@@ -212,7 +295,7 @@
 
   const youtubeUrl = [];
   channelId.forEach(channel=>{
-    var url = "{{ route('youtubeData', ['channel_id' => '__id__']) }}";
+    var url = "{{ route('youtubeData', ['channel_id' => '__id__']) }}"; 
     window.fetchYoutubeDataUrl = url.replace('__id__', channel);
     youtubeUrl.push(window.fetchYoutubeDataUrl);
   });
@@ -246,10 +329,10 @@
     });
   }, timeInMilliseconds);
 
-</script> --}}
+</script>
 
 {{-- calender --}}
-{{-- @php
+@php
     $allPosts = App\Models\publishPost::where('creator_id', Auth::user()->id)->get();
     $accounts = App\Models\api::where('creator_id', Auth::user()->id)->get();
 @endphp
@@ -270,12 +353,12 @@
     var eventsArray = [];
     var popupDiv;
 
-    for (let i = 0; i < posts.length; i++)
+    for (let i = 0; i < posts.length; i++) 
     {
       var post = posts[i];
       var dateStr = post.scheduledTime;
       var color = '#ebebeb';
-
+      
       var parts = dateStr.split(' ');
       var datePart = parts[0];
       var timePart = parts[1];
@@ -287,11 +370,11 @@
       var hours = parseInt(timeParts[0]);
       var minutes = parseInt(timeParts[1]);
       var jsDate = new Date(year, month, day, hours, minutes);
-
+      
       var event = {
           title: post.account_name,
-          start: jsDate,
-          allDay: false,
+          start: jsDate, 
+          allDay: false, 
           backgroundColor: color,
           borderColor: color,
           image: post.thumbnail,
@@ -312,7 +395,7 @@
         right: 'dayGridMonth,timeGridWeek,timeGridDay'
       },
       themeSystem: 'bootstrap',
-      events: eventsArray,
+      events: eventsArray, 
 
       eventContent: function (arg) {
 
@@ -321,8 +404,8 @@
             : '';
 
           var typeIconHtml = `
-            <span class="rounded-circle socialLogo ${arg.event.extendedProps.type}App">
-              <i class="fab fa-${arg.event.extendedProps.type}"></i>
+            <span class="rounded-circle socialLogo ${arg.event.extendedProps.type}App"> 
+              <i class="fab fa-${arg.event.extendedProps.type}"></i> 
             </span>`;
 
           if (arg.event.extendedProps.status === 'pending') {
@@ -339,7 +422,7 @@
               imageHtml +
               '</div>'
           };
-          }
+          } 
       },
 
       editable: false,
@@ -387,7 +470,7 @@
               </div>
 
               <div class="p-3 px-4 d-flex justify-content-end bg-white" style="border-top: 1px solid #dee2e6;">
-
+              
               </div>
           `;
           // <a href="${post.link ? post.link: '#'}" target="_blank" class="postLink" style="font-weight: bold;color:#6c757d !important">View Post</a>
@@ -395,7 +478,7 @@
 
           // Set the content of the popupDiv
           popupDiv.innerHTML = popupContent;
-
+          
 
           var eventElement = event.el;
           var rect = eventElement.getBoundingClientRect();
@@ -408,7 +491,7 @@
       },
 
       eventMouseLeave: function () {
-          if (popupDiv)
+          if (popupDiv) 
           {
             popupDiv.addEventListener('mouseenter',()=>{
                 popupDiv.style.display = 'block';
@@ -429,7 +512,7 @@
 
     calendar.render();
   });
-</script> --}}
+</script>
 
 </body>
 </html>

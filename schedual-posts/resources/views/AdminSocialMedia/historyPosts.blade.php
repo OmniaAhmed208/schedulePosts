@@ -15,7 +15,7 @@
                 Add New Post
             </a>
           </div>
-
+            
             @if (session('postDeleted'))
               <div class="alert alert-success mt-4" role="alert">
                 {{ session('postDeleted') }}

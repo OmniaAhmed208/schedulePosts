@@ -2,11 +2,8 @@
 
 <html
   lang="en"
-  class="light-style layout-menu-fixed layout-compact"
-  dir="ltr"
-  data-theme="theme-default"
-  data-assets-path="tools/assets/"
-  data-template="vertical-menu-template-free">
+  class="light-style layout-menu-fixed layout-compact" dir="ltr" data-theme="theme-default" 
+  data-assets-path="{{ asset('tools/assets/') }}" data-template="vertical-menu-template-free">
   <head>
     <meta charset="utf-8" />
     <meta
@@ -18,7 +15,7 @@
     <meta name="description" content="" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="tools/evolve/Icon/Icon-04.png" />
+    <link rel="icon" type="image/x-icon" href="{{ asset('tools/evolve/Icon/Icon-04.png') }}" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -37,14 +34,20 @@
     <!-- fullCalendar -->
     <link rel="stylesheet" href="{{ asset('tools/plugins/fullcalendar/main.css') }}">
 
+    <!-- DataTables -->
+    <link rel="stylesheet" href="{{ asset('tools/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('tools/plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('tools/plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
+
+    <!-- Toastr -->
+    <link rel="stylesheet" href="{{ asset('tools/plugins/toastr/toastr.min.css') }}">
+
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="{{asset('tools/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css')}}" />
     <link rel="stylesheet" href="{{asset('tools/assets/vendor/libs/apex-charts/apex-charts.css')}}" />
-    <link rel="stylesheet" href="{{asset('tools/css/style.css')}}" />
+    {{-- <link rel="stylesheet" href="{{asset('tools/css/style.css')}}" /> --}}
     <link rel="stylesheet" href="{{asset('tools/css/sneat.css')}}" />
-
-    <!-- Page CSS -->
-
+    
     <!-- Helpers -->
     <script src="{{asset('tools/assets/vendor/js/helpers.js')}}"></script>
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->

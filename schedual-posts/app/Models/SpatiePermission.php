@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class SpatiePermission extends Role
 
 {
-    protected $fillable = ['role_color'];
+    protected $fillable = ['color'];
 
     public function users(): BelongsToMany
     {

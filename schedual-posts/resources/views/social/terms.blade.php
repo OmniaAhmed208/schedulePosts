@@ -1,4 +1,4 @@
-@extends('layouts.layoutAdminSocial')
+@extends('layouts.layout')
 
 @section('content')
 

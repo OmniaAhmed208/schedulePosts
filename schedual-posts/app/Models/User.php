@@ -27,6 +27,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'image',
         'facebook_app_id',
         'facebook_token',
         'remember_token',
@@ -71,7 +72,6 @@ class User extends Authenticatable
     {
         return $this->hasMany(publishPost::class, 'creator_id');
     }
-
 
     public function roles(): BelongsToMany
     {

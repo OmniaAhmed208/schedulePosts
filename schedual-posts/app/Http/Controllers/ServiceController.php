@@ -4,18 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\settingsApi;
+use App\Models\youtube_category;
 use Illuminate\Http\Request;
 
 class ServiceController extends Controller
 {
     public function index(Request $request)
     {
-        return view('AdminSocialMedia.services');
+        $allApps = ['facebook', 'instagram','twitter','youtube'];
+        $settingsApiType = settingsApi::all();
+        $youtubeCategories = youtube_category::all();
+
+        return view('main.services.index',compact('allApps','settingsApiType','youtubeCategories'));
     }
 
     public function store(Request $request)
     {
-        // dd($request);
         $appType = $request->appType; 
 
         $settingsData = [
@@ -33,8 +37,6 @@ class ServiceController extends Controller
         } else {
             settingsApi::create($settingsData);
         }
-
-        // $settingsApi = settingsApi::updateOrCreate($settingsData);
 
         return back()->with('success', 'Settings saved successfully');   
     }

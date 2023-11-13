@@ -254,12 +254,12 @@ class PostController extends Controller
         }
     }
 
-    public function removeAccount($userId)
-    {
-        Api::where('account_id',$userId)->where('creator_id', Auth::user()->id)->delete(); // account_id => unique
+    // public function removeAccount($userId)
+    // {
+    //     Api::where('account_id',$userId)->where('creator_id', Auth::user()->id)->delete(); // account_id => unique
 
-        return redirect()->route('socialAccounts')->with('success','Account deleted successfully');
-    }
+    //     return redirect()->route('socialAccounts')->with('success','Account deleted successfully');
+    // }
 
 
     public function chartJS(Request $request,$userId)

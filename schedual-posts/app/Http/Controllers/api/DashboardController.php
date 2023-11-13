@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\api;
 
 use App\Models\Api;
+use App\Models\User;
 use App\Models\publishPost;
 use App\Models\settingsApi;
 use Illuminate\Http\Request;
@@ -51,5 +52,45 @@ class DashboardController extends Controller
             'status' => true
         ],200);
     }
+
+
+    public function show(string $id) // show dashboard for each user to admin
+    {
+        $user = User::find($id);
+
+        $count_all_posts = PublishPost::where('creator_id', $id)->count();
+        $appCount = Api::distinct()->where('creator_id', $id)->count('account_type');
+        $servicesCount = settingsApi::count();
+
+        // $userApps = App\Models\Api::where('creator_id', $userId)->distinct()->pluck('account_type'); // App of user regesterd in
+        // $allApps = settingsApi::all(); // all App on website
+
+        $startDate = now()->subDays(7);
+        $publishPostCount_for_lastWeek = PublishPost::where('scheduledTime', '>=', $startDate)->where('status', 'published')
+        ->where('creator_id', $id)->count();
+
+        $allPosts = PublishPost::all()->where('creator_id', $id);
+
+        if($user == null){
+            return response()->json([
+                'message' => 'User not found',
+                'status' => false
+            ],401);
+        }
+
+        return response()->json([
+            'message' => 'User found',
+            'data' => [
+                'userName'=> $user->name,
+                'registeredAppCount' => $appCount,
+                'servicesCount' => $servicesCount,
+                'publish_post_count_for_lastWeek' => $publishPostCount_for_lastWeek, //count,
+                'count_all_posts' => $count_all_posts,
+                'allPosts' => $allPosts
+            ],
+            'status' => true
+        ],200);
+    }
+
 
 }
