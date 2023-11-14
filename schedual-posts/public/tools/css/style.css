@@ -20,20 +20,6 @@
 .bg-primary {background-color: #007bff !important;}
 :is(.bg-info, .btn-info){background-color: #79DAE8 !important;border-color: #79DAE8 !important;}
 
-/* icons color and bg */
-.facebookApp{color:#fff !important; background: #007bff;}
-.instagramApp{color:#fff !important; background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);}
-.twitterApp{color: #00acee !important; background-color: #fff;}
-.youtubeApp{color: #ff0000 !important; background-color: #fff;}
-
-.facebookApp-border{border-color: #007bff !important}
-.twitterApp-border{border-color: #00acee !important}
-.youtubeApp-border{border-color: #ff0000 !important}
-.instagramApp-border{ border-color: #dc2743 !important}
-
-.socialAccounts .instagramApp{color:#dc2743 !important;}
-.socialAccounts .facebookApp{color: #007bff !important;} 
-
 /* ============= side bar ========= */
 .main-sidebar:hover{overflow-y: auto;}
 .main-sidebar::-webkit-scrollbar {width: 7px;}
@@ -75,24 +61,10 @@
 .publishPostContainer .postLink{cursor:pointer}
 .publishPostContainer .previewSec img{width: 50px; margin: 10px 0 -20px;border-radius: 6px;}
 .publishPostContainer .previewSec video{width:50px;height:50px;margin-bottom: -33px;}
-.publishPostContainer .socialAccounts label{cursor: pointer;}
-.publishPostContainer .socialAccounts input[type="checkbox"]:not(:checked) + label img {border-color: #ced7df !important;filter: grayscale(1);}
-.publishPostContainer .socialAccounts input[type="checkbox"]:not(:checked) + label span{color: #646464 !important;filter: grayscale(1);}
 
 
-.servicesPage .config span{font-weight: bold;font-size: 15px}
-.servicesPage .config li{line-height: 1.8;}
-.servicesPage .verificationMsg :is(.verify, .enable){display: none;border-width: 2px !important;}
-.servicesPage .config .nav-link{color: #06283D;}
-.servicesPage .config .active{border: 0;color: #fff;}
-.servicesPage .config .active#nav-facebook-tab{background: #007bff;}
-.servicesPage .config .active#nav-instagram-tab{background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);}
-.servicesPage .config .active#nav-twitter-tab{background: #00acee;}
-.servicesPage .config .active#nav-youtube-tab{background: #dc2743;}
 
-@media (max-width:767px) {
-    .servicesPage .verificationMsg{width: 100% !important;}
-}
+
 
 .postsPage #nav-tab{border-bottom: 0;}
 .postsPage .nav-tabs .nav-link {

@@ -36,6 +36,7 @@ class UserController extends Controller
 
     public function update(Request $request, $id)
     {
+        // dd($request);
         $user = User::find($id);
         if($user == null){
             return back()->with('error','User not found');
@@ -68,6 +69,9 @@ class UserController extends Controller
             $filename = time() . '_' . $image->getClientOriginalName();
             $image->storeAs('public/profile_images', $filename); 
             $storageImage = Storage::url('profile_images/'. $filename);
+        }
+        if ($request->reset_image == 1) {
+            $storageImage = 'tools/dist/img/user.png';
         }
 
         $user->update([

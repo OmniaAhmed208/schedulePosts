@@ -80,7 +80,7 @@
                                 </div>
                                 <div class="d-flex justify-content-between">
                                     <h3 class="fw-medium d-block mb-1">posts</h3>
-                                    <h4 class="card-title mb-2">{{ $allPosts }}</h4>
+                                    <h4 class="card-title mb-2">{{ $postsCount }}</h4>
                                 </div>
                                 <p>All posts you have</p>
                             </div>
@@ -153,11 +153,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@3.10.2/dist/fullcalendar.min.js"></script>
 
-@php
-    $allPosts = App\Models\publishPost::where('creator_id', Auth::user()->id)->get();
-    $accounts = App\Models\api::where('creator_id', Auth::user()->id)->get();
-@endphp
-
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         var calendarEl = document.getElementById('calendar');
@@ -185,13 +180,18 @@
             var minutes = parseInt(timeParts[1]);
             var jsDate = new Date(year, month, day, hours, minutes);
 
+            var postImage = '';
+            if(post.post_images.length > 0){
+                postImage = post.post_images[0].image;
+            }
+            
             var event = {
                 title: post.account_name,
                 start: jsDate,
                 allDay: false,
                 backgroundColor: color,
                 borderColor: color,
-                image: post.thumbnail,
+                image: postImage,
                 id: post.id,
                 type: post.account_type,
                 status: post.status,
@@ -212,13 +212,15 @@
             events: eventsArray,
 
             eventContent: function (arg) {
+            console.log(arg.event.extendedProps)
+
                 var imageHtml = arg.event.extendedProps.image
                     ? '<img src="' + arg.event.extendedProps.image + '" class="event-image img-fluid rounded" style="max-width:50px" />'
                     : '';
 
                 var typeIconHtml = `
-                    <span class="rounded-circle socialLogo ${arg.event.extendedProps.type}App">
-                        <i class="bx bxl-${arg.event.extendedProps.type}"></i>
+                    <span class="socialLogo ${arg.event.extendedProps.type}App">
+                        <i class="bx bxl-${arg.event.extendedProps.type} rounded-circle p-1"></i>
                     </span>`;
 
                 var eventContentHtml = `
@@ -255,38 +257,42 @@
                 return p.id === postId;
                 });
 
-                var accountID = parseInt(event.event.account_id);
+                var accountID = event.event.extendedProps.account_id;
                 var account = accounts.find(function (a) {
                     return a.account_id === accountID;
                 });
+                var account_img = "{{url('')}}" + account.account_pic;
 
                 if (post) {
-                var scheduledTime = post.scheduledTime.split(' ')[1];
-                var popupContent = `
-                    <div class="accountInfo bg-white p-2 px-4">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="info position-relative">
-                            <img src="{{ asset('tools/dist/img/avatar5.png') }}" class="rounded-circle" style="width:50px" alt="">
-                            <span class="rounded-circle position-absolute socialLogo ${post.account_type}App"><i class="bx bxl-${post.account_type}"></i></span>
-                            <span class="ml-3 accountName" style="font-weight: bold">${post.account_name ? post.account_name : ''} </span>
-                        </div>
-                        <div class="text-dark p-1 text-end">  ${scheduledTime}  </div>
-                    </div>
-                    </div>
 
-                    <div class="row p-3 px-4">
-                        <div class="col-7">
-                            <div class="postData">${post.content}</div>
+                    var scheduledTime = post.scheduledTime.split(' ')[1];
+                    var popupContent = `
+                        <div class="accountInfo bg-white p-2 px-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="info position-relative">
+                                <img src="${account_img}" class="rounded-circle" style="width:50px" alt="">
+                                <span class="position-absolute socialLogo ${post.account_type}App"><i class="bx bxl-${post.account_type} p-1 rounded-circle"></i></span>
+                                <a href="${account.account_link}" class="text-dark">
+                                    <span class="ms-3 accountName" style="font-weight: bold">${post.account_name ? post.account_name : ''} </span>
+                                </a>
+                            </div>
+                            <div class="text-dark p-1 text-end">  ${scheduledTime}  </div>
                         </div>
-                        <div class="col-5">
-                            ${post.thumbnail ? `<div><img src="${post.thumbnail}" alt="Image" class="popup-image img-fluid"/></div>` : ''}
                         </div>
-                    </div>
 
-                    <div class="p-3 px-4 d-flex justify-content-end bg-white" style="border-top: 1px solid #dee2e6;">
+                        <div class="row p-3 px-4">
+                            <div class="col-7">
+                                <div class="postData">${post.content}</div>
+                            </div>
+                            <div class="col-5">
+                                ${post.post_images.length > 0 ? `<div><img src="${post.post_images[0].image}" alt="Image" class="popup-image img-fluid"/></div>` : ''}
+                            </div>
+                        </div>
 
-                    </div>
-                `;
+                        <div class="p-3 px-4 d-flex justify-content-end bg-white" style="border-top: 1px solid #dee2e6;">
+
+                        </div>
+                    `;
                 // <a href="${post.link ? post.link: '#'}" target="_blank" class="postLink" style="font-weight: bold;color:#6c757d !important">View Post</a>
                 // ${account ? `<a href="${account.account_link ? account.account_link : '#'}" target="_blank" class="postLink" style="font-weight: bold;color:#6c757d !important">View Post</a></div> : '' `}
 

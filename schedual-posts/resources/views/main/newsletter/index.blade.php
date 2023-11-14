@@ -25,7 +25,7 @@
                         <div class="col">
                             <div class="card" style="background-color: {{ $data->color }}">
                                 @if ($data['image'] != null)
-                                    <img class="card-img-top" src="{{url('tools/assets/img/elements/5.jpg')}}" alt="Card image cap" />
+                                    <img class="card-img-top" src="{{asset($data['image'])}}" alt="Card image cap" />
                                 @endif
                                 <div class="card-body">
                                     <h5 class="card-title">{{ $data['title'] }}</h5>
@@ -87,21 +87,15 @@
                                     </div>
                                     <div class="row">
                                         <div class="col mb-3">
-                                            <label for="newsletterColor" class="form-label">
-                                                <input type="checkbox" id="newsletterColor" hidden name="color"> 
-                                                <span class="ms-2">Color for Box</span>
-                                                <span class="ms-2 position-absolute" id="newsletterColorSpan" style="background-color: #e0f7fc;height: 25px;width: 50px;border: 1px solid #ddd;border-radius:3px"></span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col mb-3">
                                             <div class="w-50 p-2 pb-0" style="border: 2px dashed #ccc;">
                                                 <div id="imageContainer"></div>
-                                                <label for="newsletterImage" class="form-label position-relative" style="cursor: pointer;">
-                                                    <input type="file" id="newsletterImage" class="form-control position-absolute" name="image" style="opacity:0;" accept="image/*" />
-                                                    <i class="bx bx-image-add" style="font-size: 24px; top:8px ;color: #333;"></i> Add Image
-                                                </label>
+                                                <div id="imageAction" class="d-flex justify-content-between">
+                                                    <label for="newsletterImage" class="form-label position-relative" style="cursor: pointer;">
+                                                        <input type="file" id="newsletterImage" class="form-control position-absolute" name="image" style="opacity:0;" accept="image/*" />
+                                                        <i class="bx bx-image-add" style="font-size: 24px; top:8px ;color: #333;"></i> Add Image
+                                                    </label>
+                                                    <i class="bx bx-trash removeImage" style="cursor: pointer;"></i>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -145,10 +139,13 @@
                                         <div class="col mb-0">
                                             <div class="w-50 p-2 pb-0" style="border: 2px dashed #ccc;">
                                                 <div id="imageContainer"></div>
-                                                <label for="newsletterImage" class="form-label position-relative" style="cursor: pointer;">
-                                                    <input type="file" id="newsletterImage" class="form-control position-absolute" name="image" style="opacity:0;" accept="image/*" />
-                                                    <i class="bx bx-image-add" style="font-size: 24px; top:8px ;color: #333;"></i> Add Image
-                                                </label>
+                                                <div id="imageAction" class="d-flex justify-content-between">
+                                                    <label for="newsletterImage" class="form-label position-relative" style="cursor: pointer;">
+                                                        <input type="file" id="newsletterImage" class="form-control position-absolute" name="image" style="opacity:0;" accept="image/*" />
+                                                        <i class="bx bx-image-add" style="font-size: 24px; top:8px ;color: #333;"></i> Add Image
+                                                    </label>
+                                                    <i class="bx bx-trash removeImage" style="cursor: pointer;"></i>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -175,7 +172,9 @@
             editButtons.forEach(function(button) {
                 button.addEventListener('click', function() {
                     const newsletterData = JSON.parse(button.getAttribute('data-newsletter'));
+                    // console.log(newsletterData);
                     const imageContainer = document.querySelector('#editNewsletterForm #imageContainer');
+
                     imageContainer.innerHTML = '';
 
                     var url = "{{ route('newsLetter.update', ['newsLetter' => '__id__']) }}";
@@ -184,12 +183,22 @@
 
                     document.querySelector('#editNewsletter #newsletterTitle').value = newsletterData.title;
                     document.querySelector('#editNewsletter #newsletterContent').value = newsletterData.content;
-                    document.querySelector('#editNewsletter #newsletterColor').value = newsletterData.color;
+                    // document.querySelector('#editNewsletter #newsletterColor').value = newsletterData.color;
 
-                    if (newsletterData.image != null) {
+                    const removeImage = document.querySelector('#editNewsletterForm .removeImage');
+
+                    // Check if there is an image
+                    if (newsletterData.image !== null && newsletterData.image !== '') {
                         const existingImage = document.createElement('img');
-                        existingImage.src = '{{url('')}}' + newsletterData.image;
+                        existingImage.src = "{{url('')}}" + newsletterData.image;
                         existingImage.className = 'rounded p-1 w-100';
+
+                        removeImage.addEventListener('click', function () {
+                            existingImage.remove();
+                            newsletterData.image = '';
+                            document.querySelector('#newsletterImage').value = '';
+                        });
+
                         imageContainer.appendChild(existingImage);
                         document.querySelector('#editNewsletter #newsletterContent').removeAttribute('required');
                     }
@@ -202,26 +211,39 @@
                         const imageURL = URL.createObjectURL(selectedFile);
                         selectedImage.src = imageURL;
                         selectedImage.className = 'rounded p-1 w-100'; // Adjust the class as needed
+
+                        removeImage.addEventListener('click', function () {
+                            selectedImage.remove();
+                            imageInput.value = '';
+                        });
+
                         imageContainer.innerHTML = ''; // Clear previous content
                         imageContainer.appendChild(selectedImage);
                     });
+
                 });
             });
 
-
             addButton.addEventListener('click', function() {
                 const imageContainer = document.querySelector('#addNewsletterForm #imageContainer');
+                const removeImage = document.querySelector('#addNewsletterForm .removeImage');
+
                 imageContainer.innerHTML = ''; // Clear previous content
 
                 const imageInput = document.querySelector('#addNewsletter #newsletterImage');
                 imageInput.addEventListener('change', function() {
-                    console.log('fdgdg');
                     document.querySelector('#addNewsletter #newsletterContent').removeAttribute('required');
                     const selectedImage = document.createElement('img');
                     const selectedFile = this.files[0];
                     const imageURL = URL.createObjectURL(selectedFile);
                     selectedImage.src = imageURL;
                     selectedImage.className = 'rounded p-1 w-100'; // Adjust the class as needed
+
+                    removeImage.addEventListener('click', function () {
+                        selectedImage.remove();
+                        imageInput.value = '';
+                    });
+                    
                     imageContainer.innerHTML = ''; // Clear previous content
                     imageContainer.appendChild(selectedImage);
                 });
@@ -233,15 +255,14 @@
                 // });
             });
 
-
             // color
-            var colorInput = document.querySelector('#addNewsletterForm newsletterColor');
-            var colorSpan = document.querySelector('#addNewsletterForm newsletterColorSpan');
+            // var colorInput = document.querySelector('#addNewsletterForm #newsletterColor');
+            // var colorSpan = document.querySelector('#addNewsletterForm #newsletterColorSpan');
 
-            colorInput.addEventListener('change', ()=>{
-                colorSpan.style.border = '1px solid #03c3ec';
-                colorInput.value = '#e0f7fc';
-            });
+            // colorInput.addEventListener('change', ()=>{
+            //     colorSpan.style.border = '1px solid #03c3ec';
+            //     colorInput.value = '#e0f7fc';
+            // });
         });   
     </script>
 @endsection

@@ -20,10 +20,10 @@ class DashboardController extends Controller
         $servicesCount = settingsApi::count();
         $allServices = settingsApi::all();
 
+        $user = user::where('id', Auth::user()->id)->first();
+
         $registeredAppCount = Api::distinct()->where('creator_id', Auth::user()->id)->count('account_type');
         $count_all_posts = publishPost::where('creator_id', Auth::user()->id)->count(); // publish & pending
-
-        $userId = Auth::user()->id;
 
         $startDate = now()->subDays(7); // last 7 days ==> chart js
         $publishPostCount_for_lastWeek = publishPost::where('status', 'published')->where('creator_id', Auth::user()->id)
@@ -43,6 +43,7 @@ class DashboardController extends Controller
 
         return response()->json([
             'data' => [
+                'user' => $user,
                 'registeredAppCount' => $registeredAppCount,
                 'servicesCount' => $servicesCount,
                 'publish_post_count_for_lastWeek' => $publishPostCount_for_lastWeek, //count,

@@ -45,7 +45,7 @@
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="{{asset('tools/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css')}}" />
     <link rel="stylesheet" href="{{asset('tools/assets/vendor/libs/apex-charts/apex-charts.css')}}" />
-    {{-- <link rel="stylesheet" href="{{asset('tools/css/style.css')}}" /> --}}
+    <link rel="stylesheet" href="{{asset('tools/css/style.css')}}" />
     <link rel="stylesheet" href="{{asset('tools/css/sneat.css')}}" />
     
     <!-- Helpers -->

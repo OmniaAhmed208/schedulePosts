@@ -1,5 +1,0 @@
-@include('layouts.headerSocial')
-@include('layouts.navbarSocial')
-@include('layouts.sidebarSocial')
-@yield('content')
-@include('layouts.footerSocial')

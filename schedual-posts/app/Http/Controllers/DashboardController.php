@@ -17,9 +17,12 @@ class DashboardController extends Controller
 
     public function index()
     {
-        $allPosts = publishPost::where('creator_id', Auth::user()->id)->count();
+        $postsCount = publishPost::where('creator_id', Auth::user()->id)->count();
+        $allPosts = publishPost::where('creator_id', Auth::user()->id)->with(['postImages', 'postVideos'])->get();
+
         $appCount = Api::distinct()->where('creator_id', Auth::user()->id)->count('account_type');
         $servicesCount = settingsApi::count();
+        $accounts = api::where('creator_id', Auth::user()->id)->get();
         $allApps = settingsApi::all();
         $startDate = now()->subDays(7); // last 7 days
         $lastPosts = publishPost::where('scheduledTime', '>=', $startDate)->where('status', 'published')
@@ -29,7 +32,7 @@ class DashboardController extends Controller
         $publishPost = publishPost::where('status', 'published')->where('creator_id', Auth::user()->id)
         ->where('scheduledTime', '>=', $startDate)->get();
 
-        return view('main.dashboard.index',compact('allPosts','appCount','servicesCount',
+        return view('main.dashboard.index',compact('postsCount','allPosts','appCount','servicesCount','accounts',
         'allApps','startDate','lastPosts','userId','publishPost'));
     }
 

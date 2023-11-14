@@ -21,6 +21,6 @@ class AccountController extends Controller
     {
         Api::where('account_id',$userId)->where('creator_id', Auth::user()->id)->delete(); // account_id => unique
 
-        return redirect()->route('socialAccounts')->with('success','Account deleted successfully');
+        return redirect()->back()->with('success','Account deleted successfully');
     }
 }

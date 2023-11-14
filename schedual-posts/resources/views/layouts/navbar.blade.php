@@ -37,11 +37,11 @@
             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                 <div class="avatar avatar-online">
-                    {{-- @if (Auth::user()->image != null)
+                    @if (Auth::user()->image != null)
                         <img src="{{ asset(Auth::user()->image)}}" alt="profile image" class="w-px-40 h-auto rounded-circle" />                            
-                    @else --}}
+                    @else
                         <img src="{{ asset('tools/dist/img/user.png') }}" alt="profile image" class="w-px-40 h-auto rounded-circle"/>                            
-                    {{-- @endif --}}
+                    @endif
                 </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
@@ -50,11 +50,11 @@
                     <div class="d-flex">
                         <div class="flex-shrink-0 me-3">
                             <div class="avatar avatar-online">
-                                {{-- @if (Auth::user()->image != null)
+                                @if (Auth::user()->image != null)
                                     <img src="{{asset(Auth::user()->image)}}" alt class="w-px-40 h-auto rounded-circle" />                           
-                                @else --}}
+                                @else
                                     <img src="{{asset('tools/dist/img/user.png')}}" alt class="w-px-40 h-auto rounded-circle" />                           
-                                {{-- @endif --}}
+                                @endif
                             </div>
                         </div>
                         <div class="flex-grow-1">

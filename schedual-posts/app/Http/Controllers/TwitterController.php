@@ -131,10 +131,10 @@ class TwitterController extends Controller
 
             // $this->getTweets($user);
 
-            return redirect()->route('socialAccounts.index');
+            return redirect()->back();
             // return $this->postMessageToTwitter($oauth_token, $oauth_token_secret);
         } catch (TwitterOAuthException $e) {
-            return redirect()->route('socialAccounts.index');
+            return redirect()->back();
         }
         
     }

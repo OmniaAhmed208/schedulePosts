@@ -67,11 +67,219 @@ class PostController extends Controller
         return view('main.posts.create',compact('userApps','userAccounts','channels','timeThink','youtubeCategories'));
     }
 
-    public function store(Request $request)
-    {
-        $messages = $this->postStore->store($request);
+    // public function store(Request $request)
+    // {
+    //     $messages = $this->postStore->store($request);
+    //     return redirect()->back()->with('postStatusForPublishing', $messages);
+    // }
+
+    public function store(Request $request) 
+    { 
+        $validator = $request->validate([
+            'postData' => 'max:5000',
+            // 'video' => 'mimetypes:video/mov,video/mp4,video/mpg,video/mpeg,video/avi,video/webm',
+            // 'images' => 'mimes:jpeg,jpg,png',
+
+            'video' => 'mimetypes:video/quicktime,video/mp4,video/mpeg,video/avi,video/webm',
+            'images' => 'required|array',
+            'images.*' => 'required|file|image|mimes:jpeg,jpg,png',
+            
+            'accounts_id' => 'required'
+        ]);
+
+        $validationRules = [
+            'postData' => 'required',
+        ];
+        if ($request->has('images') || $request->has('video')) {
+            unset($validationRules['postData']); // If there's an image or video, text is not required
+        }
+
+        $accountsID = $request->accounts_id;
+        $accountsType = [];
+        $accounts = '';
+        
+        $accountsData = [];
+
+        foreach($accountsID as $id){
+            $accounts = Api::where('account_id',$id)->where('creator_id', Auth::user()->id)->get();
+            foreach($accounts as $account){
+                $account_type = $account->account_type;
+                if($account_type == 'youtube'){
+                    $validationRules['videoTitle'] = 'required';
+                    $validationRules['video'] = 'required';
+                }
+
+                if($account_type == 'instagram'){
+                    // $validationRules['file'] = 'required|mimetypes:video/mp4, image/png';
+                    $validationRules['images'] = 'required';
+                    $validationRules['video'] = 'required';
+                    if($request->has('images')){
+                        unset($validationRules['video']);
+                    }
+                    if($request->has('video')){
+                        unset($validationRules['images']);
+                    }
+                }
+
+                $accountData = [
+                    'creator_id'=> Auth::user()->id,
+                    'account_type' => $account->account_type,
+                    'account_id' => $account->account_id,
+                    'account_name' => $account->account_name,
+                    'tokenApp' => $account->token,
+                    'token_secret' => $account->token_secret
+                ];
+            }   
+            $accountsType[] = $account_type;
+            $accountsData[] = $accountData;        
+        }
+
+        $request->validate($validationRules);
+
+        $imgUpload = []; $imgLocation = []; $filename = '';
+        $publishPosts = [];
+
+        if ($request->hasFile('images')) 
+        {
+            $images = $request->file('images');        
+            foreach ($images as $image) {
+                $filename = time() . '_' . $image->getClientOriginalName(); // Generate a unique filename
+                $image->storeAs('public/uploadImages', $filename); // Store the file with the unique filename
+                $localFilePath = storage_path('uploadImages/' . $filename); // Get the local file path (fullPath)
+                $storageImage = Storage::url('uploadImages/'. $filename); //storage/uploadImages/img_name
+                $imgUpload[] = $localFilePath;
+                $imgLocation[] = $storageImage;
+            }
+        }
+
+        $youtubeVideoPath='';$twitterVideoPath='';$storageVideo='';
+        if ($request->hasfile('video')) 
+        {
+            $video = $request->file('video');
+            $filename = $video->getClientOriginalName();
+            $storagePath = 'uploadVideos';
+            if (!Storage::exists($storagePath)) {
+                Storage::makeDirectory($storagePath);
+            }
+
+            $video->storeAs($storagePath, $filename);
+            $OriginalVideo = $storagePath . '/' . $filename;
+
+            $newVideo = FFMpeg::fromDisk('local')->open($OriginalVideo)->addFilter(function ($filters) {
+                $filters->resize(new \FFMpeg\Coordinate\Dimension(2000, 2000));
+            });
+
+            $commpressedVideo = $storagePath . '/' . 'compressed_' . $filename;
+            $youtubeVideoPath = $commpressedVideo; // for youtube
+            $twitterVideoPath = storage_path('app/'. $commpressedVideo); // Get the local file path // twitter
+            $storageVideo = Storage::url('app/'. $commpressedVideo);
+
+            $newVideo->export()
+            ->toDisk('local')
+            ->inFormat(new \FFMpeg\Format\Video\X264())
+            ->save($storagePath . '/' . 'compressed_' . $filename);
+        }
+
+        if($request->scheduledTime){
+            $postTime =  Carbon::parse($request->scheduledTime)->format('Y-m-d H:i');
+            $status = 'pending';
+        }
+        else{
+            $now = Carbon::now(); 
+            $diff_time = time_think::where('creator_id', Auth::user()->id)->first()->time;
+            $postTime = $now->copy()->addHours($diff_time)->format('Y-m-d H:i');
+            $status = 'published';
+            // $publishPosts[] = $this->publishPost($request, $imgUpload, $youtubeVideoPath, $twitterVideoPath);
+            $publishPosts[] = $this->postStore->publishPost($request, $imgUpload, $youtubeVideoPath, $twitterVideoPath);
+        }
+
+        $successfulApps = []; // apps that return 'postCreated' and not error
+        $messages = [];
+        
+        if(!empty($publishPosts)){
+            foreach ($publishPosts[0] as $appName => $appResults) {
+                switch ($appResults) {
+                    case 'postCreated':
+                        $successfulApps[] = $appName;
+                        $msg = '- '.$appName.' : The post created successfully.';
+                        break;
+                    default:
+                        $msg = '- '.$appName.' : There exist an error.';
+                        break;
+                }
+                $messages[] = $msg;
+            }
+        }
+
+        $data = [];
+        $allAccountsData = [];
+        foreach($accountsData as $account){
+            $account['status'] = $status;
+            $account['content'] = $request->postData ?? '';
+            $account['link'] = $request->link;
+            $account['scheduledTime'] = $postTime;
+
+            $allAccountsData[] = $account;
+        }
+
+        $allServices = settingsApi::all();
+        $services = [];
+        foreach($allServices as $service){
+            $services[] = $service['appType'];
+        }
+        $selectedApps = array_intersect($accountsType, $services);
+        
+
+        foreach ($selectedApps as $appType) {
+            if (in_array($appType, $successfulApps) || $status == 'pending') // if appType in successefullApp means that post created and not failed
+            {
+                foreach($allAccountsData as $account){
+                    switch ($appType) {
+                        case 'youtube':
+                            // $account['thumbnail'] = $storageVideo;
+                            $account['post_title'] = $request->videoTitle;
+                            $account['youtube_privacy'] = $request->youtubePrivacy;
+                            $account['youtube_tags'] = $request->youtubeTags;
+                            $account['youtube_category'] = $request->youtubeCategory;
+                            break;
+                    }
+                    $data[] = $account;
+                }
+            }
+        }
+
+        // dd($data);
+
+        if (!empty($data)) {
+            foreach ($data as $attributes) {
+                
+                $post = new publishPost(); // Create a new instance of publishPost model
+                $post->fill($attributes); // Set the attributes for the model
+                $post->save(); // Save the model to the database
+        
+                if (is_array($imgLocation) && !empty($imgLocation)) {
+                    foreach ($imgLocation as $img) {
+                        PostImages::create([
+                            'post_id' => $post->id,
+                            'creator_id' => Auth::user()->id,
+                            'image' => $img
+                        ]);
+                    }
+                }
+
+                if ($storageVideo) {
+                    PostVideos::create([
+                        'post_id' => $post->id,
+                        'creator_id' => Auth::user()->id,
+                        'video' => $storageVideo
+                    ]);
+                }
+            }
+        }
+
         return redirect()->back()->with('postStatusForPublishing', $messages);
     }
+
 
     public function edit(Request $request,$id)
     {

@@ -25,7 +25,6 @@ class NewsLetterController extends Controller
 
     public function store(Request $request)
     {
-        // dd($request);
         $validationRules = [
             'title' => 'required',
             'content' => 'required',
@@ -49,7 +48,7 @@ class NewsLetterController extends Controller
             'title' => $request->title,
             'content' => $request->content,
             'image' => $storageImage,
-            'color' => $request->color
+            // 'color' => $request->color
         ]);
 
         return back()->with('success','The post created successfully');

@@ -21,11 +21,11 @@
                   <div class="col-sm-4 col-lg-3">
                     <div class="card h-100">
                       <div class="d-flex justify-content-center align-items-center h-100 previewSec p-5 py-3">
-                        {{-- @if ($user->image != null)
-                          <img class="card-img-top rounded-circle rounded-circle w-50" src="{{ asset($user->image) }}" alt="profile image" />                            
-                        @else --}}
-                          <img class="card-img-top rounded-circle rounded-circle w-50" src="{{ asset('tools/dist/img/user.png') }}" alt="profile image" />                            
-                        {{-- @endif --}}
+                        @if ($user->image != null)
+                          <img class="card-img-top rounded-circle" src="{{ asset($user->image) }}" alt="profile image" />                            
+                        @else
+                          <img class="card-img-top rounded-circle" src="{{ asset('tools/dist/img/user.png') }}" alt="profile image" />                            
+                        @endif
                       </div>
                       <div class="card-body py-0">
                         <p class="card-text">
@@ -39,6 +39,7 @@
                               <i class="bx bx-reset d-block d-sm-none"></i>
                               <span class="d-none d-sm-block">Reset</span>
                             </button>
+                            <input type="hidden" name="reset_image" id="reset_image" value="0">
                             <p class="text-muted mb-0">Allowed JPG, JPEG or PNG.</p>
                           </div>
                           {{-- <div class="d-flex justify-content-center">
@@ -101,11 +102,11 @@
                       <div class="card info-box d-flex flex-row user-info py-3">
                         <div class="info-box-icon w-100 d-flex flex-column align-items-center position-relative">
 
-                          {{-- @if ($account['account_pic'])
+                          @if ($account['account_pic'])
                             <img src="{{ asset($account['account_pic']) }}" class="rounded-circle p-1 {{ $account['account_type'] }}App-border" alt="User Image">
-                          @else --}}
+                          @else
                             <img src="{{ asset('tools/dist/img/user.png') }}" class="rounded-circle p-1 {{ $account['account_type'] }}App-border" alt="User Image">          
-                          {{-- @endif --}}
+                          @endif
                           <p class="mt-3">{{ $account['account_name'] }}</p>
                           <span class="position-absolute mt-5 {{ $account['account_type'] }}App" style="background: transparent">
                             <i class="bx bxl-{{ $account['account_type'] }} rounded-circle shadow-sm p-1 ms-5 position-relative"></i>
@@ -136,7 +137,6 @@
                 @endforeach
               </div>
 
-
               <div class="modal fade" id="addAccount" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered" role="document">
                   <div class="modal-content" style="background: aliceblue">
@@ -149,9 +149,9 @@
                           @foreach ($userApps as $app)
                             <div class="mb-2">
                               <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="{{ $app['appType'] }}App p-2 rounded" style="text-transform: capitalize;"> 
-                                  <i class="bx bxl-{{ $app['appType'] }} appIcon mr-2 mb-1"></i>
-                                  {{ $app['appType'] }} 
+                                <h5 class="{{ $app['appType'] }}App" style="text-transform: capitalize;"> 
+                                  <i class="bx bxl-{{ $app['appType'] }} appIcon me-2 p-1 rounded fs-large"></i>
+                                  <span>{{ $app['appType'] }} </span>
                                 </h5>
                                 <a 
                                   @if ($app['appType'] == 'facebook')
@@ -178,6 +178,37 @@
             </section>
         </div>
   </div>
+
+  
+  <script>
+    // document.getElementById('connectAccount').addEventListener('click',()=>{
+    //     document.getElementById('appAccount').style.display = 'flex';
+    // });
+
+    // document.querySelector('#appAccount .cancel').addEventListener('click',()=>{
+    //     document.getElementById('appAccount').style.display = 'none';
+    // });
+    
+    // upload photo
+    function getImagePreview(event){
+      for(let i = 0; i<event.target.files.length; i++)
+      {
+        var img = URL.createObjectURL(event.target.files[i]);
+        var container = document.querySelector('.previewSec');
+        container.innerHTML = '';
+        var html = `<img src="${img}" class="card-img-top rounded-circle" alt="profile image">`;
+        container.innerHTML += html;
+      }  
+    }
+
+    function closeFile() {
+      var container = document.querySelector('.previewSec');
+      container.innerHTML = '';
+      var html = `<img src="{{ asset('tools/dist/img/user.png') }}" class="card-img-top rounded-circle" alt="profile image">`;
+      container.innerHTML += html;
+      document.getElementById('reset_image').value = 1;
+    }
+  </script>
 
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -346,35 +377,6 @@
      
   </script>
   <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
-
-
-  <script>
-    document.getElementById('connectAccount').addEventListener('click',()=>{
-        document.getElementById('appAccount').style.display = 'flex';
-    });
-
-    document.querySelector('#appAccount .cancel').addEventListener('click',()=>{
-        document.getElementById('appAccount').style.display = 'none';
-    });
-
-    // upload photo
-    function getImagePreview(event){
-      for(let i = 0; i<event.target.files.length; i++)
-      {
-          var img = URL.createObjectURL(event.target.files[i]);
-          var container = document.querySelector('.previewSec');
-          container.innerHTML = '';
-          var html = `<img src="${img}" class="card-img-top rounded-circle" alt="profile image">`;
-          container.innerHTML += html;
-      }  
-    }
-
-    function closeFile() {
-      var container = document.querySelector('.previewSec');
-      container.innerHTML = '';
-      var html = `<img src="{{ asset('tools/dist/img/user.png') }}" class="card-img-top rounded-circle w-50" alt="profile image">`;
-      container.innerHTML += html;
-    }
-  </script>
+  
 
 @endsection
