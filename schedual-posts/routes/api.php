@@ -7,6 +7,7 @@ use App\Http\Controllers\api\CronController;
 use App\Http\Controllers\api\PostController;
 use App\Http\Controllers\api\RoleController;
 use App\Http\Controllers\api\UserController;
+use App\Http\Controllers\api\MediaController;
 use App\Http\Controllers\api\AccountController;
 use App\Http\Controllers\api\ServiceController;
 use App\Http\Controllers\api\TwitterController;
@@ -30,7 +31,6 @@ use App\Http\Controllers\api\YoutubeCategoryController;
 |
 */
 
-
 //public routes
 Route::post('/auth/register',[UserController::class,'register']);
 Route::post('/auth/login', [UserController::class,'login']); 
@@ -40,7 +40,9 @@ Route::resource('subscribers', SubscriberController::class);
 Route::middleware('auth:sanctum')->group(function () 
 {
     Route::post('/logout', [UserController::class, 'logout']);
+    Route::put('updatePassword/{id}', [UserController::class,'updatePassword']);
 
+    Route::resource('users', UserController::class); 
     Route::resource('dashboard', DashboardController::class); 
     Route::resource('analytics', AnalyticsController::class); 
     Route::resource('categories', YoutubeCategoryController::class);
@@ -49,6 +51,7 @@ Route::middleware('auth:sanctum')->group(function ()
     Route::resource('posts', PostController::class);
     Route::resource('publishPosts', PublishPostController::class);
     Route::resource('cron', CronController::class);
+    Route::resource('media', MediaController::class);
     
     Route::resource('twitter', TwitterController::class);
     Route::resource('youtube', YoutubeController::class);
@@ -56,7 +59,6 @@ Route::middleware('auth:sanctum')->group(function ()
 
 Route::group(['middleware' => ['admin','auth:sanctum']], function () { 
     Route::resource('services', ServiceController::class); 
-    Route::resource('users', UserController::class); 
     Route::get('/users/search/{name}', [UserController::class, 'search']);
     Route::resource('roles', RoleController::class);
     Route::resource('permissions', PermissionController::class);

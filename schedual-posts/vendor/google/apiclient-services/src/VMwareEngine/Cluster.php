@@ -37,6 +37,8 @@ class Cluster extends \Google\Model
    * @var string
    */
   public $state;
+  protected $stretchedClusterConfigType = StretchedClusterConfig::class;
+  protected $stretchedClusterConfigDataType = '';
   /**
    * @var string
    */
@@ -115,6 +117,20 @@ class Cluster extends \Google\Model
   public function getState()
   {
     return $this->state;
+  }
+  /**
+   * @param StretchedClusterConfig
+   */
+  public function setStretchedClusterConfig(StretchedClusterConfig $stretchedClusterConfig)
+  {
+    $this->stretchedClusterConfig = $stretchedClusterConfig;
+  }
+  /**
+   * @return StretchedClusterConfig
+   */
+  public function getStretchedClusterConfig()
+  {
+    return $this->stretchedClusterConfig;
   }
   /**
    * @param string

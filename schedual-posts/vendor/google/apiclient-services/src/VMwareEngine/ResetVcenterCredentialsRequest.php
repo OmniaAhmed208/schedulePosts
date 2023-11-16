@@ -23,6 +23,10 @@ class ResetVcenterCredentialsRequest extends \Google\Model
    * @var string
    */
   public $requestId;
+  /**
+   * @var string
+   */
+  public $username;
 
   /**
    * @param string
@@ -37,6 +41,20 @@ class ResetVcenterCredentialsRequest extends \Google\Model
   public function getRequestId()
   {
     return $this->requestId;
+  }
+  /**
+   * @param string
+   */
+  public function setUsername($username)
+  {
+    $this->username = $username;
+  }
+  /**
+   * @return string
+   */
+  public function getUsername()
+  {
+    return $this->username;
   }
 }
 

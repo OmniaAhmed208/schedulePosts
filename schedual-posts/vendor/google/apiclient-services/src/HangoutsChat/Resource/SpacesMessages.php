@@ -68,8 +68,7 @@ class SpacesMessages extends \Google\Service\Resource
    * instead. ID for the thread. Supports up to 4000 characters. To start or add
    * to a thread, create a message and specify a `threadKey` or the thread.name.
    * For example usage, see [Start or reply to a message thread](https://developer
-   * s.google.com/chat/api/guides/crudl/messages#start_or_reply_to_a_message_threa
-   * d).
+   * s.google.com/chat/api/guides/v1/messages/create#create-message-thread).
    * @return Message
    */
   public function create($parent, Message $postBody, $optParams = [])
@@ -86,8 +85,6 @@ class SpacesMessages extends \Google\Service\Resource
    * supports [service account
    * authentication](https://developers.google.com/chat/api/guides/auth/service-
    * accounts) and [user
-   * authentication](https://developers.google.com/chat/api/guides/auth/users).
-   * [User
    * authentication](https://developers.google.com/chat/api/guides/auth/users).
    * Requests authenticated with service accounts can only delete messages created
    * by the calling Chat app. (messages.delete)
@@ -119,8 +116,6 @@ class SpacesMessages extends \Google\Service\Resource
    * supports [service account
    * authentication](https://developers.google.com/chat/api/guides/auth/service-
    * accounts) and [user
-   * authentication](https://developers.google.com/chat/api/guides/auth/users).
-   * [User
    * authentication](https://developers.google.com/chat/api/guides/auth/users).
    * Note: Might return a message from a blocked member or space. (messages.get)
    *
@@ -208,8 +203,6 @@ class SpacesMessages extends \Google\Service\Resource
    * authentication](https://developers.google.com/chat/api/guides/auth/service-
    * accounts) and [user
    * authentication](https://developers.google.com/chat/api/guides/auth/users).
-   * [User
-   * authentication](https://developers.google.com/chat/api/guides/auth/users).
    * Requests authenticated with service accounts can only update messages created
    * by the calling Chat app. (messages.patch)
    *
@@ -247,8 +240,6 @@ class SpacesMessages extends \Google\Service\Resource
    * supports [service account
    * authentication](https://developers.google.com/chat/api/guides/auth/service-
    * accounts) and [user
-   * authentication](https://developers.google.com/chat/api/guides/auth/users).
-   * [User
    * authentication](https://developers.google.com/chat/api/guides/auth/users).
    * Requests authenticated with service accounts can only update messages created
    * by the calling Chat app. (messages.update)

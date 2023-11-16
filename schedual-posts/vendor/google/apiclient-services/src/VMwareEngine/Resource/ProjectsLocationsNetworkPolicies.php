@@ -17,6 +17,7 @@
 
 namespace Google\Service\VMwareEngine\Resource;
 
+use Google\Service\VMwareEngine\FetchNetworkPolicyExternalAddressesResponse;
 use Google\Service\VMwareEngine\ListNetworkPoliciesResponse;
 use Google\Service\VMwareEngine\NetworkPolicy;
 use Google\Service\VMwareEngine\Operation;
@@ -100,6 +101,33 @@ class ProjectsLocationsNetworkPolicies extends \Google\Service\Resource
     $params = ['name' => $name];
     $params = array_merge($params, $optParams);
     return $this->call('delete', [$params], Operation::class);
+  }
+  /**
+   * Lists external IP addresses assigned to VMware workload VMs within the scope
+   * of the given network policy. (networkPolicies.fetchExternalAddresses)
+   *
+   * @param string $networkPolicy Required. The resource name of the network
+   * policy to query for assigned external IP addresses. Resource names are
+   * schemeless URIs that follow the conventions in
+   * https://cloud.google.com/apis/design/resource_names. For example:
+   * `projects/my-project/locations/us-central1/networkPolicies/my-policy`
+   * @param array $optParams Optional parameters.
+   *
+   * @opt_param int pageSize The maximum number of external IP addresses to return
+   * in one page. The service may return fewer than this value. The maximum value
+   * is coerced to 1000. The default value of this field is 500.
+   * @opt_param string pageToken A page token, received from a previous
+   * `FetchNetworkPolicyExternalAddresses` call. Provide this to retrieve the
+   * subsequent page. When paginating, all parameters provided to
+   * `FetchNetworkPolicyExternalAddresses`, except for `page_size` and
+   * `page_token`, must match the call that provided the page token.
+   * @return FetchNetworkPolicyExternalAddressesResponse
+   */
+  public function fetchExternalAddresses($networkPolicy, $optParams = [])
+  {
+    $params = ['networkPolicy' => $networkPolicy];
+    $params = array_merge($params, $optParams);
+    return $this->call('fetchExternalAddresses', [$params], FetchNetworkPolicyExternalAddressesResponse::class);
   }
   /**
    * Retrieves a `NetworkPolicy` resource by its resource name.

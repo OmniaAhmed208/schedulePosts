@@ -62,7 +62,7 @@ class AdminSocialController extends Controller
     
     public function historyPosts()
     {
-        $columns =  Schema::getColumnListing('publish__posts');
+        $columns =  Schema::getColumnListing('publish_posts');
         return view('AdminSocialMedia.historyPosts',compact('columns'));
     }
 

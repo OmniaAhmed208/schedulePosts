@@ -39,6 +39,10 @@ class Subnet extends \Google\Model
    * @var string
    */
   public $type;
+  /**
+   * @var int
+   */
+  public $vlanId;
 
   /**
    * @param string
@@ -109,6 +113,20 @@ class Subnet extends \Google\Model
   public function getType()
   {
     return $this->type;
+  }
+  /**
+   * @param int
+   */
+  public function setVlanId($vlanId)
+  {
+    $this->vlanId = $vlanId;
+  }
+  /**
+   * @return int
+   */
+  public function getVlanId()
+  {
+    return $this->vlanId;
   }
 }
 

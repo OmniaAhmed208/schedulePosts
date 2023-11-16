@@ -17,8 +17,11 @@
 
 namespace Google\Service\SecurityCommandCenter;
 
-class SecuritycenterObject extends \Google\Model
+class SecuritycenterObject extends \Google\Collection
 {
+  protected $collection_key = 'containers';
+  protected $containersType = Container::class;
+  protected $containersDataType = 'array';
   /**
    * @var string
    */
@@ -36,6 +39,20 @@ class SecuritycenterObject extends \Google\Model
    */
   public $ns;
 
+  /**
+   * @param Container[]
+   */
+  public function setContainers($containers)
+  {
+    $this->containers = $containers;
+  }
+  /**
+   * @return Container[]
+   */
+  public function getContainers()
+  {
+    return $this->containers;
+  }
   /**
    * @param string
    */

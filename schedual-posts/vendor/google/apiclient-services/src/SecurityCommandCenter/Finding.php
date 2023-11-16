@@ -82,6 +82,8 @@ class Finding extends \Google\Collection
   protected $kubernetesDataType = '';
   protected $loadBalancersType = LoadBalancer::class;
   protected $loadBalancersDataType = 'array';
+  protected $logEntriesType = LogEntry::class;
+  protected $logEntriesDataType = 'array';
   protected $mitreAttackType = MitreAttack::class;
   protected $mitreAttackDataType = '';
   /**
@@ -108,6 +110,8 @@ class Finding extends \Google\Collection
    * @var string
    */
   public $nextSteps;
+  protected $orgPoliciesType = OrgPolicy::class;
+  protected $orgPoliciesDataType = 'array';
   /**
    * @var string
    */
@@ -478,6 +482,20 @@ class Finding extends \Google\Collection
     return $this->loadBalancers;
   }
   /**
+   * @param LogEntry[]
+   */
+  public function setLogEntries($logEntries)
+  {
+    $this->logEntries = $logEntries;
+  }
+  /**
+   * @return LogEntry[]
+   */
+  public function getLogEntries()
+  {
+    return $this->logEntries;
+  }
+  /**
    * @param MitreAttack
    */
   public function setMitreAttack(MitreAttack $mitreAttack)
@@ -574,6 +592,20 @@ class Finding extends \Google\Collection
   public function getNextSteps()
   {
     return $this->nextSteps;
+  }
+  /**
+   * @param OrgPolicy[]
+   */
+  public function setOrgPolicies($orgPolicies)
+  {
+    $this->orgPolicies = $orgPolicies;
+  }
+  /**
+   * @return OrgPolicy[]
+   */
+  public function getOrgPolicies()
+  {
+    return $this->orgPolicies;
   }
   /**
    * @param string

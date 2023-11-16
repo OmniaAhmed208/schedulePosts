@@ -6,6 +6,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use Laravel\Socialite\Facades\Socialite;
+use App\Http\Controllers\MediaController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TwitterController;
@@ -38,23 +39,13 @@ Route::middleware(['guest'])->get('/', function () {
 
 Auth::routes();
 
-Route::group(['middleware' => ['admin','auth']], function ()
-{ // for admin only to login on them
-    
-});
-
 Route::group(['middleware' => ['auth']], function ()
 {
     Route::get('/home', [DashboardController::class, 'index'])->name('admin.index');
     Route::get('/test', [DashboardController::class, 'test'])->name('test');
+    Route::put('updatePassword/{id}', [UserController::class,'updatePassword']);
+    Route::post('chartJS/{id}', [DashboardController::class,'chartJS']);
 
-    
-// You can also apply middleware to specific actions using the "only" or "except" methods
-// For example:
-// Route::resource('users', UserController::class)->only(['index', 'show'])->middleware('your-middleware');
-
-// Or
-// Route::resource('users', UserController::class)->except(['create', 'store'])->middleware('your-middleware')
 
     Route::resource('services', ServiceController::class)->middleware('permission:services');
     Route::resource('users', UserController::class);
@@ -66,6 +57,7 @@ Route::group(['middleware' => ['auth']], function ()
     Route::resource('youtubeCategories', YoutubeCategoryController::class);
     Route::resource('subscribers', SubscriberController::class)->only(['index'])->middleware('permission:subscribers.all');
     Route::resource('newsLetter', NewsLetterController::class); // permissions in controller
+    Route::resource('media', MediaController::class);
 
     Route::resource('rolePermissions', RolesPermissionsController::class);
     Route::post('/assignRoleToPermissions/{role_id}', [RolesPermissionsController::class, 'assignRoleToPermissions']);
@@ -94,4 +86,15 @@ Route::middleware('web')->group(function () {
 
     Route::get('auth/youtube',[YoutubeController::class, 'redirectToYoutube']);
     Route::get('auth/youtube/callback', [YoutubeController::class, 'YoutubeCallback'])->name('youtube.callback');
+});
+
+
+// You can also apply middleware to specific actions using the "only" or "except" methods
+// For example:
+// Route::resource('users', UserController::class)->only(['index', 'show'])->middleware('your-middleware');
+
+// Or
+// Route::resource('users', UserController::class)->except(['create', 'store'])->middleware('your-middleware')
+Route::group(['middleware' => ['admin','auth']], function ()
+{ // for admin only to login on them   
 });
