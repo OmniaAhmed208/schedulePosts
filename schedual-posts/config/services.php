@@ -53,13 +53,14 @@ return [
     ],
 
     'twitter' => [
-        // 'client_id' => 'kzHeMTrIkGLh02wajZChgisoz', // apiKey
-        // 'client_secret' => 'BgZeEGpCd4tBeXzIMWNXueLv9uN9ToBACf5jiRsmepFM4Bfssu', // apiSecret
-        'redirect' => 'http://localhost/schedulePosts/schedual-posts/auth/twitter/callback',
+        'client_id' => env('TWITTER_CONSUMER_KEY'),
+        'client_secret' => env('TWITTER_CONSUMER_SECRET'),
+        'redirect' => 'http://192.168.1.15:8000/auth/twitter/callback',
+        // 'redirect' => 'http://localhost/e-commerce/Social/schedual-posts/auth/twitter/callback',
     ],
 
     'youtube' => [
         'api_key' => env('YOUTUBE_API_KEY'),
-        'redirect' => 'http://localhost/e-commerce/Social/schedual-posts/youtube/callback',
+        'redirect' => 'http://localhost/e-commerce/Social/schedual-posts/auth/youtube/callback',
     ],
 ];

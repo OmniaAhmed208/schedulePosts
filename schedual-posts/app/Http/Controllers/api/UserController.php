@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
@@ -144,8 +145,8 @@ class UserController extends Controller
     {
         $user = User::find($id);
 
-        $apiAccounts = Api::all()->where('creator_id', Auth::user()->id);
-        $userApps = settingsApi::all(); // all App on website
+        $userAccounts = Api::all()->where('creator_id', Auth::user()->id);
+        $services = settingsApi::all(); // all App on website
 
         if($user == null){
             return response()->json([
@@ -158,14 +159,15 @@ class UserController extends Controller
             'message' => 'User found',
             'data' => [
                 'user'=> $user,
-                'apiAccounts' => $apiAccounts,
-                'userApps' =>  $userApps
+                'userAccounts' => $userAccounts,
+                'services' =>  $services
             ],
             'status' => true
         ],200);
     }
 
-    public function update(Request $request, string $id)
+
+    public function update(Request $request, $id)
     {
         try{
             $user = User::find($id);
@@ -180,9 +182,7 @@ class UserController extends Controller
             $validator = Validator::make($request->all(), [
                 'name' => 'required',
                 'email' => 'required|email|unique:users,email,' . $user->id,
-                'password' => ['required','nullable','confirmed','min:8',
-                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
-                ],
+                'image' => 'mimes:jpg,jpeg,png',
             ]);
 
             if($validator->fails()){
@@ -193,14 +193,85 @@ class UserController extends Controller
                 ],401);
             }
 
+            $storageImage = $user->image;
+            if ($request->hasFile('image')) 
+            {
+                $image = $request->file('image');        
+                $filename = time() . '_' . $image->getClientOriginalName();
+                $image->storeAs('public/profile_images', $filename); 
+                $storageImage = Storage::url('profile_images/'. $filename);
+            }
+            if ($request->reset_image == 1) {
+                $storageImage = 'tools/dist/img/user.png';
+            }
+
             $user->update([
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => Hash::make($request->password),
+                'image' => $storageImage
             ]);
 
             return response()->json([
                 'message' => 'User updated successfully',
+                'status' => true
+            ],200);
+        }
+        catch(\Throwable $th){
+            return response()->json([
+                'message' => $th->getMessage(),
+                'status' => false,
+            ],500);
+        }
+    }
+
+    public function updatePassword(Request $request, $id)
+    {
+
+        try{
+            $user = User::find($id);
+
+            if($user == null){
+                return response()->json([
+                    'message' => 'User not found',
+                    'status' => false
+                ],404);
+            }
+
+            $validator = Validator::make($request->all(), [
+                'old_password' => 'required',
+                'new_password' => ['required','min:8','regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'],
+            ]);
+
+            if($validator->fails()){
+                return response()->json([
+                    'message' => 'Validation error',
+                    'errors' => $validator->errors(),
+                    'status' => false
+                ],401);
+            }
+
+            $password = $user->password;
+
+            if ($request->filled('old_password') && $request->filled('new_password')) 
+            {
+                if (!Hash::check($request->old_password, $user->password)) 
+                {
+                    return response()->json([
+                        'message' => 'Old password does not match.',
+                        'status' => false
+                    ],404);
+                }
+                else{
+                    $password = Hash::make($request->new_password);
+                }
+            }
+
+            $user->update([
+                'password' => $password,
+            ]);
+
+            return response()->json([
+                'message' => 'Password updated successfully',
                 'status' => true
             ],200);
 
@@ -212,6 +283,55 @@ class UserController extends Controller
             ],500);
         }
     }
+
+
+    // public function update(Request $request, string $id)
+    // {
+    //     try{
+    //         $user = User::find($id);
+
+    //         if($user == null){
+    //             return response()->json([
+    //                 'message' => 'User not found',
+    //                 'status' => false
+    //             ],404);
+    //         }
+
+    //         $validator = Validator::make($request->all(), [
+    //             'name' => 'required',
+    //             'email' => 'required|email|unique:users,email,' . $user->id,
+    //             'password' => ['required','nullable','confirmed','min:8',
+    //                 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
+    //             ],
+    //         ]);
+
+    //         if($validator->fails()){
+    //             return response()->json([
+    //                 'message' => 'Validation error',
+    //                 'errors' => $validator->errors(),
+    //                 'status' => false
+    //             ],401);
+    //         }
+
+    //         $user->update([
+    //             'name' => $request->name,
+    //             'email' => $request->email,
+    //             'password' => Hash::make($request->password),
+    //         ]);
+
+    //         return response()->json([
+    //             'message' => 'User updated successfully',
+    //             'status' => true
+    //         ],200);
+
+    //     }
+    //     catch(\Throwable $th){
+    //         return response()->json([
+    //             'message' => $th->getMessage(),
+    //             'status' => false,
+    //         ],500);
+    //     }
+    // }
 
     public function destroy(string $id)
     {

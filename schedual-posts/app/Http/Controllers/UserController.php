@@ -48,19 +48,19 @@ class UserController extends Controller
             'image' => 'mimes:jpg,jpeg,png',
         ]);
 
-        $password = $user->password;
+        // $password = $user->password;
 
-        if ($request->filled('old_password') && $request->filled('new_password')) {
-            if (!Hash::check($request->old_password, $user->password)) {
-                return redirect()->back()->with('error', 'Old password does not match.');
-            }
-            else{
-                $request->validate([
-                    'new_password' => ['nullable','min:8','regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'],
-                ]);
-                $password = Hash::make($request->new_password);
-            }
-        }
+        // if ($request->filled('old_password') && $request->filled('new_password')) {
+        //     if (!Hash::check($request->old_password, $user->password)) {
+        //         return redirect()->back()->with('error', 'Old password does not match.');
+        //     }
+        //     else{
+        //         $request->validate([
+        //             'new_password' => ['nullable','min:8','regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'],
+        //         ]);
+        //         $password = Hash::make($request->new_password);
+        //     }
+        // }
 
         $storageImage = $user->image;
         if ($request->hasFile('image')) 
@@ -77,24 +77,61 @@ class UserController extends Controller
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => $password,
             'image' => $storageImage
         ]);
+
+        // $user->addMediaFromRequest('image')->toMediaCollection('profile_images');
 
         return back()->with('success','User updated successfully');
     }
 
 
-    public function destroy(string $id)
+    public function updatePassword(Request $request, $id)
     {
         $user = User::find($id);
 
-        if($user == null){
-            return back()->with('error','User not found');
+        $validator = $request->validate([
+            'old_password' => 'required',
+            'new_password' => ['required','min:8','regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'],
+        ]);
+
+        $password = $user->password;
+
+        if ($request->filled('old_password') && $request->filled('new_password')) 
+        {
+            if (!Hash::check($request->old_password, $user->password)) 
+            {
+                return response()->json([
+                    'message' => 'Old password does not match.',
+                    'status' => false
+                ],404);
+            }
+            else{
+                $password = Hash::make($request->new_password);
+            }
         }
 
-        $user->delete();
+        $user->update([
+            'password' => $password,
+        ]);
 
-        return back()->with('error','User deleted successfully');
+        return back()->with('success','Password updated successfully');
+
     }
+
+    public function forgetPassword(Request $request)
+    {}
+
+    // public function destroy(string $id)
+    // {
+    //     $user = User::find($id);
+
+    //     if($user == null){
+    //         return back()->with('error','User not found');
+    //     }
+
+    //     $user->delete();
+
+    //     return back()->with('error','User deleted successfully');
+    // }
 }

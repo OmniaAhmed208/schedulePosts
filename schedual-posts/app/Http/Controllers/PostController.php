@@ -2,42 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use Exception;
 use Carbon\Carbon;
-use Google_Client;
 use App\Models\Api;
-use App\Models\User;
-use Facebook\Facebook;
-use GuzzleHttp\Client;
-use App\Models\Instagram;
 use App\Models\PostImages;
 use App\Models\PostVideos;
 use App\Models\time_think;
 use App\Models\publishPost;
 use App\Models\settingsApi;
-use Google_Service_YouTube;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use Madcoda\Youtube\Youtube;
-use Thujohn\Twitter\Twitter;
-use Google_Service_Exception;
-use Thujohn\Twitter\tmhOAuth;
-use App\Models\youtube_category;
-use Google_Service_YouTube_Video;
-use Google\Service\Blogger\PostList;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Http;
-use Intervention\Image\Facades\Image;
-use Abraham\TwitterOAuth\TwitterOAuth;
-use Illuminate\Support\Facades\Schema;
-use Google_Service_YouTube_VideoStatus;
-use Illuminate\Support\Facades\Storage;
-use Google_Service_YouTube_VideoSnippet;
-use Facebook\Exceptions\FacebookSDKException;
-use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
-use Facebook\Exceptions\FacebookResponseException;
 use App\Services\PostService;
+use App\Models\youtube_category;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
+use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 
 class PostController extends Controller
 {
@@ -468,22 +447,6 @@ class PostController extends Controller
 
     //     return redirect()->route('socialAccounts')->with('success','Account deleted successfully');
     // }
-
-
-    public function chartJS(Request $request,$userId)
-    {
-        $startDate = now()->subDays(9);
-
-        if($request)
-        {
-            $startDate = $request->input('selectedDate');
-        }
-
-        $Publish_Post = publishPost::where('status', 'published')->where('creator_id', $userId)
-            ->where('scheduledTime', '>=', $startDate)->get();
-
-        return $Publish_Post;
-    }
 
     public function updateInterval(Request $request)
     {
