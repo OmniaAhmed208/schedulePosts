@@ -67,9 +67,10 @@
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title">Add role</h5>
-                                <p>Role you may use and assign to your users.</p>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
+                            <p class="ms-3">Role you may use and assign to your users.</p>
+
 
                             <form id="userToRolesForm" action="" method="post" enctype="multipart/form-data">
                                 @csrf

@@ -1,17 +1,4 @@
 /* ==================== principles =========== */
-/* card header */
-.card-info:not(.card-outline)>.card-header {
-    background-color: #79DAE8;
-    border-color: #79DAE8;
-}
-.badge.bg-label-success{background-color: #e8fadf !important;color: #5fb332 !important;}
-.badge.bg-label-warning {background-color: #fff2d6 !important;color: #ffab00 !important;}
-.badge.bg-label-danger {background-color: #ffe0db !important;color: #ff3e1d !important;}
-.badge.bg-label-primary {background-color: #e7e7ff !important;color: #696cff !important;}
-.badge.bg-label-info {background-color: #d7f5fc !important;color: #03c3ec !important;}
-.badge.bg-label-dark {background-color: #e5e5e5 !important;color: #636363 !important;}
-
-
 /* table number */
 .page-item.active .page-link {background-color: #79dae8;border-color: #79dae8;}
 

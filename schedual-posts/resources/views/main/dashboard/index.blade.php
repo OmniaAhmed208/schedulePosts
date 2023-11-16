@@ -32,7 +32,7 @@
             </div>
 
             <div class="col-lg-12 order-1">
-                <div class="row">
+                <div class="row align-items-center">
                     <div class="col-lg-4 col-md-12 col-6 mb-4">
                         <div class="card" style="background: #06283d">
                             <div class="card-body text-white">
@@ -93,44 +93,7 @@
 
         <div class="row">
 
-            <!-- Expense Overview -->
             <div class="col-lg-12 order-1 mb-4">
-
-                {{-- <div class="card h-100">
-                    <div class="card-header">
-                        <ul class="nav nav-pills" role="tablist">
-                            <li class="nav-item">
-                                <button
-                                type="button"
-                                class="nav-link active"
-                                role="tab"
-                                data-bs-toggle="tab"
-                                data-bs-target="#navs-tabs-line-card-income"
-                                aria-controls="navs-tabs-line-card-income"
-                                aria-selected="true">
-                                Filter applications <i class="bx bx-down-arrow-alt"></i>
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="card-body px-0">
-                        <div class="tab-content p-0">
-                        <div class="tab-pane fade show active" id="navs-tabs-line-card-income" role="tabpanel">
-                            <div id="incomeChart"></div>
-                            <div class="d-flex justify-content-center pt-4 gap-2">
-                            <div class="flex-shrink-0">
-                                <div id="expensesOfWeek"></div>
-                            </div>
-                            <div>
-                                <p class="mb-n1 mt-1">Expenses This Week</p>
-                                <small class="text-muted">$39 less than last week</small>
-                            </div>
-                            </div>
-                        </div>
-                        </div>
-                    </div>
-                </div> --}}
-
                 <div class="card p-4">
                     <div id="calendar"></div>
                 </div>

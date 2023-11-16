@@ -14,92 +14,109 @@
                     <li>{{ $error }}</li>
                 @endforeach
 
-              <form action="{{ route('users.update', $user->id) }}" method="post" enctype="multipart/form-data">
-                @csrf
-                @method('put')
-                <div class="row mb-5">
-                  <div class="col-sm-4 col-lg-3">
-                    <div class="card h-100">
-                      <div class="d-flex justify-content-center align-items-center h-100 previewSec p-5 py-3">
-                        @if ($user->image != null)
-                          <img class="card-img-top rounded-circle" src="{{ asset($user->image) }}" alt="profile image" />                            
-                        @else
-                          <img class="card-img-top rounded-circle" src="{{ asset('tools/dist/img/user.png') }}" alt="profile image" />                            
-                        @endif
-                      </div>
-                      <div class="card-body py-0">
-                        <p class="card-text">
-                          <div class="button-wrapper">
-                            <label for="profile_image" class="btn btn-dark me-2 mb-4" tabindex="0">
-                              <span class="d-none d-sm-block">Upload photo</span>
-                              <i class="bx bx-upload d-block d-sm-none"></i>
-                              <input type="file" id="profile_image" class="account-file-input" hidden name="image" onchange="getImagePreview(event)" accept="image/png, image/jpeg, image/jpg" />
-                            </label>
-                            <button type="button" class="btn btn-outline-secondary account-image-reset mb-4" onclick="closeFile()">
-                              <i class="bx bx-reset d-block d-sm-none"></i>
-                              <span class="d-none d-sm-block">Reset</span>
-                            </button>
-                            <input type="hidden" name="reset_image" id="reset_image" value="0">
-                            <p class="text-muted mb-0">Allowed JPG, JPEG or PNG.</p>
-                          </div>
-                          {{-- <div class="d-flex justify-content-center">
+                {{-- <div class="d-flex justify-content-center">
                             <button type="button" class="btn btn-danger mt-4">Deactivate Account </button>
                           </div> --}}
-                        </p>
-                      </div>
-                    </div>
-                  </div> 
 
-                  <div class="col-sm-8 col-lg-9">
-                    <div class="card shadow-none h-100" style="background: transparent;">
-                      <div class="card">
-                        <h5 class="card-header">Profile Details</h5>
+              
+                <div class="row mb-5">
+                    <div class="col-sm-8 col-lg-9 mb-2">
+                      <form action="{{ route('users.update', $user->id) }}" method="post" enctype="multipart/form-data">
+                        @csrf
+                        @method('put')
+                        <div class="card shadow-none h-100" style="background: transparent;">
+                          <div class="card">
+                            <h5 class="card-header text-dark">Profile Details</h5>
+                            <div class="card-body">
+                              <div class="row">
+                                <div class="mb-3 col-md-4">
+                                  <div class="previewSec">
+                                  @if ($user->image != null)
+                                    <img class="card-img-top rounded-circle w-50" src="{{ asset($user->image) }}" alt="profile image" />                            
+                                  @else
+                                    <img class="card-img-top rounded-circle w-25" src="{{ asset('tools/dist/img/user.png') }}" alt="profile image" />                            
+                                  @endif
+                                  </div>
+                                </div>
+
+                                <div class="col-md-8 d-flex align-items-center">
+                                  <div class="button-wrapper">
+                                    <label for="profile_image" class="btn btn-dark me-2 mb-4" tabindex="0">
+                                      <span class="d-none d-sm-block">Upload photo</span>
+                                      <i class="bx bx-upload d-block d-sm-none"></i>
+                                      <input type="file" id="profile_image" class="account-file-input" hidden name="image" onchange="getImagePreview(event)" accept="image/png, image/jpeg, image/jpg" />
+                                    </label>
+                                    <button type="button" class="btn btn-outline-secondary account-image-reset mb-4" onclick="closeFile()">
+                                      <i class="bx bx-reset d-block d-sm-none"></i>
+                                      <span class="d-none d-sm-block">Reset</span>
+                                    </button>
+                                    <input type="hidden" name="reset_image" id="reset_image" value="0">
+                                    <p class="text-muted mb-0">Allowed JPG, JPEG or PNG.</p>
+                                  </div>
+                                </div>
+
+                                <div class="mb-3 col-md-6">
+                                  <label for="name" class="form-label">Name</label>
+                                  <input class="form-control" type="text" id="name" name="name" value="{{ $user->name }}" autofocus required/>
+                                </div>
+                                <div class="mb-3 col-md-6">
+                                  <label for="email" class="form-label">E-mail</label>
+                                  <input class="form-control" type="text" id="email" name="email" value="{{ $user->email }}"  required/>
+                                </div>
+                                
+
+                              </div>
+                              <div class="mt-2">
+                                <button type="submit" class="btn btn-dark me-2">Save changes</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+                
+
+                  <div class="col-sm-4 col-lg-3 mb-2">
+                    <div class="card h-100 d-flex justify-content-center">
+                      <h5 class="card-header text-dark">Change Password</h5>
+
+                      <form action="{{ url('updatePassword', $user->id) }}" method="post">
+                        @csrf
+                        @method('put')
                         <div class="card-body">
                           <div class="row">
-                            <div class="mb-3 col-md-6">
-                              <label for="name" class="form-label">Name</label>
-                              <input class="form-control" type="text" id="name" name="name" value="{{ $user->name }}" autofocus/>
-                            </div>
-                            <div class="mb-3 col-md-6">
-                              <label for="email" class="form-label">E-mail</label>
-                              <input class="form-control" type="text" id="email" name="email" value="{{ $user->email }}" placeholder="john.doe@example.com"/>
-                            </div>
-                            <div class="mb-3 col-md-6">
+                            <div class="mb-3">
                               <label for="oldPassword" class="form-label">Old password</label>
-                              <input class="form-control" type="password" id="oldPassword" name="old_password"/>
+                              <input class="form-control" type="password" id="oldPassword" name="old_password" required value="{{ old('old_password') }}"/>
                             </div>
-                            <div class="mb-3 col-md-6">
+                            <div class="mb-3">
                               <label for="newPassword" class="form-label">New password</label>
-                              <input class="form-control" type="password" id="newPassword" name="new_password"/>
+                              <input class="form-control" type="password" id="newPassword" name="new_password" required/>
                             </div>
-                            <p class="text-primary">Optionally to change password</p>
-
                           </div>
                           <div class="mt-2">
-                            <button type="submit" class="btn btn-dark me-2">Save changes</button>
-                            <button type="reset" class="btn btn-outline-secondary">Cancel</button>
+                            <button type="submit" class="btn btn-dark me-2 mb-1">Save changes</button>
                           </div>
                         </div>
-                      </div>
-
-                      <div class="card mt-4 p-3 h-100">
-                        <div class="w-100 h-100 p-2 pb-0 d-flex justify-content-center align-items-center" style="border: 2px dashed #ccc;">
-                          <button class="btn" type="button" data-bs-toggle="modal" data-bs-target="#addAccount">
-                            <i class="bx bx-plus-circle fs-large" style="color: #333;"></i>
-                          </button>
-                        </div>
-                      </div>  
+                      </form> 
                     </div>
                   </div>
-                
-              </form>
+                </div>  
 
               <div class="row my-5">
-                <h4 class="my-4"><i class="bx bx-laptop mr-3"></i> Accounts you have</h4>
+                <h4 class="my-4 text-dark"><i class="bx bx-laptop mr-3"></i> Accounts you have</h4>
+
+                <div class="col-sm-6 col-md-4 col-lg-3 mb-3">
+                  <div class="w-100 h-100 p-2 d-flex justify-content-center align-items-center bg-white" style="border: 2px dashed #ccc;">
+                    <button class="btn" type="button" data-bs-toggle="modal" data-bs-target="#addAccount">
+                      <i class="bx bx-plus-circle fs-large" style="color: #333;"></i>
+                    </button>
+                  </div>
+                </div>
 
                 @foreach ($apiAccounts as $account)
                   <div class="col-sm-6 col-md-4 col-lg-3">
-                      <div class="card info-box d-flex flex-row user-info py-3">
+                      <div class="card info-box d-flex flex-row user-info py-3 mb-3">
                         <div class="info-box-icon w-100 d-flex flex-column align-items-center position-relative">
 
                           @if ($account['account_pic'])
@@ -196,7 +213,7 @@
         var img = URL.createObjectURL(event.target.files[i]);
         var container = document.querySelector('.previewSec');
         container.innerHTML = '';
-        var html = `<img src="${img}" class="card-img-top rounded-circle" alt="profile image">`;
+        var html = `<img src="${img}" class="card-img-top rounded-circle w-50" alt="profile image">`;
         container.innerHTML += html;
       }  
     }
@@ -204,7 +221,7 @@
     function closeFile() {
       var container = document.querySelector('.previewSec');
       container.innerHTML = '';
-      var html = `<img src="{{ asset('tools/dist/img/user.png') }}" class="card-img-top rounded-circle" alt="profile image">`;
+      var html = `<img src="{{ asset('tools/dist/img/user.png') }}" class="card-img-top rounded-circle w-50" alt="profile image">`;
       container.innerHTML += html;
       document.getElementById('reset_image').value = 1;
     }

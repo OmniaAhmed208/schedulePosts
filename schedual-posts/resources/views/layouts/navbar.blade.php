@@ -45,63 +45,63 @@
                 </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
-                <li>
-                    <a class="dropdown-item" href="#">
-                    <div class="d-flex">
-                        <div class="flex-shrink-0 me-3">
-                            <div class="avatar avatar-online">
-                                @if (Auth::user()->image != null)
-                                    <img src="{{asset(Auth::user()->image)}}" alt class="w-px-40 h-auto rounded-circle" />                           
-                                @else
-                                    <img src="{{asset('tools/dist/img/user.png')}}" alt class="w-px-40 h-auto rounded-circle" />                           
-                                @endif
+                    <li>
+                        <a class="dropdown-item" href="#">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0 me-3">
+                                <div class="avatar avatar-online">
+                                    @if (Auth::user()->image != null)
+                                        <img src="{{asset(Auth::user()->image)}}" alt class="w-px-40 h-auto rounded-circle" />                           
+                                    @else
+                                        <img src="{{asset('tools/dist/img/user.png')}}" alt class="w-px-40 h-auto rounded-circle" />                           
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <span class="fw-medium d-block text-capitalize">{{Auth::user()->name}}</span>
+                                <small class="text-muted text-capitalize">{{Auth::user()->user_type}}</small>
                             </div>
                         </div>
-                        <div class="flex-grow-1">
-                            <span class="fw-medium d-block text-capitalize">{{Auth::user()->name}}</span>
-                            <small class="text-muted text-capitalize">{{Auth::user()->user_type}}</small>
-                        </div>
-                    </div>
-                    </a>
-                </li>
-                <li>
-                    <div class="dropdown-divider"></div>
-                </li>
-                <li>
-                    <a class="dropdown-item" href="{{ route('users.show', Auth::user()->id) }}">
-                        <i class="bx bx-user me-2"></i>
-                        <span class="align-middle">My Profile</span>
-                    </a>
-                </li>
-                {{-- <li>
-                    <a class="dropdown-item" href="#">
-                    <i class="bx bx-cog me-2"></i>
-                    <span class="align-middle">Settings</span>
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item" href="#">
-                    <span class="d-flex align-items-center align-middle">
-                        <i class="flex-shrink-0 bx bx-credit-card me-2"></i>
-                        <span class="flex-grow-1 align-middle ms-1">Billing</span>
-                        <span class="flex-shrink-0 badge badge-center rounded-pill bg-danger w-px-20 h-px-20">4</span>
-                    </span>
-                    </a>
-                </li>
-                <li>
-                    <div class="dropdown-divider"></div>
-                </li> --}}
+                        </a>
+                    </li>
+                    <li>
+                        <div class="dropdown-divider"></div>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{{ route('users.show', Auth::user()->id) }}">
+                            <i class="bx bx-user me-2"></i>
+                            <span class="align-middle">My Profile</span>
+                        </a>
+                    </li>
+                    {{-- <li>
+                        <a class="dropdown-item" href="#">
+                        <i class="bx bx-cog me-2"></i>
+                        <span class="align-middle">Settings</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#">
+                        <span class="d-flex align-items-center align-middle">
+                            <i class="flex-shrink-0 bx bx-credit-card me-2"></i>
+                            <span class="flex-grow-1 align-middle ms-1">Billing</span>
+                            <span class="flex-shrink-0 badge badge-center rounded-pill bg-danger w-px-20 h-px-20">4</span>
+                        </span>
+                        </a>
+                    </li>
+                    <li>
+                        <div class="dropdown-divider"></div>
+                    </li> --}}
 
-                <li>
-                    <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
-                    document.getElementById('logout-form').submit();">
-                    <i class="bx bx-power-off me-2"></i>
-                    <span class="align-middle">{{ __('Logout') }}</span>
-                    </a>
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                        @csrf
-                    </form>
-                </li>
+                    <li>
+                        <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
+                        document.getElementById('logout-form').submit();">
+                        <i class="bx bx-power-off me-2"></i>
+                        <span class="align-middle">{{ __('Logout') }}</span>
+                        </a>
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                            @csrf
+                        </form>
+                    </li>
                 </ul>
             </li>
           <!--/ User -->

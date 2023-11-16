@@ -59,7 +59,7 @@
                                     </div>
                                 </div>
 
-                                <div class="form-group container" id="youtubeSelectBlock" style="display: none;">
+                                <div class="form-group container mt-4" id="youtubeSelectBlock" style="display: none;">
                                     <div class="row">
                                         <div class="col-2 d-flex align-items-center mb-3">
                                             <span><b>Video title</b></span>
@@ -72,8 +72,7 @@
                                             <div class="row mb-3">
                                                 <div class="col-4"><span><b>Category</b></span></div>
                                                 <div class="col-8">
-                                                    <select class="form-control select2 w-100" name="youtubeCategory">
-                                                        <option selected disabled>Choose category of video on youtube</option>
+                                                    <select class="form-select"  name="youtubeCategory" aria-label="Default select example">
                                                         @foreach($youtubeCategories as $category)
                                                             <option value="{{$category['category_id']}}">{{$category['category_name']}}</option>
                                                         @endforeach
@@ -85,9 +84,9 @@
                                             <div class="row mb-3">
                                                 <div class="col-4"><span><b>Visibility</b></span></div>
                                                 <div class="col-8">
-                                                    <select class="form-control select2 w-100" name="youtubePrivacy">
-                                                        <option value="public">Public</option>
-                                                        <option value="private">Private</option>
+                                                    <select class="form-select" name="youtubePrivacy" aria-label="Default select example">
+                                                      <option value="public">Public</option>
+                                                      <option value="Private">Private</option>
                                                     </select>
                                                 </div>
                                             </div>

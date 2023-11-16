@@ -7,117 +7,127 @@
     <!-- Content Header (Page header) -->
     <div class="content-header">
         <div class="container-fluid">
-            <section class="content py-4">
+            <section class="py-4">
 
                 <div class="row">
-                    <h5> 
-                      @foreach ($user as $user)
-                      Dashboard:  {{ $user->name }}
-                      @endforeach
-                    </h5>
+                  <h5> 
+                    @foreach ($user as $user)
+                    Dashboard:  {{ $user->name }}
+                    @endforeach
+                  </h5>
 
 
-                    <div class="col-lg-12 order-1">
-                        <div class="row">
-                            <div class="col-lg-4 col-md-12 col-6 mb-4">
-                                <div class="card" style="background: #06283d">
-                                    <div class="card-body text-white">
-                                        <div class="card-title d-flex align-items-start justify-content-between">
-                                            <div class="avatar flex-shrink-0 p-2 rounded" style="background-color: #e0f7fc;">
-                                                <img src="{{ asset('tools/assets/img/icons/unicons/service.png') }}" alt="chart success" class="rounded" />
-                                            </div>
-                                        </div>
-                                        <div class="d-flex justify-content-between">
-                                            <h3 class="fw-medium d-block mb-1 text-white">Services</h3>
-                                            <h4 class="card-title mb-2 text-white">{{ $appCount }} / {{ $servicesCount }}</h4>
-                                        </div>
-                                        <p>Accounts connected in</p>
-                                        <small class="fw-medium">
-                                            <a href="{{ route('services.index') }}" class="text-white">
-                                                <i class="bx bx-right-arrow-alt"></i> View more
-                                            </a>
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-4 col-md-12 col-6 mb-4">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="card-title d-flex align-items-start justify-content-between">
-                                            <div class="avatar flex-shrink-0 p-2 rounded" style="background-color: #e0f7fc;">
-                                                <img src="{{ asset('tools/assets/img/icons/unicons/post.png') }}" alt="post" class="rounded" />
-                                            </div>
-                                        </div>
-                                        <div class="d-flex justify-content-between">
-                                            <h3 class="fw-medium d-block mb-1">Published</h3>
-                                            <h4 class="card-title mb-2">{{ $lastPosts }}</h4>
-                                        </div>
-                                        <p>Posts published at last week</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-4 col-md-12 col-6 mb-4">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="card-title d-flex align-items-start justify-content-between">
-                                            <div class="avatar flex-shrink-0 p-2 rounded" style="background-color: #e0f7fc;">
-                                                <img src="{{ asset('tools/assets/img/icons/unicons/post.png') }}" alt="post" />
-                                            </div>
-                                        </div>
-                                        <div class="d-flex justify-content-between">
-                                            <h3 class="fw-medium d-block mb-1">posts</h3>
-                                            <h4 class="card-title mb-2">{{ $allPosts }}</h4>
-                                        </div>
-                                        <p>All posts have</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-        
-                    <div class="col-12">
-        
-                      {{-- <section class="content">
-                        <div class="card card-info">
-                            <div class="card-header">
-                              <h3 class="card-title my-2 d-flex align-items-center">
-                                <span>Count of posts published from </span>
-                                <span class="form-group m-0 mx-3">
-                                  <input type="date" id="datePosts" class="form-control mb-0" style="width: 150px" onchange="changeDate();">
-                                </span>
-                                <span id="numDays">10 days ago</span>
-                              </h3>
-                              <div class="card-tools">
-                                <div class="btn-group">
-                                    <button type="button" class="btn text-white dropdown-toggle" style="background-color: #06283D" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <i class="fas fa-desktop mr-2"></i>
-                                        choose App
-                                    </button>
-                                    <div class="dropdown-menu dropdown-menu-right" style="background-color: #f5f5f5">
-                                      <button class="dropdown-item filter-button" data-filter="all" type="button">All applications</button>
-                                      <div class="dropdown-divider"></div>
-                                      <h5 class="pl-3">Accounts</h5>
-        
-                                      @foreach ($allApps as $app)
-                                        <button class="dropdown-item filter-button my-1" data-filter="{{ $app['appType'] }}" type="button">
-                                          <span class="info-box-icon py-1 px-2 mr-2 rounded {{ $app['appType'] }}App"><i class="fab fa-{{ $app['appType'] }}"></i></span>
-                                          {{ $app['appType'] }}
-                                        </button>
-                                      @endforeach
-                                      
+                  <div class="col-lg-12 order-1 my-3">
+                      <div class="row align-items-center">
+                          <div class="col-lg-4 col-md-12 col-6 mb-4">
+                              <div class="card" style="background: #06283d">
+                                  <div class="card-body text-white">
+                                      <div class="card-title d-flex align-items-start justify-content-between">
+                                          <div class="avatar flex-shrink-0 p-2 rounded" style="background-color: #e0f7fc;">
+                                              <img src="{{ asset('tools/assets/img/icons/unicons/service.png') }}" alt="chart success" class="rounded" />
+                                          </div>
+                                      </div>
+                                      <div class="d-flex justify-content-between">
+                                          <h3 class="fw-medium d-block mb-1 text-white">Services</h3>
+                                          <h4 class="card-title mb-2 text-white">{{ $appCount }} / {{ $servicesCount }}</h4>
+                                      </div>
+                                      <p>Accounts connected in</p>
+                                      <small class="fw-medium">
+                                          <a href="{{ route('services.index') }}" class="text-white">
+                                              <i class="bx bx-right-arrow-alt"></i> View more
+                                          </a>
+                                      </small>
                                   </div>
-                                </div>
                               </div>
-                            </div>
-                            <div class="card-body">
-                                <canvas id="myChart"></canvas>
-                            </div>
-                        </div>
-                      </section> --}}
-        
-                    </div>
-        
+                          </div>
+                          <div class="col-lg-4 col-md-12 col-6 mb-4">
+                              <div class="card">
+                                  <div class="card-body">
+                                      <div class="card-title d-flex align-items-start justify-content-between">
+                                          <div class="avatar flex-shrink-0 p-2 rounded" style="background-color: #e0f7fc;">
+                                              <img src="{{ asset('tools/assets/img/icons/unicons/post.png') }}" alt="post" class="rounded" />
+                                          </div>
+                                      </div>
+                                      <div class="d-flex justify-content-between">
+                                          <h3 class="fw-medium d-block mb-1">Published</h3>
+                                          <h4 class="card-title mb-2">{{ $lastPosts }}</h4>
+                                      </div>
+                                      <p>Posts published at last week</p>
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="col-lg-4 col-md-12 col-6 mb-4">
+                              <div class="card">
+                                  <div class="card-body">
+                                      <div class="card-title d-flex align-items-start justify-content-between">
+                                          <div class="avatar flex-shrink-0 p-2 rounded" style="background-color: #e0f7fc;">
+                                              <img src="{{ asset('tools/assets/img/icons/unicons/post.png') }}" alt="post" />
+                                          </div>
+                                      </div>
+                                      <div class="d-flex justify-content-between">
+                                          <h3 class="fw-medium d-block mb-1">posts</h3>
+                                          <h4 class="card-title mb-2">{{ $allPosts }}</h4>
+                                      </div>
+                                      <p>All posts have</p>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
                   </div>
+        
+        
+                </div>
+
+                <!-- Expense Overview -->
+                <div class="col-lg-12 order-1">
+
+                <div class="card card-info">
+                  <div class="card-header px-4 pt-2 pb-0" style="background-color: #e0f7fc">
+                    <div class="row">
+                      <div class="col-md-10">
+                        <span class="card-title d-flex align-items-center text-dark">
+                          <span>Count of posts which published from </span>
+                          <span class="form-group m-0 mx-3">
+                            <input type="date" id="datePosts" class="form-control mb-0" style="width: 150px" onchange="changeDate();">
+                          </span>
+                          <span id="numDays"></span>
+                        </span>
+                      </div>
+
+                      <div class="col-md-2">
+                        <div class="card-tools my-1">
+                          <div class="btn-group">
+                              <button type="button" class="btn text-white dropdown-toggle" style="background-color: #06283d" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                  <i class="bx bx-desktop me-2"></i>
+                                  choose App
+                              </button>
+                              <div class="dropdown-menu dropdown-menu-right shadow-sm mt-1">
+                                  <button class="dropdown-item filter-button text-dark" data-filter="all" type="button">All applications</button>
+                                  <div class="dropdown-divider"></div>
+                                  <h5 class="ps-3">Accounts</h5>
+    
+                                  @foreach ($allApps as $app)
+                                    <button class="dropdown-item filter-button my-1" data-filter="{{ $app['appType'] }}" type="button" style="text-transform: capitalize;">
+                                      <span class="info-box-icon py-1 px-2 me-2 rounded {{ $app['appType'] }}App">
+                                        <i class="bx bxl-{{ $app['appType'] }} p-1 rounded"></i>
+                                      </span>
+                                      {{ $app['appType'] }}
+                                    </button>
+                                  @endforeach
+                              </div>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <div class="card-body">
+                    <canvas id="myChart"></canvas>
+                  </div>
+
+                </div>
+              </div>
 
             </section>
         </div>
@@ -129,8 +139,7 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
-
-{{-- <script>
+<script>
   var currentDate = new Date(); // Get the current date
   currentDate.setDate(currentDate.getDate() - 9);  // Subtract 10 days from the current date
   var formattedDate = currentDate.toISOString().substr(0, 10); // Format the date as yyyy-mm-dd (required by input type="date")
@@ -148,7 +157,7 @@
     var selectedDate = datePosts.value;
 
     var userId = <?php echo $userId; ?>;
-    var url = "{{ route('chartJS', ['userId' => '__id__']) }}"; 
+    var url = "{{ url('chartJS', ['id' => '__id__']) }}"; 
     var finalUrl = url.replace('__id__', userId);
 
     var xhr = new XMLHttpRequest();
@@ -257,7 +266,7 @@
         var postCountsByDate = {};
         posts.forEach(element => {
           // Check if the post type matches the selected app
-          if (element.type === selectedApp) {
+          if (element.account_type === selectedApp) {
             var postDate = element.scheduledTime.split(' ')[0];
 
             if (postCountsByDate[postDate]) {
@@ -313,7 +322,7 @@
 
     }
   }  
-</script> --}}
+</script>
 
 @endsection
 

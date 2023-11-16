@@ -130,6 +130,14 @@
                 </a>
             </li>
         @endcan
+        
+
+        {{-- <li class="menu-item">
+            <a href="{{route('media.index')}}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-images"></i>
+                <div data-i18n="createPost">Media Library</div>
+            </a>
+        </li> --}}
 
         {{-- <li class="menu-header small text-uppercase"><span class="menu-header-text">Settings</span></li>
         <li class="menu-item">
