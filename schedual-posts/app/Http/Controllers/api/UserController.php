@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Models\PublishPost;
 use App\Models\settingsApi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -49,13 +51,20 @@ class UserController extends Controller
                     'status' => false
                 ],401);
             }
-    
+
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password), // bcrypt($request->password)
             ]);
-    
+
+            $role = Role::where('name','user')->first();
+            DB::table('user_has_roles')
+                ->insert([
+                    'role_id' => $role->id,
+                    'user_id' => $user->id,
+                ]);
+
             return response()->json([
                 'message' => 'User created successfully',
                 'status' => true,
@@ -78,7 +87,7 @@ class UserController extends Controller
                 'email' => 'required',
                 'password' => 'required|string',
             ]);
-    
+
             if($validator->fails()){
                 return response()->json([
                     'message' => 'Validation error',
@@ -86,18 +95,18 @@ class UserController extends Controller
                     'status' => false
                 ],401);
             }
-    
+
             $credentials = $request->only(['email','password']);
-            
+
             if(!Auth::attempt($credentials)){
                 return response()->json([
                     'message' => "Email $ Password don't match with our record",
                     'status' => false
                 ],401);
             }
-    
+
             $user = User::where('email', $request->email)->first();
-    
+
             return response()->json([
                 'message' => 'User logged in successfully',
                 'token' => $user->createToken("API TOKEN")->plainTextToken,
@@ -116,7 +125,7 @@ class UserController extends Controller
     public function logout(Request $request)
     {
         try {
-            if (auth()->check()) 
+            if (auth()->check())
             {
                 auth()->user()->tokens->each(function ($token, $key) {
                     $token->delete();
@@ -125,12 +134,12 @@ class UserController extends Controller
                 return response()->json([
                     'message' => 'Logged out'
                 ]);
-                
+
             } else {
                 return response()->json([
                     'message' => 'Unauthorized',
                     'status' => false,
-                ], 401); 
+                ], 401);
             }
 
         } catch (\Throwable $th) {
@@ -194,11 +203,11 @@ class UserController extends Controller
             }
 
             $storageImage = $user->image;
-            if ($request->hasFile('image')) 
+            if ($request->hasFile('image'))
             {
-                $image = $request->file('image');        
+                $image = $request->file('image');
                 $filename = time() . '_' . $image->getClientOriginalName();
-                $image->storeAs('public/profile_images', $filename); 
+                $image->storeAs('public/profile_images', $filename);
                 $storageImage = Storage::url('profile_images/'. $filename);
             }
             if ($request->reset_image == 1) {
@@ -252,9 +261,9 @@ class UserController extends Controller
 
             $password = $user->password;
 
-            if ($request->filled('old_password') && $request->filled('new_password')) 
+            if ($request->filled('old_password') && $request->filled('new_password'))
             {
-                if (!Hash::check($request->old_password, $user->password)) 
+                if (!Hash::check($request->old_password, $user->password))
                 {
                     return response()->json([
                         'message' => 'Old password does not match.',
