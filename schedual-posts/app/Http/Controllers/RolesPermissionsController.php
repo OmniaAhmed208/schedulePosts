@@ -89,13 +89,14 @@ class RolesPermissionsController extends Controller
         if ($newRoles === null || empty($newRoles)) {
             $role = Role::where('name', 'user')->first();
 
-            // Check if the user already has the 'user' role to avoid redundancy
-            if (!in_array($role->id, $existingRoles)) {
-                DB::table('user_has_roles')->insert([
-                    'role_id' => $role->id,
-                    'user_id' => $userId,
-                ]);
-            }
+            // Remove existing roles for the user
+            DB::table('user_has_roles')->where('user_id', $userId)->delete();
+
+            // Insert the 'user' role
+            DB::table('user_has_roles')->insert([
+                'role_id' => $role->id,
+                'user_id' => $userId,
+            ]);
 
         } else {
             $rolesToInsert = array_diff($newRoles, $existingRoles);

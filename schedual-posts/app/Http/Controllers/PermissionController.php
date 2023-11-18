@@ -7,11 +7,11 @@ use Spatie\Permission\Models\Permission;
 
 class PermissionController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('permission:roles.permissions.add')->only(['store']);
-        $this->middleware('permission:roles.permissions.edit')->only(['update']);
-    }
+    // public function __construct()
+    // {
+        // $this->middleware('permission:roles.permissions.add')->only(['store']);
+        // $this->middleware('permission:roles.permissions.edit')->only(['update']);
+    // }
 
     public function store(Request $request)
     {
@@ -33,7 +33,7 @@ class PermissionController extends Controller
         $validator = $request->validate(['permission'=>'required']);
 
         $permission = Permission::find($id);
-        
+
         $permission->update([
             'name' => $request->permission
         ]);

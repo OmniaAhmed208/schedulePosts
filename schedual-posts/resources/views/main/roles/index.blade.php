@@ -92,7 +92,7 @@
                     </div>
 
                     {{-- permissions --}}
-                    <div class="row">
+                    {{-- <div class="row">
                         <div class="col-lg">
 
                             <div class="card">
@@ -153,7 +153,7 @@
                             </div>
 
                         </div>
-                    </div>
+                    </div> --}}
 
                     {{-- add role --}}
                     <div class="modal fade" id="addRoleModal" tabindex="-1" aria-hidden="true">
@@ -227,6 +227,7 @@
                             </div>
                         </div>
                     </div>
+
 
                     {{-- add permission --}}
                     <div class="modal fade" id="addPermissionModal" tabindex="-1" aria-hidden="true">
@@ -313,7 +314,7 @@
                                                     <div class="p-4 border rounded bg-white my-2">
                                                         <h5 class="text-dark">{{ $page }}</h5>
                                                         <p>
-                                                            <input class="form-check-input allBox" type="checkbox" data-group="{{ $page }}"
+                                                            <input hidden class="form-check-input allBox" type="checkbox" data-group="{{ $page }}"
                                                             id="allBox_{{ $page }}"/>
                                                             <label class="form-check-label mx-2" for="allBox_{{ $page }}">All</label>
                                                         </p>
