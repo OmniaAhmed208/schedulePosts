@@ -41,7 +41,7 @@ class SubscriberController extends Controller
                 'message' => 'Validation error',
                 'errors' => $validator->errors(),
                 'status' => false
-            ],401);
+            ],422);
         }
 
         $subscriberExist = Subscriber::where('email',$request->email)->first();
@@ -73,20 +73,5 @@ class SubscriberController extends Controller
             'reason' => $request->reason,
             'notes' => $request->notes,
         ]);
-    }
-
-    public function show(string $id)
-    {
-        //
-    }
-
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    public function destroy(string $id)
-    {
-        //
     }
 }

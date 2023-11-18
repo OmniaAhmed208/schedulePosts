@@ -9,26 +9,20 @@ use Illuminate\Support\Facades\Validator;
 
 class RoleController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $roles = Role::all();
-        
+
         return response()->json([
             'data' => $roles,
             'status' => true
         ],200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(),[
-            'roleName' => 'required|unique:roles,name'
+            'role' => 'required|unique:roles,name'
         ]);
 
         if($validator->fails()){
@@ -39,9 +33,19 @@ class RoleController extends Controller
             ],422);
         }
 
+        $role = $request->role;
+        $color = $request->color ?? 'dark';
+
+        if (Role::where('name', $role)->exists()) {
+            return response()->json([
+                'message' => 'The role is already exists.',
+                'status' => false
+            ],500);
+        }
+
         $role = Role::create([
-            'name' => $request->roleName, 
-            'role_color' => $request->roleColor ? $request->roleColor : 'dark'
+            'name' => $role,
+            'color' => $color
         ]);
 
         return response()->json([
@@ -50,18 +54,6 @@ class RoleController extends Controller
             'status' => true
         ],200);
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
 
     public function update(Request $request, string $id)
     {
@@ -75,7 +67,7 @@ class RoleController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'roleName' => 'required|unique:roles,name,' . $role->id,
+            'role' => 'required|unique:roles,name,' . $role->id,
         ]);
 
         if ($validator->fails()) {
@@ -87,8 +79,8 @@ class RoleController extends Controller
         }
 
         $role->update([
-            'name' => $request->roleName, 
-            'role_color' => $request->roleColor ?? 'dark',
+            'name' => $request->role,
+            'color' => $request->color ?? 'dark',
         ]);
 
         return response()->json([
@@ -98,10 +90,6 @@ class RoleController extends Controller
         ], 200);
     }
 
-
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $role = Role::find($id);
@@ -114,7 +102,7 @@ class RoleController extends Controller
         }
 
         $role->delete();
-        
+
         return response()->json([
             'message' => 'The role deleted successfully',
             'status' => true

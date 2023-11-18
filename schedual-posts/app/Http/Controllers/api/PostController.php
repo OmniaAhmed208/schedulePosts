@@ -30,27 +30,31 @@ class PostController extends Controller
 
     public function index()
     {
-        $Allpost = PublishPost::all()->where('creator_id', Auth::user()->id);
-        $services = api::all()->where('creator_id',Auth::user()->id);
-        $accounts = [];
-        foreach($services as $service){
-            $account_type = $service->account_type;
-            $accounts[] = $account_type;
+        $allPosts = PublishPost::where('creator_id', Auth::user()->id)->with(['postImages', 'postVideos'])->get();
+        $allApps = settingsApi::all();
+
+        $posts = [];
+
+        foreach ($allPosts as $post) {
+            $postImages = $post->postImages;
+            $postVideos = $post->postVideos;
+
+            $posts[] = [
+                'post' => $post,
+            ];
         }
-        $groupedPosts = $Allpost->groupBy('scheduledTime'); // for the same raw which have the similar rows and (collect all apps together)
 
         return response()->json([
             'data' => [
-                'allPosts' => $Allpost,
-                'allApps' => $accounts,
-                'groupedPosts' => $groupedPosts,
+                'allPosts' => $posts,
+                'allApps' => $allApps,
             ],
             'status' => true
         ],200);
     }
 
     public function store(Request $request)
-    { 
+    {
         Validator::make($request->all(), [
             'content' => 'max:5000',
             'video' => 'mimetypes:video/mov,video/mp4,video/mpg,video/mpeg,video/avi,video/webm',
@@ -61,13 +65,13 @@ class PostController extends Controller
             'content' => 'required',
         ];
         if ($request->has('images') || $request->has('video')) {
-            unset($validationRules['content']); 
+            unset($validationRules['content']);
         }
 
         $accountsID = $request->accounts_id;
         $accountsType = [];
         $accounts = '';
-        
+
         $accountsData = [];
 
         foreach($accountsID as $id){
@@ -98,9 +102,9 @@ class PostController extends Controller
                     'tokenApp' => $account->token,
                     'token_secret' => $account->token_secret
                 ];
-            }   
+            }
             $accountsType[] = $account_type;
-            $accountsData[] = $accountData;        
+            $accountsData[] = $accountData;
         }
 
         Validator::make($request->all(), $validationRules);
@@ -108,9 +112,9 @@ class PostController extends Controller
         $imgUpload = []; $imgLocation = []; $filename = '';
         $publishPosts = [];
 
-        if ($request->hasFile('images')) 
+        if ($request->hasFile('images'))
         {
-            $images = $request->file('images');        
+            $images = $request->file('images');
             foreach ($images as $image) {
                 $filename = time() . '_' . $image->getClientOriginalName(); // Generate a unique filename
                 $image->storeAs('public/uploadImages', $filename); // Store the file with the unique filename
@@ -122,7 +126,7 @@ class PostController extends Controller
         }
 
         $youtubeVideoPath='';$twitterVideoPath='';$storageVideo='';
-        if ($request->hasfile('video')) 
+        if ($request->hasfile('video'))
         {
             $video = $request->file('video');
             $filename = $video->getClientOriginalName();
@@ -154,7 +158,7 @@ class PostController extends Controller
             $status = 'pending';
         }
         else{
-            $now = Carbon::now(); 
+            $now = Carbon::now();
             $diff_time = time_think::where('creator_id', Auth::user()->id)->first()->time;
             $postTime = $now->copy()->addHours($diff_time)->format('Y-m-d H:i');
             $status = 'published';
@@ -163,7 +167,7 @@ class PostController extends Controller
 
         $successfulApps = []; // apps that return 'postCreated' and not error
         $messages = [];
-        
+
         if(!empty($publishPosts)){
             foreach ($publishPosts[0] as $appName => $appResults) {
                 switch ($appResults) {
@@ -196,7 +200,7 @@ class PostController extends Controller
             $services[] = $service['appType'];
         }
         $selectedApps = array_intersect($accountsType, $services);
-        
+
 
         foreach ($selectedApps as $appType) {
             if (in_array($appType, $successfulApps) || $status == 'pending') // if appType in successefullApp means that post created and not failed
@@ -215,15 +219,13 @@ class PostController extends Controller
             }
         }
 
-        // dd($data);
-
         if (!empty($data)) {
             foreach ($data as $attributes) {
-                
+
                 $post = new publishPost(); // Create a new instance of publishPost model
                 $post->fill($attributes); // Set the attributes for the model
                 $post->save(); // Save the model to the database
-        
+
                 if (is_array($imgLocation) && !empty($imgLocation)) {
                     foreach ($imgLocation as $img) {
                         PostImages::create([
@@ -277,13 +279,14 @@ class PostController extends Controller
     public function update(Request $request, string $id,PostService $postService)
     {
         try{
-            $post = PublishPost::where('id', $id)->where('creator_id', Auth::user()->id)->first();
+            // $post = PublishPost::where('id', $id)->where('creator_id', Auth::user()->id)->first();
+            $post = publishPost::find($id);
 
             if($post == null){
                 return response()->json([
                     'message' => 'Post not found',
                     'status' => false
-                ],404); 
+                ],404);
             }
 
             Validator::make($request->all(), [
@@ -324,48 +327,49 @@ class PostController extends Controller
             $post->content = $request->content;
             $post->link = $request->link;
 
+            $imagesID = []; $videosID = [];
+
             if($post['status'] == 'pending'){
 
                 if ($request->oldImages) {
                     $allPostImages = PostImages::where('post_id', $post->id)->get();
-                    $imagesID = []; $videosID = [];
-        
+
                     if (!empty($allPostImages)) {
                         foreach ($allPostImages as $postImage) {
                             $imagesID[] = $postImage->id;
                         }
                     }
-        
+
                     $rowsId = array_intersect($request->oldImages, $imagesID);
-        
+
                     $imagesToDelete = PostImages::where('post_id', $post->id)
                         ->whereNotIn('id', $rowsId)
                         ->get();
-                    $imagesToDelete->each->delete();  
+                    $imagesToDelete->each->delete();
                 }
-        
+
                 if ($request->oldVideos) {
-                    $allPostVideos = PostVideos::where('post_id', $post->id)->get(); 
-        
+                    $allPostVideos = PostVideos::where('post_id', $post->id)->get();
+
                     if (!empty($allPostVideos)) {
                         foreach ($allPostVideos as $postVideo) {
                             $videosID[] = $postVideo->id;
                         }
                     }
-        
+
                     $rowsId = array_intersect($request->oldVideos, $videosID);
-        
+
                     $videosToDelete = PostVideos::where('post_id', $post->id)
                         ->whereNotIn('id', $rowsId)
                         ->get();
-                    $videosToDelete->each->delete();  
+                    $videosToDelete->each->delete();
                 }
-        
-                if($request->file('images') || $request->file('video')){     
-        
+
+                if($request->file('images') || $request->file('video')){
+
                     $imgUpload = []; $imgLocation = []; $filename = '';
                     if($request->file('images')){
-                        $images = $request->file('images');        
+                        $images = $request->file('images');
                         foreach ($images as $image) {
                             $filename = time() . '_' . $image->getClientOriginalName();
                             $image->storeAs('public/uploadImages', $filename); // Store the file with the unique filename
@@ -374,7 +378,7 @@ class PostController extends Controller
                             $imgUpload[] = $localFilePath;
                             $imgLocation[] = $storageImage;
                         }
-        
+
                         if (is_array($imgLocation) && !empty($imgLocation)) {
                             foreach ($imgLocation as $img) {
                                 $postImages = PostImages::where('post_id',$post->id)->get();
@@ -386,8 +390,8 @@ class PostController extends Controller
                             }
                         }
                     }
-        
-                    if ($request->hasfile('video')) 
+
+                    if ($request->hasfile('video'))
                     {
                         $video = $request->file('video');
                         $filename = $video->getClientOriginalName();
@@ -395,22 +399,22 @@ class PostController extends Controller
                         if (!Storage::exists($storagePath)) {
                             Storage::makeDirectory($storagePath);
                         }
-        
+
                         $video->storeAs($storagePath, $filename);
                         $OriginalVideo = $storagePath . '/' . $filename;
-        
+
                         $newVideo = FFMpeg::fromDisk('local')->open($OriginalVideo)->addFilter(function ($filters) {
                             $filters->resize(new \FFMpeg\Coordinate\Dimension(2000, 2000));
                         });
-        
+
                         $commpressedVideo = $storagePath . '/' . 'compressed_' . $filename;
                         $storageVideo = Storage::url('app/'. $commpressedVideo);
-        
+
                         $newVideo->export()
                         ->toDisk('local')
                         ->inFormat(new \FFMpeg\Format\Video\X264())
                         ->save($storagePath . '/' . 'compressed_' . $filename);
-        
+
                         if ($storageVideo) {
                             PostVideos::create([
                                 'post_id' => $post->id,
@@ -420,7 +424,7 @@ class PostController extends Controller
                         }
                     }
                 }
-                
+
                 $diff_time = time_think::where('creator_id', Auth::user()->id)->first()->time;
                 $now = Carbon::now()->addHours($diff_time)->format('Y-m-d H:i');
                 $oldTime = $post->scheduledTime;
@@ -433,11 +437,11 @@ class PostController extends Controller
                     }
                     else{
                         return response()->json([
-                            'message' => 'The time must be after to now '. $now 
+                            'message' => 'The time must be after to now '. $now
                         ], 200);
                     }
                 }
-                
+
                 switch ($post['account_type']) {
                     case 'youtube':
                         $post->post_title = $request->videoTitle;
@@ -451,7 +455,7 @@ class PostController extends Controller
 
                 return response()->json([
                     'message' => 'Post updated successfully',
-                    'data' => $post, 
+                    'data' => $post,
                     'status' => true
                 ], 200);
             }
@@ -471,7 +475,7 @@ class PostController extends Controller
 
     public function destroy(string $id)
     {
-        $post = PublishPost::where('id', $id)->where('creator_id', Auth::user()->id)->first();
+        $post = PublishPost::find($id);
 
         if($post == null){
             return response()->json([
@@ -480,14 +484,23 @@ class PostController extends Controller
             ],404);
         }
 
-        if($post->status == 'pending'){
+        if($post && $post->status == 'pending'){
+
+            $post->deletePostWithVideos();
+            $post->deletePostWithImages();
 
             $post->delete();
-            
+
             return response()->json([
                 'message' => 'Post deleted successfully',
                 'status' => true
             ],200);
+        }
+        else{
+            return response()->json([
+                'message' => "Post can't remove, it's already published",
+                'status' => false
+            ],500);
         }
     }
 

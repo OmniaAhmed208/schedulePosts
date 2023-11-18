@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Madcoda\compat;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 
 class PostController extends Controller
@@ -36,6 +37,18 @@ class PostController extends Controller
         return view('AdminSocialMedia.posts',compact('allPosts','allApps'));
     }
 
+    public function show($id)
+    {
+        $post = PublishPost::where('id', $id)->where('creator_id', Auth::user()->id)->with(['postImages', 'postVideos'])->first();
+        $youtubeCategories = youtube_category::all();
+
+        if($post == null){
+            return view('AdminSocialMedia.posts')->with('error','post not found');
+        }
+
+        return view('AdminSocialMedia.posts',compact('post','youtubeCategories'))->with('success','post found');
+    }
+
     public function create()
     {
         $userApps = Api::where('creator_id', Auth::user()->id)->distinct()->pluck('account_type'); // App of user regesterd in
@@ -52,8 +65,8 @@ class PostController extends Controller
     //     return redirect()->back()->with('postStatusForPublishing', $messages);
     // }
 
-    public function store(Request $request) 
-    { 
+    public function store(Request $request)
+    {
         $validator = $request->validate([
             'postData' => 'max:5000',
             // 'video' => 'mimetypes:video/mov,video/mp4,video/mpg,video/mpeg,video/avi,video/webm',
@@ -62,7 +75,7 @@ class PostController extends Controller
             'video' => 'mimetypes:video/quicktime,video/mp4,video/mpeg,video/avi,video/webm',
             'images' => 'required|array',
             'images.*' => 'required|file|image|mimes:jpeg,jpg,png',
-            
+
             'accounts_id' => 'required'
         ]);
 
@@ -76,7 +89,7 @@ class PostController extends Controller
         $accountsID = $request->accounts_id;
         $accountsType = [];
         $accounts = '';
-        
+
         $accountsData = [];
 
         foreach($accountsID as $id){
@@ -108,9 +121,9 @@ class PostController extends Controller
                     'tokenApp' => $account->token,
                     'token_secret' => $account->token_secret
                 ];
-            }   
+            }
             $accountsType[] = $account_type;
-            $accountsData[] = $accountData;        
+            $accountsData[] = $accountData;
         }
 
         $request->validate($validationRules);
@@ -118,9 +131,9 @@ class PostController extends Controller
         $imgUpload = []; $imgLocation = []; $filename = '';
         $publishPosts = [];
 
-        if ($request->hasFile('images')) 
+        if ($request->hasFile('images'))
         {
-            $images = $request->file('images');        
+            $images = $request->file('images');
             foreach ($images as $image) {
                 $filename = time() . '_' . $image->getClientOriginalName(); // Generate a unique filename
                 $image->storeAs('public/uploadImages', $filename); // Store the file with the unique filename
@@ -132,7 +145,7 @@ class PostController extends Controller
         }
 
         $youtubeVideoPath='';$twitterVideoPath='';$storageVideo='';
-        if ($request->hasfile('video')) 
+        if ($request->hasfile('video'))
         {
             $video = $request->file('video');
             $filename = $video->getClientOriginalName();
@@ -164,7 +177,7 @@ class PostController extends Controller
             $status = 'pending';
         }
         else{
-            $now = Carbon::now(); 
+            $now = Carbon::now();
             $diff_time = time_think::where('creator_id', Auth::user()->id)->first()->time;
             $postTime = $now->copy()->addHours($diff_time)->format('Y-m-d H:i');
             $status = 'published';
@@ -174,7 +187,7 @@ class PostController extends Controller
 
         $successfulApps = []; // apps that return 'postCreated' and not error
         $messages = [];
-        
+
         if(!empty($publishPosts)){
             foreach ($publishPosts[0] as $appName => $appResults) {
                 switch ($appResults) {
@@ -207,7 +220,7 @@ class PostController extends Controller
             $services[] = $service['appType'];
         }
         $selectedApps = array_intersect($accountsType, $services);
-        
+
 
         foreach ($selectedApps as $appType) {
             if (in_array($appType, $successfulApps) || $status == 'pending') // if appType in successefullApp means that post created and not failed
@@ -231,11 +244,11 @@ class PostController extends Controller
 
         if (!empty($data)) {
             foreach ($data as $attributes) {
-                
+
                 $post = new publishPost(); // Create a new instance of publishPost model
                 $post->fill($attributes); // Set the attributes for the model
                 $post->save(); // Save the model to the database
-        
+
                 if (is_array($imgLocation) && !empty($imgLocation)) {
                     foreach ($imgLocation as $img) {
                         PostImages::create([
@@ -259,7 +272,6 @@ class PostController extends Controller
         return redirect()->back()->with('postStatusForPublishing', $messages);
     }
 
-
     public function edit(Request $request,$id)
     {
         $post = publishPost::find($id);
@@ -282,8 +294,8 @@ class PostController extends Controller
             'video' => 'mimetypes:video/mov,video/mp4,video/mpg,video/mpeg,video/avi,video/webm',
             'images' => 'mimetypes: image/png,image/jpg,image/jpeg',
         ]);
+
         $validationRules = [];
-        // dd($request);
 
         if($request->postData == '')
         {
@@ -308,7 +320,7 @@ class PostController extends Controller
                 $post->scheduledTime =  Carbon::parse($request->scheduledTime)->format('Y-m-d H:i');
             }
             else{
-                return dd('The time must be after to now '. $now );
+                return redirect()->back()->with('error','The time must be after to now '. $now );
             }
         }
 

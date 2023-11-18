@@ -12,9 +12,6 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $servicesCount = settingsApi::count();
@@ -54,7 +51,6 @@ class DashboardController extends Controller
         ],200);
     }
 
-
     public function show(string $id) // show dashboard for each user to admin
     {
         $user = User::find($id);
@@ -64,7 +60,7 @@ class DashboardController extends Controller
         $servicesCount = settingsApi::count();
 
         // $userApps = App\Models\Api::where('creator_id', $userId)->distinct()->pluck('account_type'); // App of user regesterd in
-        // $allApps = settingsApi::all(); // all App on website
+        $allApps = settingsApi::all(); // all App on website
 
         $startDate = now()->subDays(7);
         $publishPostCount_for_lastWeek = PublishPost::where('scheduledTime', '>=', $startDate)->where('status', 'published')
@@ -82,16 +78,15 @@ class DashboardController extends Controller
         return response()->json([
             'message' => 'User found',
             'data' => [
-                'userName'=> $user->name,
+                'user'=> $user,
                 'registeredAppCount' => $appCount,
                 'servicesCount' => $servicesCount,
                 'publish_post_count_for_lastWeek' => $publishPostCount_for_lastWeek, //count,
                 'count_all_posts' => $count_all_posts,
-                'allPosts' => $allPosts
+                'allPosts' => $allPosts,
+                'allApps' => $allApps
             ],
             'status' => true
         ],200);
     }
-
-
 }

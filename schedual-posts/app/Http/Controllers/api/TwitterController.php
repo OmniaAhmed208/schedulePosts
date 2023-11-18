@@ -13,33 +13,14 @@ use Abraham\TwitterOAuth\TwitterOAuthException;
 
 class TwitterController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
     public function show(string $twitterId)
     {
-        $twitterSettings = settingsApi::where('appType', 'twitter')->first(); 
+        $twitterSettings = settingsApi::where('appType', 'twitter')->first();
         $consumer_key = $twitterSettings['appID'];
         $consumer_secret = $twitterSettings['appSecret'];
 
         $userData = Api::where('creator_id', Auth::user()->id)->where('account_id', $twitterId)->first();
-        
+
         $screenName = $userData['account_name'];
         $oauth_token = $userData['token'];
         $oauth_token_secret = $userData['token_secret'];
@@ -66,7 +47,7 @@ class TwitterController extends Controller
         $bearerToken = $response['access_token'];
 
         $url = 'https://api.twitter.com/2/tweets?ids=1212092628029698048';
-       
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -88,47 +69,30 @@ class TwitterController extends Controller
         ],200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
-
-
     public function twitterRedirect()
     {
         $callback = route('twitter.callback');
 
         // consumer key and secret
-        $twitterSettings = settingsApi::where('appType', 'twitter')->first(); 
+        $twitterSettings = settingsApi::where('appType', 'twitter')->first();
         $apiKey = $twitterSettings['appID'];
         $apiSecret = $twitterSettings['appSecret'];
-        
+
         $twitter_connect = new TwitterOAuth($apiKey, $apiSecret);
-    
+
         $access_token = $twitter_connect->oauth('oauth/request_token',['oauth_callback'=>$callback]);
 
         $route = $twitter_connect->url('oauth/authorize',['oauth_token'=>$access_token['oauth_token']]);
 
         return redirect($route);
     }
-    
+
 
     public function twitterCallback(Request $request)
     {
         $response = $request->all();
-        
-        $twitterSettings = settingsApi::where('appType', 'twitter')->first(); 
+
+        $twitterSettings = settingsApi::where('appType', 'twitter')->first();
         $apiKey = $twitterSettings['appID'];
         $apiSecret = $twitterSettings['appSecret'];
 
@@ -146,10 +110,10 @@ class TwitterController extends Controller
 
             $userName = $token['screen_name'];
             $userId = $token['user_id'];
-            $profileLink = "https://twitter.com/intent/user?user_id={$userId}";          
+            $profileLink = "https://twitter.com/intent/user?user_id={$userId}";
 
             $twitter = new TwitterOAuth($apiKey, $apiSecret, $oauth_token, $oauth_token_secret);
- 
+
             $userData = [
                 'creator_id'=> Auth::user()->id,
                 'account_type' => 'twitter',
@@ -159,7 +123,7 @@ class TwitterController extends Controller
                 // 'account_pic' => $profileImage,
                 'account_link' => $profileLink,
                 'token' => $oauth_token,
-                'token_secret' => $oauth_token_secret ? $oauth_token_secret : '' 
+                'token_secret' => $oauth_token_secret ? $oauth_token_secret : ''
             ];
 
 
@@ -176,13 +140,13 @@ class TwitterController extends Controller
                 'data' => $userData,
                 'status' => true
             ],200);
-            
+
         } catch (TwitterOAuthException $e) {
             return response()->json([
                 'message' => $e->getMessage(),
                 'status' => true
             ],500);
         }
-        
+
     }
 }

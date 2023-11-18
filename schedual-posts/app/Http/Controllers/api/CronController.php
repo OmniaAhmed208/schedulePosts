@@ -25,7 +25,7 @@ class CronController extends Controller
         $postStatus = PublishPost::get()->where('status','pending');
         $time_table = time_think::where('creator_id', Auth::user()->id)->first();
 
-        $now = Carbon::now(); 
+        $now = Carbon::now();
         $diff_time = $time_table->time;
         $newDateTime = $now->copy()->addHours($diff_time);
 
@@ -43,23 +43,23 @@ class CronController extends Controller
                     case('facebook'):
                         $funRes = $this->facePublish($post->pageName, $post->tokenApp, $post->postData, $post->link, $post->image);
                         break;
-         
+
                     case('instagram'):
                         $funRes = $this->instaPublish($post->tokenApp, $post->postData, $post->image);
                         break;
-                    
+
                     case('twitter'):
                         $funRes = $this->twitterPublish($post);
                         break;
-         
+
                     default:
                         $msg = 'Something went wrong.';
                 }
 
                 $results[] = ['funRes' => $funRes, 'postData' => $post];
             }
-            
-        }   
+
+        }
 
         $returnData = $this->returnedRes($results);
         return response()->json([
@@ -69,7 +69,6 @@ class CronController extends Controller
 
     }
 
-    
     public function returnedRes($funRes)
     {
         // dd($funRes);
@@ -113,7 +112,7 @@ class CronController extends Controller
         $desiredPage = null;
 
         foreach ($pages as $page) {
-            if ($page['name'] === $pageName) 
+            if ($page['name'] === $pageName)
             {
                 $desiredPage = $page;
                 $pageToken = $desiredPage['access_token'];
@@ -127,16 +126,16 @@ class CronController extends Controller
             'app_secret' => config('services.facebook.client_secret'),
             'default_graph_version' => 'v12.0', // Use the appropriate version
         ]);
-        
+
         $fb->setDefaultAccessToken($token);
-        
+
         $permissions = ['pages_manage_posts','pages_manage_ads','pages_manage_cta','pages_manage_metadata'];
 
         try {
 
             $url = "https://graph.facebook.com/v12.0/{$pageId}/feed";
 
-            if ($image != null) 
+            if ($image != null)
             {
                 $filename = Str::replace('postImages\\', '', $image);
 
@@ -158,7 +157,7 @@ class CronController extends Controller
                     'access_token' => $pageToken,
                 ]);
             }
-            
+
             $responseData = $response->json();
 
             return true;
@@ -190,11 +189,11 @@ class CronController extends Controller
                     'caption' => $caption,
                     'access_token' => $accessToken,
                 ]);
-                
+
                 if ($mediaResponse->successful()) {
                     $mediaData = $mediaResponse->json();
                     $mediaId = $mediaData['id'];
-                   
+
                     $publishResponse = Http::post("https://graph.facebook.com/v17.0/{$pageId}/media_publish", [
                         'creation_id' => $mediaId,
                         'access_token' => $accessToken,
@@ -217,16 +216,16 @@ class CronController extends Controller
             return $e->getMessage();
         }
     }
- 
+
     public function twitterPublish($post)
-    {   
+    {
         $account_id = $post->account_id;
 
-        $twitterSettings = settingsApi::where('appType', 'twitter')->first(); 
+        $twitterSettings = settingsApi::where('appType', 'twitter')->first();
         $consumer_key = $twitterSettings['appID'];
         $consumer_secret = $twitterSettings['appSecret'];
         $mediaIds = []; $imgPaths = ''; $videoPath ='';
-    
+
         $text = $post->content;
 
         $accounts = Api::where('account_type', 'twitter')
@@ -239,13 +238,13 @@ class CronController extends Controller
             $imgPaths = $post->postImages;
             $videoPath = $post->postVideos;
         }
-        
+
 
         foreach ($accounts as $account) {
             $twitterToken = $account->token;
             $twitterTokenSecret = $account->token_secret;
         }
-            
+
         $connection = new TwitterOAuth($consumer_key, $consumer_secret, $twitterToken, $twitterTokenSecret);
         $connected = $connection->get("account/verify_credentials");
 
@@ -266,7 +265,7 @@ class CronController extends Controller
                     return 'File does not exist';
                 }
             }
-            
+
             $connection->setApiVersion(2);
             $parameters = [
                 'text' => $text,
@@ -274,7 +273,7 @@ class CronController extends Controller
             ];
             $result = $connection->post('tweets', $parameters, true);
             // dd($result);
-            $mediaIds = [];      
+            $mediaIds = [];
         }
         if ($videoPath->isNotEmpty()) {
             try{
@@ -295,15 +294,15 @@ class CronController extends Controller
                 );
                 // dd($connection->response);
                 $results = json_decode($connection->response['response']);
-                
+
                 if ($connection->response['code'] === 200) {
                     $media_id = $results->media_id_string;
-            
+
                     // Step 2: Upload video chunks (POST media/upload - APPEND)
                     $chunkSize = 1024 * 1024; // 1 MB chunk size
                     $file = fopen($videoPath, 'rb');
                     $segmentIndex = 0;
-            
+
                     while (!feof($file)) {
                         $chunk = fread($file, $chunkSize);
                         $connection->request(
@@ -319,9 +318,9 @@ class CronController extends Controller
                         );
                         $segmentIndex++;
                     }
-            
+
                     fclose($file);
-            
+
                     // Step 3: Finalize the video upload (POST media/upload - FINALIZE)
                     $connection->request(
                         'POST',
@@ -331,7 +330,7 @@ class CronController extends Controller
                             'media_id' => $media_id,
                         ]
                     );
-            
+
                     if ($connection->response['code'] === 200) {
                         dd($media_id); // Video upload successful
                     } else {
@@ -360,6 +359,6 @@ class CronController extends Controller
             return 'postFailed'; // Handle other cases as needed
         }
 
-        
+
     }
 }

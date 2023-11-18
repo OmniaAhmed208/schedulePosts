@@ -23,21 +23,20 @@ class NewsLetterController extends Controller
 
     public function store(Request $request)
     {
-        // dd($request);
         $validationRules = [
             'title' => 'required',
             'content' => 'required',
         ];
 
         $storageImage = '';
-        if ($request->hasFile('image')) 
+        if ($request->hasFile('image'))
         {
             unset($validationRules['content']);
 
-            $image = $request->file('image');  
+            $image = $request->file('image');
             $filename = time() . '_' . $image->getClientOriginalName();
             $image->storeAs('public/newsLetter', $filename);
-            $storageImage = Storage::url('newsLetter/'. $filename);   
+            $storageImage = Storage::url('newsLetter/'. $filename);
         }
 
         $validator = Validator::make($request->all(), $validationRules);
@@ -73,23 +72,23 @@ class NewsLetterController extends Controller
         ];
 
         $storageImage = '';
-        
+
         $oldImage = $newsLetter->oldImage;
         if($oldImage != null){
             $storageImage = $oldImage;
             unset($validationRules['content']);
         }
 
-        if ($request->hasFile('image')) 
+        if ($request->hasFile('image'))
         {
             unset($validationRules['content']);
 
-            $image = $request->file('image');  
+            $image = $request->file('image');
             $filename = time() . '_' . $image->getClientOriginalName();
             $image->storeAs('public/newsLetter', $filename);
-            $storageImage = Storage::url('newsLetter/'. $filename);   
+            $storageImage = Storage::url('newsLetter/'. $filename);
         }
-        
+
         $validator = Validator::make($request->all(), $validationRules);
 
         $newsLetter->update([

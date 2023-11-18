@@ -34,14 +34,14 @@ class DashboardController extends Controller
         // dd($data);
 
         // ________________________________________________________
-        
+
         $ip = '156.194.63.61'; //For static IP address get
         $ip = request()->ip(); //Dynamic IP address get
-        $data = Location::get($ip);      
+        $data = Location::get($ip);
         // dd($data);
 
         // ________________________________________________________
-        
+
         $time = Carbon::now('Africa/Cairo');
 
         $userTimezoneString = 'Africa/Cairo';
