@@ -11,6 +11,7 @@
         "facebook/graph-sdk": "^5.1",
         "google/apiclient": "^2.15",
         "guzzlehttp/guzzle": "^7.8",
+        "ichtrojan/laravel-otp": "^1.4",
         "intervention/image": "^2.7",
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",

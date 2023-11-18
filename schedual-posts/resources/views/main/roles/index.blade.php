@@ -12,7 +12,7 @@
                     <div class="d-flex justify-content-between align-items-center px-4">
                         <h4 class="my-4"><i class="fas fa-shield-alt"></i><span class="mx-2">Roles and permissions</span></h4>
                     </div>
-        
+
                     {{-- roles --}}
                     <div class="row">
                         <div class="col-lg">
@@ -49,9 +49,9 @@
                                                                     @php
                                                                         $permission = $permissions->find($item->permission_id)->name;
                                                                     @endphp
-                                                        
+
                                                                     <div class="col-md-4 p-2">{{ $permission }}</div>
-                                                        
+
                                                                     @if (($loop->index + 1) % 4 == 0 || $loop->last)
                                                                         </div>
                                                                         @if (!$loop->last)
@@ -60,7 +60,7 @@
                                                                     @endif
                                                                 @endif
                                                             @endforeach
-                                                        </div>                                                    
+                                                        </div>
                                                     </td>
                                                     <td>
                                                         <div class="dropdown">
@@ -68,12 +68,12 @@
                                                             <i class="bx bx-dots-vertical-rounded"></i>
                                                             </button>
                                                             <div class="dropdown-menu">
-                                                                <a class="dropdown-item" href="javascript:void(0);" 
+                                                                <a class="dropdown-item" href="javascript:void(0);"
                                                                 data-bs-toggle="modal" data-bs-target="#editRoleModal" data-role="{{$role}}">
                                                                     <i class="bx bx-edit-alt me-1"></i> Edit role name
                                                                 </a>
 
-                                                                <a class="dropdown-item" href="javascript:void(0);" 
+                                                                <a class="dropdown-item" href="javascript:void(0);"
                                                                 data-bs-toggle="modal" data-bs-target="#roleToPermissionsModal" data-role="{{$role}}">
                                                                     <i class="bx bx-edit me-1"></i> Assign role to permissions
                                                                 </a>
@@ -129,7 +129,7 @@
                                                                     {{ $permission->name }}
                                                                 </div>
                                                                 <div class="col-1">
-                                                                    <button class="btn" data-bs-toggle="modal" data-bs-target="#editPermissionModal" 
+                                                                    <button class="btn" data-bs-toggle="modal" data-bs-target="#editPermissionModal"
                                                                     data-permission="{{ $permission }}">
                                                                         <i class="bx bx-edit"></i>
                                                                     </button>
@@ -228,7 +228,6 @@
                         </div>
                     </div>
 
-
                     {{-- add permission --}}
                     <div class="modal fade" id="addPermissionModal" tabindex="-1" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered" role="document">
@@ -256,8 +255,8 @@
 
                             </div>
                         </div>
-                    </div>   
-                    
+                    </div>
+
                     {{-- edit permission --}}
                     <div class="modal fade" id="editPermissionModal" tabindex="-1" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered" role="document">
@@ -295,13 +294,13 @@
                                 <form id="roleToPermissionsForm" action="" method="post" enctype="multipart/form-data">
                                     @csrf
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="modalFullTitle">Assign Role to Permissions for 
+                                        <h5 class="modal-title" id="modalFullTitle">Assign Role to Permissions for
                                             <span id="user" style="text-dark">Ali</span>
                                         </h5>
                                         <button type="submit" class="btn btn-primary mx-4">Save changes</button>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" ></button>
                                     </div>
-                                
+
                                     <div class="modal-body">
                                         <div class="row">
                                             <div class="col-12 mb-3">
@@ -314,15 +313,15 @@
                                                     <div class="p-4 border rounded bg-white my-2">
                                                         <h5 class="text-dark">{{ $page }}</h5>
                                                         <p>
-                                                            <input class="form-check-input allBox" type="checkbox" data-group="{{ $page }}" 
+                                                            <input class="form-check-input allBox" type="checkbox" data-group="{{ $page }}"
                                                             id="allBox_{{ $page }}"/>
                                                             <label class="form-check-label mx-2" for="allBox_{{ $page }}">All</label>
                                                         </p>
                                                         @foreach($permissions as $permission)
                                                             @if (strpos($permission->name, $page) === 0)
                                                                 <p class="permissionsCheckBox">
-                                                                    <input class="form-check-input permissionCheckbox" type="checkbox" 
-                                                                    name="permission[]" value="{{$permission->id}}" data-group="{{ $page }}" 
+                                                                    <input class="form-check-input permissionCheckbox" type="checkbox"
+                                                                    name="permission[]" value="{{$permission->id}}" data-group="{{ $page }}"
                                                                     id="checkPermission{{ $permission->id }}"/>
                                                                     <label class="form-check-label mx-2" for="checkPermission{{ $permission->id }}">
                                                                         {{ $permission->name }}
@@ -335,18 +334,18 @@
                                             @endforeach
                                         </div>
                                     </div>
-                                </form>    
+                                </form>
                             </div>
                         </div>
-                    </div> 
+                    </div>
 
                 </section>
             </div>
-        </div>   
+        </div>
     </div>
 
 
-  
+
 @endsection
 
 <script>
@@ -356,7 +355,7 @@
         const role_has_permissions = <?php echo $role_has_permissions;?>;
         const roleToPermissionsModal = document.getElementById('roleToPermissionsModal');
         const checkboxes = roleToPermissionsModal.querySelectorAll('.permissionsCheckBox input[type="checkbox"]');
-        
+
         roleToPermissionsModal.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget; // Get the button that triggered the modal
             const roleData = JSON.parse(button.getAttribute('data-role'));
@@ -365,7 +364,7 @@
                 checkbox.value = checkbox.value + ',' + roleData.id; // value="{{$permission->id}},{{ $role->id }}"
 
                 role_has_permissions.forEach(row => {
-                    const [permissionId, roleId] = checkbox.value.split(',');                 
+                    const [permissionId, roleId] = checkbox.value.split(',');
                     if (permissionId == row['permission_id'] && roleId == row['role_id']) {
                         checkbox.checked = true;
                     }
@@ -382,7 +381,7 @@
 
 
         const allBoxes = document.querySelectorAll('.allBox'); // that have (all) input checkbox
-        
+
         allBoxes.forEach(function (allBox) {
             allBox.addEventListener('click', function () {
                 const group = allBox.getAttribute('data-group');
@@ -410,7 +409,7 @@
         var colorContainerEdit = document.querySelector('#editRoleModal .colors');
 
         var html = '';
-        colors.forEach((color,index) => 
+        colors.forEach((color,index) =>
         {
             html += `<span class="mx-2 my-1 badge bg-label-${color}" style="font-size: 90%;cursor:pointer">Role</span>`;
         });
@@ -474,7 +473,7 @@
             });
         });
 
-        
+
         // edit permission name
         const permissionForm = document.getElementById('editPermissionForm');
         const editPermissionButtons = document.querySelectorAll(' [data-bs-target="#editPermissionModal"] ');
@@ -488,7 +487,7 @@
 
                 document.querySelector('#editPermissionForm #permissionName').value = permissionData.name;
             });
-        }); 
+        });
 
 
         // roleToPermissionsForm
@@ -501,6 +500,6 @@
                 var finalUrl = url.replace('__id__', roleData.id || '');
                 roleToPermissionsForm.action = finalUrl;
             });
-        }); 
+        });
     });
 </script>

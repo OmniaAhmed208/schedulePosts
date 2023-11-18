@@ -10,16 +10,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
+use App\Notifications\RegisterNotification;
+use App\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-
+use Ichtrojan\Otp\Otp;
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    private $otp;
+
+    public function __construct(){
+        $this->otp = new Otp; // for verification code after registration
+    }
+
     public function index()
     {
         $users = User::all();
@@ -30,7 +35,6 @@ class UserController extends Controller
             'status' => true
         ],200);
     }
-
 
     public function register(Request $request)
     {
@@ -65,12 +69,63 @@ class UserController extends Controller
                     'user_id' => $user->id,
                 ]);
 
+            $user->notify(new RegisterNotification());
+
             return response()->json([
                 'message' => 'User created successfully',
                 'status' => true,
                 'token' => $user->createToken("API TOKEN")->plainTextToken
             ],200);
 
+        }
+        catch(\Throwable $th){
+            return response()->json([
+                'message' => $th->getMessage(),
+                'status' => false,
+            ],500);
+        }
+    }
+
+    public function sendEmailVerification(Request $request)
+    {
+        $request->user()->notify(new RegisterNotification());
+        return response()->json([
+            'status'=>true
+        ],200);
+
+    }
+
+    public function email_verification(Request $request)
+    {
+        try{
+            $validator = Validator::make($request->all(), [
+                'email' => 'required|email|exists:users',
+                'otp' => 'required|max:6',
+            ]);
+
+            if($validator->fails()){
+                return response()->json([
+                    'message' => 'Validation error',
+                    'errors' => $validator->errors(),
+                    'status' => false
+                ],401);
+            }
+
+            $otpEmail = $this->otp->validate($request->email,$request->otp);
+
+            if(!$otpEmail->status){
+                return response()->json([
+                    'error' => $otpEmail,
+                    'status' => false,
+                ],401);
+            }
+
+            $user = User::where('email', $request->email)->first();
+            $user->update(['email_verified_at' => now()]);
+            return response()->json([
+                'message' => 'email verified successfully',
+                'status' => true,
+            ],500);
         }
         catch(\Throwable $th){
             return response()->json([
@@ -175,7 +230,6 @@ class UserController extends Controller
         ],200);
     }
 
-
     public function update(Request $request, $id)
     {
         try{
@@ -235,7 +289,6 @@ class UserController extends Controller
 
     public function updatePassword(Request $request, $id)
     {
-
         try{
             $user = User::find($id);
 
@@ -293,25 +346,111 @@ class UserController extends Controller
         }
     }
 
+    public function forgetPassword(Request $request)
+    {
+        try{
+            $validator = Validator::make($request->all(),[
+                'email' => 'required'
+            ]);
 
-    // public function update(Request $request, string $id)
+            if($validator->fails()){
+                return response()->json([
+                    'message' => 'Validation error',
+                    'errors' => $validator->errors(),
+                    'status' => false
+                ],401);
+            }
+
+            $user = User::where('email',$request->email)->first();
+
+            if($user == null){
+                return response()->json([
+                    'message' => 'User not found',
+                    'status' => false
+                ],404);
+            }
+
+            $user->notify(new ResetPassword());
+
+            return response()->json([
+                'message' => 'success',
+                'status' => true
+            ],200);
+
+        }
+        catch(\Throwable $th){
+            return response()->json([
+                'message' => $th->getMessage(),
+                'status' => false,
+            ],500);
+        }
+    }
+
+    public function verificationCode(Request $request)
+    {
+        $validator = Validator::make($request->all(),[
+            'email' => 'required|email',
+            'code' => 'required|max:6',
+        ]);
+
+        if($validator->fails()){
+            return response()->json([
+                'message' => 'Validation error',
+                'errors' => $validator->errors(),
+                'status' => false
+            ],401);
+        }
+
+        $otpValidate = $this->otp->validate($request->email, $request->code);
+
+        if(! $otpValidate->status){
+            return response()->json([
+                'status' => false,
+                'message' => "The Code isn't valid!",
+            ]);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Code is correct',
+        ]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(),[
+            'email' => 'required|email',
+            'code' => 'required|max:6',
+            'password' => 'required'
+        ]);
+
+        if($validator->fails()){
+            return response()->json([
+                'message' => 'Validation error',
+                'errors' => $validator->errors(),
+                'status' => false
+            ],401);
+        }
+
+        $user = User::where('email',$request->email)->first();
+        $user->update([
+            'password' => Hash::make($request->password)
+        ]);
+        $user->tokens()->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Password updated successfully',
+        ]);
+    }
+
+    // public function resetPassword(Request $request)
     // {
     //     try{
-    //         $user = User::find($id);
-
-    //         if($user == null){
-    //             return response()->json([
-    //                 'message' => 'User not found',
-    //                 'status' => false
-    //             ],404);
-    //         }
-
-    //         $validator = Validator::make($request->all(), [
-    //             'name' => 'required',
-    //             'email' => 'required|email|unique:users,email,' . $user->id,
-    //             'password' => ['required','nullable','confirmed','min:8',
-    //                 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
-    //             ],
+    //         $validator = Validator::make($request->all(),[
+    //             'email' => 'required|exists:users',
+    //             'otp' => 'required|max:6',
+    //             'password' => 'required'
     //         ]);
 
     //         if($validator->fails()){
@@ -322,15 +461,24 @@ class UserController extends Controller
     //             ],401);
     //         }
 
+    //         $otpValidate = $this->otp->validate($request->email, $request->otp);
+    //         if(! $otpValidate->status){
+    //             return response()->json([
+    //                 'error' => $otpValidate
+    //             ],401);
+    //         }
+    //         $user = User::where('email',$request->email)->first();
+
     //         $user->update([
-    //             'name' => $request->name,
-    //             'email' => $request->email,
-    //             'password' => Hash::make($request->password),
+    //             'password' => Hash::make($request->password)
     //         ]);
+    //         $user->tokens()->delete();
+
+    //         $success['success'] = true;
 
     //         return response()->json([
-    //             'message' => 'User updated successfully',
-    //             'status' => true
+    //             'message' =>'password updated successfully',
+    //             'status' => true,
     //         ],200);
 
     //     }

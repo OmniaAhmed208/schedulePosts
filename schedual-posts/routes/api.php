@@ -33,18 +33,26 @@ use App\Http\Controllers\api\YoutubeCategoryController;
 
 //public routes
 Route::post('/auth/register',[UserController::class,'register']);
-Route::post('/auth/login', [UserController::class,'login']); 
+Route::post('/auth/login', [UserController::class,'login']);
+
+Route::post('/forgetPassword', [UserController::class,'forgetPassword']);
+Route::post('/verificationCode', [UserController::class,'verificationCode']);
+Route::post('/resetPassword', [UserController::class,'resetPassword']);
+
 Route::resource('subscribers', SubscriberController::class);
 
 //protected routes
-Route::middleware('auth:sanctum')->group(function () 
+Route::middleware('auth:sanctum')->group(function ()
 {
+    Route::get('/email_verification', [UserController::class, 'sendEmailVerification']);
+    Route::post('/email_verification', [UserController::class, 'email_verification']);
+    
     Route::post('/logout', [UserController::class, 'logout']);
     Route::put('updatePassword/{id}', [UserController::class,'updatePassword']);
 
-    Route::resource('users', UserController::class); 
-    Route::resource('dashboard', DashboardController::class); 
-    Route::resource('analytics', AnalyticsController::class); 
+    Route::resource('users', UserController::class);
+    Route::resource('dashboard', DashboardController::class);
+    Route::resource('analytics', AnalyticsController::class);
     Route::resource('categories', YoutubeCategoryController::class);
     Route::resource('accounts', AccountController::class);
     Route::resource('timeThink', TimeThinkController::class);
@@ -52,17 +60,17 @@ Route::middleware('auth:sanctum')->group(function ()
     Route::resource('publishPosts', PublishPostController::class);
     Route::resource('cron', CronController::class);
     Route::resource('media', MediaController::class);
-    
+
     Route::resource('twitter', TwitterController::class);
     Route::resource('youtube', YoutubeController::class);
 });
 
-Route::group(['middleware' => ['admin','auth:sanctum']], function () { 
-    Route::resource('services', ServiceController::class); 
+Route::group(['middleware' => ['admin','auth:sanctum']], function () {
+    Route::resource('services', ServiceController::class);
     Route::get('/users/search/{name}', [UserController::class, 'search']);
     Route::resource('roles', RoleController::class);
     Route::resource('permissions', PermissionController::class);
-}); 
+});
 
 Route::middleware('web')->group(function () {
 

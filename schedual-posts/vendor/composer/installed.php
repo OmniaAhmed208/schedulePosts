@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'laravel/laravel',
-        'pretty_version' => 'dev-evolvemain',
-        'version' => 'dev-evolvemain',
-        'reference' => '48944a491cd4fb9cb03e01a0cf14a94538caff5a',
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => '180152311588273f2559971c0d21f556ac5fa768',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -247,6 +247,15 @@
             'aliases' => array(),
             'dev_requirement' => true,
         ),
+        'ichtrojan/laravel-otp' => array(
+            'pretty_version' => 'v1.4.2',
+            'version' => '1.4.2.0',
+            'reference' => 'ff8353ddfe40ca8ada7a312a7408658197f47105',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../ichtrojan/laravel-otp',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'illuminate/auth' => array(
             'dev_requirement' => false,
             'replaced' => array(
@@ -470,9 +479,9 @@
             'dev_requirement' => false,
         ),
         'laravel/laravel' => array(
-            'pretty_version' => 'dev-evolvemain',
-            'version' => 'dev-evolvemain',
-            'reference' => '48944a491cd4fb9cb03e01a0cf14a94538caff5a',
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => '180152311588273f2559971c0d21f556ac5fa768',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

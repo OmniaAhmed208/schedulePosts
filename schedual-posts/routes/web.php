@@ -37,6 +37,10 @@ Route::middleware(['guest'])->get('/', function () {
     return view('welcome');
 });
 
+Route::post('/forgetPassword', [UserController::class,'forgetPassword']);
+Route::post('/verificationCode', [UserController::class,'verificationCode']);
+Route::post('/resetPassword', [UserController::class,'resetPassword']);
+
 Auth::routes();
 
 Route::group(['middleware' => ['auth']], function ()
@@ -96,5 +100,5 @@ Route::middleware('web')->group(function () {
 // Or
 // Route::resource('users', UserController::class)->except(['create', 'store'])->middleware('your-middleware')
 Route::group(['middleware' => ['admin','auth']], function ()
-{ // for admin only to login on them   
+{ // for admin only to login on them
 });

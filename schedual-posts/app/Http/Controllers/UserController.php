@@ -6,6 +6,7 @@ use App\Models\Api;
 use App\Models\User;
 use App\Models\PublishPost;
 use App\Models\settingsApi;
+use App\Notifications\ResetPassword;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
@@ -13,9 +14,15 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
-
+use Ichtrojan\Otp\Otp;
 class UserController extends Controller
 {
+    private $otp;
+
+    public function __construct(){
+        $this->otp = new Otp;
+    }
+
     public function index()
     {
         $allUsers = User::all();
@@ -25,12 +32,12 @@ class UserController extends Controller
     }
 
     public function show($userId) // profile
-    { 
+    {
         $user = User::find($userId);
 
         $apiAccounts = Api::all()->where('creator_id', Auth::user()->id);
         $userApps = settingsApi::all(); // all App on website
-        
+
         return view('main.users.show',compact('user','apiAccounts','userApps'));
     }
 
@@ -63,11 +70,11 @@ class UserController extends Controller
         // }
 
         $storageImage = $user->image;
-        if ($request->hasFile('image')) 
+        if ($request->hasFile('image'))
         {
-            $image = $request->file('image');        
+            $image = $request->file('image');
             $filename = time() . '_' . $image->getClientOriginalName();
-            $image->storeAs('public/profile_images', $filename); 
+            $image->storeAs('public/profile_images', $filename);
             $storageImage = Storage::url('profile_images/'. $filename);
         }
         if ($request->reset_image == 1) {
@@ -97,9 +104,9 @@ class UserController extends Controller
 
         $password = $user->password;
 
-        if ($request->filled('old_password') && $request->filled('new_password')) 
+        if ($request->filled('old_password') && $request->filled('new_password'))
         {
-            if (!Hash::check($request->old_password, $user->password)) 
+            if (!Hash::check($request->old_password, $user->password))
             {
                 return response()->json([
                     'message' => 'Old password does not match.',
@@ -120,7 +127,77 @@ class UserController extends Controller
     }
 
     public function forgetPassword(Request $request)
-    {}
+    {
+        try{
+            $validator = $request->validate([
+                'email' => 'required'
+            ]);
+
+            $user = User::where('email',$request->email)->first();
+
+            if ($user == null) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Email not valid!',
+                ]);
+            }
+
+            $user->notify(new ResetPassword());
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Password reset email sent successfully!',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    public function verificationCode(Request $request)
+    {
+        $validator = $request->validate([
+            'email' => 'required|exists:users',
+            'code' => 'required|max:6',
+        ]);
+
+        $otpValidate = $this->otp->validate($request->email, $request->code);
+
+        if(! $otpValidate->status){
+            return response()->json([
+                'status' => false,
+                'message' => "The Code isn't valid!",
+            ]);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Code is correct',
+        ]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $validator = $request->validate([
+            'email' => 'required|exists:users',
+            'code' => 'required|max:6',
+            'password' => 'required'
+        ]);
+
+        $user = User::where('email',$request->email)->first();
+        $user->update([
+            'password' => Hash::make($request->password)
+        ]);
+        $user->tokens()->delete();
+
+        // return response()->json([
+        //     'status' => true,
+        //     'message' => 'Password updated successfully',
+        // ]);
+        return view('welcome');
+    }
 
     // public function destroy(string $id)
     // {
