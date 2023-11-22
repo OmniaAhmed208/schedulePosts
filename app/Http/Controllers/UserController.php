@@ -4,25 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Api;
 use App\Models\User;
-use App\Models\PublishPost;
+use App\Mail\VerifyEmail;
 use App\Models\settingsApi;
-use App\Notifications\ResetPassword;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
-use Ichtrojan\Otp\Otp;
+
 class UserController extends Controller
 {
-    private $otp;
-
-    public function __construct(){
-        $this->otp = new Otp;
-    }
-
     public function index()
     {
         $allUsers = User::all();
@@ -92,6 +85,88 @@ class UserController extends Controller
         return back()->with('success','User updated successfully');
     }
 
+    public function register(Request $request)
+    {
+        try{
+            $validator = $request->validate([
+                'name' => 'required',
+                'email' => 'required|email|unique:users,email',
+                'password' => ['required','nullable','confirmed','min:8', // confirmed ===> password_confirmation
+                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
+                ],
+            ]);
+            //  At least one lowercase letter, At least one uppercase letter, At least one digit, At least one special character
+
+            $token = rand(1000000,999999);
+
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'verification_token' => $token,
+                'password' => Hash::make($request->password), // bcrypt($request->password)
+            ]);
+
+            $cc = User::where('email', $request->email)->first();
+            $bcc = User::where('email', $request->email)->first();
+            Mail::to($request->email)
+            ->cc($cc)
+            ->bcc($bcc)
+            ->send(new VerifyEmail($token));
+
+            $role = Role::where('name','user')->first();
+            DB::table('user_has_roles')
+                ->insert([
+                    'role_id' => $role->id,
+                    'user_id' => $user->id,
+                ]);
+
+            return response()->json([
+                'message' => 'User created successfully',
+                'status' => true,
+                'token' => $user->createToken("API TOKEN")->plainTextToken
+            ],200);
+
+        }
+        catch(\Throwable $th){
+            return response()->json([
+                'message' => $th->getMessage(),
+                'status' => false,
+            ],500);
+        }
+    }
+
+    public function email_verification(Request $request)
+    {
+        try{
+            $validator = $request->validate([
+                'email' => 'required|email|exists:users',
+                'token' => 'required|max:6',
+            ]);
+
+            // $otpEmail = $this->otp->validate($request->email,$request->otp);
+
+            // if(!$otpEmail->status){
+            //     return response()->json([
+            //         'error' => $otpEmail,
+            //         'status' => false,
+            //     ],401);
+            // }
+
+            $user = User::where('email', $request->email)->first();
+            $user->update(['email_verified_at' => now()]);
+            return response()->json([
+                'message' => 'email verified successfully',
+                'status' => true,
+            ],500);
+        }
+        catch(\Throwable $th){
+            return response()->json([
+                'message' => $th->getMessage(),
+                'status' => false,
+            ],500);
+        }
+    }
+
 
     public function updatePassword(Request $request, $id)
     {
@@ -142,7 +217,15 @@ class UserController extends Controller
                 ]);
             }
 
-            $user->notify(new ResetPassword());
+            $token = rand(1000000,999999);
+            $cc = User::where('email', $request->email)->first();
+            $bcc = User::where('email', $request->email)->first();
+            Mail::to($request->email)
+            ->cc($cc)
+            ->bcc($bcc)
+            ->send(new VerifyEmail($token));
+
+            // $user->notify(new ResetPassword());
 
             return response()->json([
                 'status' => true,
@@ -156,27 +239,27 @@ class UserController extends Controller
         }
     }
 
-    public function verificationCode(Request $request)
-    {
-        $validator = $request->validate([
-            'email' => 'required|exists:users',
-            'code' => 'required|max:6',
-        ]);
+    // public function verificationCode(Request $request)
+    // {
+    //     $validator = $request->validate([
+    //         'email' => 'required|exists:users',
+    //         'code' => 'required|max:6',
+    //     ]);
 
-        $otpValidate = $this->otp->validate($request->email, $request->code);
+    //     $otpValidate = $this->otp->validate($request->email, $request->code);
 
-        if(! $otpValidate->status){
-            return response()->json([
-                'status' => false,
-                'message' => "The Code isn't valid!",
-            ]);
-        }
+    //     if(! $otpValidate->status){
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => "The Code isn't valid!",
+    //         ]);
+    //     }
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Code is correct',
-        ]);
-    }
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Code is correct',
+    //     ]);
+    // }
 
     public function resetPassword(Request $request)
     {

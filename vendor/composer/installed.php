@@ -3,7 +3,7 @@
         'name' => 'laravel/laravel',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'd887c32465af6d1991ec2a6bb043804b020c47ef',
+        'reference' => '1afb36645cf0634a05994f6c16de48ee1cd22b1e',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -247,15 +247,6 @@
             'aliases' => array(),
             'dev_requirement' => true,
         ),
-        'ichtrojan/laravel-otp' => array(
-            'pretty_version' => 'v1.4.2',
-            'version' => '1.4.2.0',
-            'reference' => 'ff8353ddfe40ca8ada7a312a7408658197f47105',
-            'type' => 'library',
-            'install_path' => __DIR__ . '/../ichtrojan/laravel-otp',
-            'aliases' => array(),
-            'dev_requirement' => false,
-        ),
         'illuminate/auth' => array(
             'dev_requirement' => false,
             'replaced' => array(
@@ -481,7 +472,7 @@
         'laravel/laravel' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'd887c32465af6d1991ec2a6bb043804b020c47ef',
+            'reference' => '1afb36645cf0634a05994f6c16de48ee1cd22b1e',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

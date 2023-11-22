@@ -173,7 +173,6 @@ return [
         ProtoneMedia\LaravelFFMpeg\Support\ServiceProvider::class,
         Spatie\Permission\PermissionServiceProvider::class,
         Stevebauman\Location\LocationServiceProvider::class,
-        Ichtrojan\Otp\OtpServiceProvider::class,
     ])->toArray(),
 
     /*
@@ -192,7 +191,6 @@ return [
         'Socialite' => Laravel\Socialite\Facades\Socialite::class,
         'FFMpeg' => ProtoneMedia\LaravelFFMpeg\Support\FFMpeg::class,
         'Location' => Stevebauman\Location\LocationServiceProvider::class,
-        'Otp' => Ichtrojan\Otp\Otp::class,
     ])->toArray(),
 
 ];

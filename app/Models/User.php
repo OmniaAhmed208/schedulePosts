@@ -28,8 +28,8 @@ class User extends Authenticatable implements HasMedia
         'email',
         'password',
         'image',
-        'facebook_app_id',
-        'facebook_token',
+        'verification_token',
+        'email_verified_at',
         'remember_token',
     ];
 
