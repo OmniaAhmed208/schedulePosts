@@ -37,8 +37,12 @@ Route::middleware(['guest'])->get('/', function () {
     return view('welcome');
 });
 
+Route::post('auth/register', [UserController::class,'register']);
+Route::post('email_verification', [UserController::class,'email_verification']);
+Route::post('code_verification_from_profile', [UserController::class,'code_verification_from_profile']);
+
 Route::post('/forgetPassword', [UserController::class,'forgetPassword']);
-Route::post('/verificationCode', [UserController::class,'verificationCode']);
+Route::post('/passwordCode', [UserController::class,'passwordCode']);
 Route::post('/resetPassword', [UserController::class,'resetPassword']);
 
 Auth::routes();

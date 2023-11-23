@@ -213,7 +213,7 @@
                     </div>
                 </div>
 
-                <div class="row mb-3">
+                {{-- <div class="row mb-3">
                     <div class="col-md-6 offset-md-4">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
@@ -223,7 +223,7 @@
                             </label>
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
                 <div class="row mb-0">
                     <div class="col-md-8 offset-md-4">
@@ -233,11 +233,10 @@
                             {{ __('Login') }}
                         </button>
 
-                        @if (Route::has('password.request'))
-                            <a class="btn btn-link" href="{{ route('password.request') }}">
-                                {{ __('Forgot Your Password?') }}
-                            </a>
-                        @endif
+                        <button class="btn text-white m-1 p-2 px-3" style="background: #06283d"
+                        type="button" data-bs-toggle="modal" data-bs-target="#forgetPAsswordModal" id="forgetPasswordBtn">
+                        {{ __('Forgot Your Password?') }}
+                        </button>
                     </div>
                 </div>
             </form>
@@ -248,13 +247,13 @@
 
 <div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content p-4">
+        <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title mb-4 text-dark">Register</h5>
+                <h5 class="modal-title ps-4 text-dark">Register</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-            <form method="POST" action="{{ route('register') }}">
+            <form id="registerForm" class="p-4" method="POST" action="{{ url('auth/register') }}">
                 @csrf
 
                 <div class="row mb-3">
@@ -306,11 +305,48 @@
                         <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required autocomplete="new-password">
                     </div>
                 </div>
-
+                <p id="verification-message"></p>
                 <div class="row mb-0">
                     <div class="col-md-6 offset-md-4">
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary" id="registerBtn">
                             {{ __('Register') }}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="emailVerifyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title ps-4 text-dark">Email verification</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form id="emailVerifyForm" class="p-4" method="POST" action="{{ url('email_verification') }}">
+                @csrf
+
+                <div class="row mb-3">
+                    <label for="token" class="col-md-4 col-form-label text-md-end">{{ __('token') }}</label>
+
+                    <div class="col-md-6">
+                        <input id="token" type="text" class="form-control @error('token') is-invalid @enderror" name="token" value="{{ old('token') }}" required autocomplete="token" autofocus>
+
+                        @error('token')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+                </div>
+                <p id="verification-code"></p>
+                <div class="row mb-0">
+                    <div class="col-md-6 offset-md-4">
+                        <button type="submit" class="btn btn-primary" id="verifyBtn">
+                            Verify
                         </button>
                     </div>
                 </div>
@@ -319,5 +355,307 @@
         </div>
     </div>
 </div>
+
+
+
+<div class="modal fade" id="forgetPasswordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title ps-4 text-dark">Reset Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form id="forgetPasswordForm" class="p-4" method="POST" action="{{ url('forgetPassword') }}">
+                @csrf
+
+                <div class="row mb-3">
+                    <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>
+
+                    <div class="col-md-6">
+                        <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email">
+
+                        @error('email')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+                </div>
+                <p id="forget-message"></p>
+                <div class="row mb-0">
+                    <div class="col-md-6 offset-md-4">
+                        <button type="submit" class="btn btn-primary" id="forgetBtn">
+                            {{ __('Send Code') }}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="passwordCodeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title ps-4 text-dark">Password Verification</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form id="passwordCodeForm" class="p-4" method="POST" action="{{ url('passwordCode') }}">
+                @csrf
+
+                <div class="row mb-3">
+                    <label for="token" class="col-md-4 col-form-label text-md-end">{{ __('token') }}</label>
+
+                    <div class="col-md-6">
+                        <input id="token" type="text" class="form-control @error('token') is-invalid @enderror" name="token" value="{{ old('token') }}" required autocomplete="token" autofocus>
+
+                        @error('token')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+                </div>
+                <p id="password-code"></p>
+                <div class="row mb-0">
+                    <div class="col-md-6 offset-md-4">
+                        <button type="submit" class="btn btn-primary" id="passwordCodeBtn">
+                            Verify
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title ps-4 text-dark">New Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form id="resetPasswordForm" class="p-4" method="POST" action="{{ url('resetPassword') }}">
+                @csrf
+
+                <div class="row mb-3">
+                    <label for="password" class="col-md-4 col-form-label text-md-end">{{ __('Password') }}</label>
+
+                    <div class="col-md-6">
+                        <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="new-password">
+
+                        @error('password')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <label for="password-confirm" class="col-md-4 col-form-label text-md-end">{{ __('Confirm Password') }}</label>
+
+                    <div class="col-md-6">
+                        <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required autocomplete="new-password">
+                    </div>
+                </div>
+                <p id="verification-message"></p>
+                <div class="row mb-0">
+                    <div class="col-md-6 offset-md-4">
+                        <button type="submit" class="btn btn-primary" id="resetBtn">
+                            {{ __('Save') }}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+{{-- email verification --}}
+<script>
+    $(document).ready(function() {
+        // Intercept form submission
+        $('#registerForm').submit(function(e) {
+            e.preventDefault(); // Prevent the default form submission
+            var formData = $(this).serialize();
+            // Disable the submit button to prevent multiple submissions
+            $('#registerBtn').prop('disabled', true);
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    // Handle successful registration here
+                    // console.log(response.status);
+                    // alert('User registered successfully!\n' + response.message);
+                    $('#verification-message').html(response.message);
+                    $('#emailVerifyModal').modal('show');  // Use modal('show') to display the modal
+                    $('#registerModal').modal('hide');
+                },
+                error: function(xhr, status, error) {
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        // console.log(response.message);
+                    } catch (e) {
+                        console.error('Error parsing JSON response:', e);
+                        console.error('Original response:', xhr.responseText);
+                    }
+
+                    // Rest of your error handling code...
+                    // alert('Error: ' + xhr.responseText);
+                    $('#verification-message').html(response.message);
+                    $('#verification-message').addClass('text-danger');
+                    $('#registerBtn').prop('disabled', false);
+                },
+
+            });
+        });
+
+        $('#emailVerifyForm').submit(function(e) {
+            e.preventDefault(); // Prevent the default form submission
+            var formData = $(this).serialize();
+            // Disable the submit button to prevent multiple submissions
+            $('#verifyBtn').prop('disabled', true);
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    // console.log(response.status);
+                    // alert('User registered successfully!\n' + response.message);
+                    $('#emailVerifyModal').modal('hide');
+                    $('#loginModal').modal('show');
+                },
+                error: function(xhr, status, error) {
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        $('#verification-code').html(response.message);
+                        $('#verification-code').addClass('text-danger');
+                    } catch (e) {
+                        console.error('Error parsing JSON response:', e);
+                        console.error('Original response:', xhr.responseText);
+                    }
+
+                    // Rest of your error handling code...
+                    // alert('Error: ' + xhr.responseText);
+                    $('#verifyBtn').prop('disabled', false);
+                },
+            });
+        });
+    });
+</script>
+
+{{-- forget password --}}
+<script>
+    $(document).ready(function()
+    {
+        $('#forgetPasswordBtn').click(function(e){
+            $('#loginModal').modal('hide');
+            $('#forgetPasswordModal').modal('show');
+        });
+
+        $('#forgetPasswordForm').submit(function(e) {
+            e.preventDefault();
+            var formData = $(this).serialize();
+
+            $('#forgetBtn').prop('disabled', true);
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    $('#forget-message').html(response.message);
+                    $('#passwordCodeModal').modal('show');
+                    $('#forgetPasswordModal').modal('hide');
+                },
+                error: function(xhr, status, error) {
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                    } catch (e) {
+                        console.error('Error parsing JSON response:', e);
+                        console.error('Original response:', xhr.responseText);
+                    }
+
+                    $('#forget-message').html(response.message);
+                    $('#forget-message').addClass('text-danger');
+                    $('#forgetBtn').prop('disabled', false);
+                },
+
+            });
+        });
+
+        $('#passwordCodeForm').submit(function(e) {
+            e.preventDefault();
+            var formData = $(this).serialize();
+            $('#passwordCodeBtn').prop('disabled', true);
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    $('#passwordCodeModal').modal('hide');
+                    $('#resetPasswordModal').modal('show');
+                },
+                error: function(xhr, status, error) {
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        $('#password-code').html(response.message);
+                        $('#password-code').addClass('text-danger');
+                    } catch (e) {
+                        console.error('Error parsing JSON response:', e);
+                        console.error('Original response:', xhr.responseText);
+                    }
+
+                    $('#passwordCodeBtn').prop('disabled', false);
+                },
+            });
+        });
+
+
+        $('#resetPasswordForm').submit(function(e) {
+            e.preventDefault();
+            var formData = $(this).serialize();
+            $('#resetBtn').prop('disabled', true);
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    $('#resetPasswordModal').modal('hide');
+                    $('#loginModal').modal('show');
+                },
+                error: function(xhr, status, error) {
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        $('#password-reset').html(response.message);
+                        $('#password-reset').addClass('text-danger');
+                    } catch (e) {
+                        console.error('Error parsing JSON response:', e);
+                        console.error('Original response:', xhr.responseText);
+                    }
+
+                    $('#resetBtn').prop('disabled', false);
+                },
+            });
+        });
+    });
+</script>
 
 @include('layouts.footer')

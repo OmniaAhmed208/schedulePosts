@@ -32,11 +32,14 @@ use App\Http\Controllers\api\YoutubeCategoryController;
 */
 
 //public routes
-Route::post('/auth/register',[UserController::class,'register']);
 Route::post('/auth/login', [UserController::class,'login']);
 
+Route::post('/auth/register',[UserController::class,'register']);
+Route::post('email_verification', [UserController::class,'email_verification']);
+Route::post('code_verification_from_profile', [UserController::class,'code_verification_from_profile']);
+
 Route::post('/forgetPassword', [UserController::class,'forgetPassword']);
-Route::post('/verificationCode', [UserController::class,'verificationCode']);
+Route::post('/passwordCode', [UserController::class,'passwordCode']);
 Route::post('/resetPassword', [UserController::class,'resetPassword']);
 
 Route::resource('subscribers', SubscriberController::class);
@@ -46,7 +49,7 @@ Route::middleware('auth:sanctum')->group(function ()
 {
     Route::get('/email_verification', [UserController::class, 'sendEmailVerification']);
     Route::post('/email_verification', [UserController::class, 'email_verification']);
-    
+
     Route::post('/logout', [UserController::class, 'logout']);
     Route::put('updatePassword/{id}', [UserController::class,'updatePassword']);
 

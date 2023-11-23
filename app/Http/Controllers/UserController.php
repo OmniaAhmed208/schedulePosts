@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ForgetPassword;
 use App\Models\Api;
 use App\Models\User;
 use App\Mail\VerifyEmail;
@@ -9,6 +10,7 @@ use App\Models\settingsApi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -97,7 +99,7 @@ class UserController extends Controller
             ]);
             //  At least one lowercase letter, At least one uppercase letter, At least one digit, At least one special character
 
-            $token = rand(1000000,999999);
+            $token = rand(100000,999999);
 
             $user = User::create([
                 'name' => $request->name,
@@ -113,16 +115,10 @@ class UserController extends Controller
             ->bcc($bcc)
             ->send(new VerifyEmail($token));
 
-            $role = Role::where('name','user')->first();
-            DB::table('user_has_roles')
-                ->insert([
-                    'role_id' => $role->id,
-                    'user_id' => $user->id,
-                ]);
-
             return response()->json([
                 'message' => 'User created successfully',
                 'status' => true,
+                'user' => $user,
                 'token' => $user->createToken("API TOKEN")->plainTextToken
             ],200);
 
@@ -139,34 +135,88 @@ class UserController extends Controller
     {
         try{
             $validator = $request->validate([
-                'email' => 'required|email|exists:users',
                 'token' => 'required|max:6',
             ]);
 
-            // $otpEmail = $this->otp->validate($request->email,$request->otp);
+            $user = User::where('verification_token', $request->token)->first();
 
-            // if(!$otpEmail->status){
-            //     return response()->json([
-            //         'error' => $otpEmail,
-            //         'status' => false,
-            //     ],401);
-            // }
+            if (!$user) {
+                return response()->json([
+                    'message' => 'Code not correct',
+                    'status' => false,
+                ], 404);
+            }
 
-            $user = User::where('email', $request->email)->first();
+            // Optionally, you can check if the user is already verified
+            if ($user->email_verified_at) {
+                return response()->json([
+                    'message' => 'User is already verified',
+                    'status' => false,
+                ], 400);
+            }
+
             $user->update(['email_verified_at' => now()]);
+
+            $role = Role::where('name', 'user')->first();
+            DB::table('user_has_roles')
+                ->insert([
+                    'role_id' => $role->id,
+                    'user_id' => $user->id,
+                ]);
+
             return response()->json([
                 'message' => 'email verified successfully',
+                'user' => $user,
                 'status' => true,
-            ],500);
+            ], 200);
         }
-        catch(\Throwable $th){
+        catch (\Throwable $th) {
+            Log::error($th); // Log the exception
             return response()->json([
                 'message' => $th->getMessage(),
                 'status' => false,
-            ],500);
+            ], 500);
         }
     }
 
+    public function code_verification_from_profile(Request $request)
+    {
+        try{
+            $user = $request->user();
+
+            if ($user->email_verified_at) {
+                return response()->json([
+                    'message' => 'User is already verified',
+                    'status' => false,
+                ], 400);
+            }
+
+            $token = rand(100000,999999);
+
+            $user->update(['verification_token' => $token]);
+
+            $cc = User::where('email', $request->email)->first();
+            $bcc = User::where('email', $request->email)->first();
+            Mail::to($request->email)
+            ->cc($cc)
+            ->bcc($bcc)
+            ->send(new VerifyEmail($token));
+
+            return response()->json([
+                'message' => 'code sent',
+                'status' => true,
+            ], 200);
+
+            //after code send it to email_verification method
+        }
+        catch (\Throwable $th) {
+            Log::error($th); // Log the exception
+            return response()->json([
+                'message' => $th->getMessage(),
+                'status' => false,
+            ], 500);
+        }
+    }
 
     public function updatePassword(Request $request, $id)
     {
@@ -217,19 +267,21 @@ class UserController extends Controller
                 ]);
             }
 
-            $token = rand(1000000,999999);
+            $token = rand(100000,999999);
+
+            $user->update(['verification_token' => $token]);
+
             $cc = User::where('email', $request->email)->first();
             $bcc = User::where('email', $request->email)->first();
             Mail::to($request->email)
             ->cc($cc)
             ->bcc($bcc)
-            ->send(new VerifyEmail($token));
-
-            // $user->notify(new ResetPassword());
+            ->send(new ForgetPassword($token));
 
             return response()->json([
                 'status' => true,
-                'message' => 'Password reset email sent successfully!',
+                'message' => 'Code sent',
+                'token' => $user->createToken("API TOKEN")->plainTextToken
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -239,59 +291,66 @@ class UserController extends Controller
         }
     }
 
-    // public function verificationCode(Request $request)
-    // {
-    //     $validator = $request->validate([
-    //         'email' => 'required|exists:users',
-    //         'code' => 'required|max:6',
-    //     ]);
+    public function passwordCode(Request $request)
+    {
+        $validator = $request->validate([
+            'token' => 'required|max:6',
+        ]);
 
-    //     $otpValidate = $this->otp->validate($request->email, $request->code);
+        $user = User::where('verification_token', $request->token)->first();
 
-    //     if(! $otpValidate->status){
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => "The Code isn't valid!",
-    //         ]);
-    //     }
+        if (!$user) {
+            return response()->json([
+                'message' => 'Code not correct',
+                'status' => false,
+            ], 404);
+        }
 
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => 'Code is correct',
-    //     ]);
-    // }
+        return response()->json([
+            'message' => 'Code correct',
+            'status' => true,
+        ], 200);
+    }
 
     public function resetPassword(Request $request)
     {
         $validator = $request->validate([
-            'email' => 'required|exists:users',
-            'code' => 'required|max:6',
-            'password' => 'required'
+            'password' => ['required','nullable','confirmed','min:8', // confirmed ===> password_confirmation
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
+            ],
         ]);
 
-        $user = User::where('email',$request->email)->first();
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not authenticated',
+                'status' => false,
+            ], 401);
+        }
+
         $user->update([
             'password' => Hash::make($request->password)
         ]);
+
         $user->tokens()->delete();
 
-        // return response()->json([
-        //     'status' => true,
-        //     'message' => 'Password updated successfully',
-        // ]);
-        return view('welcome');
+        return response()->json([
+            'status' => true,
+            'message' => 'Password updated successfully',
+        ],200);
     }
 
-    // public function destroy(string $id)
-    // {
-    //     $user = User::find($id);
+    public function destroy(string $id)
+    {
+        $user = User::find($id);
 
-    //     if($user == null){
-    //         return back()->with('error','User not found');
-    //     }
+        if($user == null){
+            return back()->with('error','User not found');
+        }
 
-    //     $user->delete();
+        $user->delete();
 
-    //     return back()->with('error','User deleted successfully');
-    // }
+        return back()->with('error','User deleted successfully');
+    }
 }
