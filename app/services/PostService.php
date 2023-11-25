@@ -29,208 +29,54 @@ use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 use Facebook\Exceptions\FacebookResponseException;
 
 
-class PostService {
+class PostService 
+{
+    public function saveImages($images)
+    {
+        $imgUpload = [];
+        foreach ($images as $image) {
+            $filename = time() . '_' . $image->getClientOriginalName(); // Generate a unique filename
+            $image->storeAs('public/uploadImages', $filename); // Store the file with the unique filename
+            // $localFilePath = storage_path('uploadImages/' . $filename); // Get the local file path (fullPath)
+            $storageImage = url('storage/uploadImages/'. $filename);
+            $imgUpload[] = $storageImage;
+        }
+        return $imgUpload;
+    }
 
-    // public function store($request) 
-    // { 
-    //     $validator = $request->validate([
-    //         'postData' => 'max:5000',
-    //         'video' => 'mimetypes:video/mov,video/mp4,video/mpg,video/mpeg,video/avi,video/webm',
-    //         'images' => 'mimetypes: image/png,image/jpg,image/jpeg',
-    //     ]);
+    public function saveVideo($video)
+    {
+        $filename = $video->getClientOriginalName();
+        $storagePath = 'public/uploadVideos';
+        if (!Storage::exists($storagePath)) {
+            Storage::makeDirectory($storagePath);
+        }
 
-    //     $validationRules = [
-    //         'postData' => 'required',
-    //     ];
-    //     if ($request->has('images') || $request->has('video')) {
-    //         unset($validationRules['postData']); // If there's an image or video, text is not required
-    //     }
+        $video->storeAs($storagePath, $filename);
+        $OriginalVideo = $storagePath . '/' . $filename;
 
-    //     $accountsID = $request->accounts_id;
-    //     $accountsType = [];
-    //     $accounts = '';
+        // $newVideo = FFMpeg::fromDisk('local')->open($OriginalVideo)->addFilter(function ($filters) {
+        //     $filters->resize(new \FFMpeg\Coordinate\Dimension(2000, 2000));
+        // });
+
+        // $commpressedVideo = $storagePath . '/' . 'compressed_' . $filename;
+        $youtubeVideoPath = $OriginalVideo; // for youtube
+        $twitterVideoPath = storage_path('app/'. $OriginalVideo); // Get the local file path // twitter
         
-    //     $accountsData = [];
+        // $storageVideo = Storage::url('app/'. $commpressedVideo);
+        $storageVideo = url('storage/uploadVideos/'. $filename);
 
-    //     foreach($accountsID as $id){
-    //         $accounts = Api::where('account_id',$id)->where('creator_id', Auth::user()->id)->get();
-    //         foreach($accounts as $account){
-    //             $account_type = $account->account_type;
-    //             if($account_type == 'youtube'){
-    //                 $validationRules['videoTitle'] = 'required';
-    //                 $validationRules['video'] = 'required';
-    //             }
+        // $newVideo->export()
+        // ->toDisk('local')
+        // ->inFormat(new \FFMpeg\Format\Video\X264())
+        // ->save($storagePath . '/' . 'compressed_' . $filename);
 
-    //             if($account_type == 'instagram'){
-    //                 // $validationRules['file'] = 'required|mimetypes:video/mp4, image/png';
-    //                 $validationRules['images'] = 'required';
-    //                 $validationRules['video'] = 'required';
-    //                 if($request->has('images')){
-    //                     unset($validationRules['video']);
-    //                 }
-    //                 if($request->has('video')){
-    //                     unset($validationRules['images']);
-    //                 }
-    //             }
-
-    //             $accountData = [
-    //                 'creator_id'=> Auth::user()->id,
-    //                 'account_type' => $account->account_type,
-    //                 'account_id' => $account->account_id,
-    //                 'account_name' => $account->account_name,
-    //                 'tokenApp' => $account->token,
-    //                 'token_secret' => $account->token_secret
-    //             ];
-    //         }   
-    //         $accountsType[] = $account_type;
-    //         $accountsData[] = $accountData;        
-    //     }
-
-    //     $request->validate($validationRules);
-
-    //     $imgUpload = []; $imgLocation = []; $filename = '';
-    //     $publishPosts = [];
-
-    //     if ($request->hasFile('images')) 
-    //     {
-    //         $images = $request->file('images');        
-    //         foreach ($images as $image) {
-    //             $filename = time() . '_' . $image->getClientOriginalName(); // Generate a unique filename
-    //             $image->storeAs('public/uploadImages', $filename); // Store the file with the unique filename
-    //             $localFilePath = storage_path('uploadImages/' . $filename); // Get the local file path (fullPath)
-    //             $storageImage = Storage::url('uploadImages/'. $filename); //storage/uploadImages/img_name
-    //             $imgUpload[] = $localFilePath;
-    //             $imgLocation[] = $storageImage;
-    //         }
-    //     }
-
-    //     $youtubeVideoPath='';$twitterVideoPath='';$storageVideo='';
-    //     if ($request->hasfile('video')) 
-    //     {
-    //         $video = $request->file('video');
-    //         $filename = $video->getClientOriginalName();
-    //         $storagePath = 'uploadVideos';
-    //         if (!Storage::exists($storagePath)) {
-    //             Storage::makeDirectory($storagePath);
-    //         }
-
-    //         $video->storeAs($storagePath, $filename);
-    //         $OriginalVideo = $storagePath . '/' . $filename;
-
-    //         $newVideo = FFMpeg::fromDisk('local')->open($OriginalVideo)->addFilter(function ($filters) {
-    //             $filters->resize(new \FFMpeg\Coordinate\Dimension(2000, 2000));
-    //         });
-
-    //         $commpressedVideo = $storagePath . '/' . 'compressed_' . $filename;
-    //         $youtubeVideoPath = $commpressedVideo; // for youtube
-    //         $twitterVideoPath = storage_path('app/'. $commpressedVideo); // Get the local file path // twitter
-    //         $storageVideo = Storage::url('app/'. $commpressedVideo);
-
-    //         $newVideo->export()
-    //         ->toDisk('local')
-    //         ->inFormat(new \FFMpeg\Format\Video\X264())
-    //         ->save($storagePath . '/' . 'compressed_' . $filename);
-    //     }
-
-    //     if($request->scheduledTime){
-    //         $postTime =  Carbon::parse($request->scheduledTime)->format('Y-m-d H:i');
-    //         $status = 'pending';
-    //     }
-    //     else{
-    //         $now = Carbon::now(); 
-    //         $diff_time = time_think::where('creator_id', Auth::user()->id)->first()->time;
-    //         $postTime = $now->copy()->addHours($diff_time)->format('Y-m-d H:i');
-    //         $status = 'published';
-    //         $publishPosts[] = $this->publishPost($request, $imgUpload, $youtubeVideoPath, $twitterVideoPath);
-    //     }
-
-    //     $successfulApps = []; // apps that return 'postCreated' and not error
-    //     $messages = [];
-        
-    //     if(!empty($publishPosts)){
-    //         foreach ($publishPosts[0] as $appName => $appResults) {
-    //             switch ($appResults) {
-    //                 case 'postCreated':
-    //                     $successfulApps[] = $appName;
-    //                     $msg = '- '.$appName.' : The post created successfully.';
-    //                     break;
-    //                 default:
-    //                     $msg = '- '.$appName.' : There exist an error.';
-    //                     break;
-    //             }
-    //             $messages[] = $msg;
-    //         }
-    //     }
-
-    //     $data = [];
-    //     $allAccountsData = [];
-    //     foreach($accountsData as $account){
-    //         $account['status'] = $status;
-    //         $account['content'] = $request->postData ?? '';
-    //         $account['link'] = $request->link;
-    //         $account['scheduledTime'] = $postTime;
-
-    //         $allAccountsData[] = $account;
-    //     }
-
-    //     $allServices = settingsApi::all();
-    //     $services = [];
-    //     foreach($allServices as $service){
-    //         $services[] = $service['appType'];
-    //     }
-    //     $selectedApps = array_intersect($accountsType, $services);
-        
-
-    //     foreach ($selectedApps as $appType) {
-    //         if (in_array($appType, $successfulApps) || $status == 'pending') // if appType in successefullApp means that post created and not failed
-    //         {
-    //             foreach($allAccountsData as $account){
-    //                 switch ($appType) {
-    //                     case 'youtube':
-    //                         // $account['thumbnail'] = $storageVideo;
-    //                         $account['post_title'] = $request->videoTitle;
-    //                         $account['youtube_privacy'] = $request->youtubePrivacy;
-    //                         $account['youtube_tags'] = $request->youtubeTags;
-    //                         $account['youtube_category'] = $request->youtubeCategory;
-    //                         break;
-    //                 }
-    //                 $data[] = $account;
-    //             }
-    //         }
-    //     }
-
-    //     // dd($data);
-
-    //     if (!empty($data)) {
-    //         foreach ($data as $attributes) {
-                
-    //             $post = new publishPost(); // Create a new instance of publishPost model
-    //             $post->fill($attributes); // Set the attributes for the model
-    //             $post->save(); // Save the model to the database
-        
-    //             if (is_array($imgLocation) && !empty($imgLocation)) {
-    //                 foreach ($imgLocation as $img) {
-    //                     PostImages::create([
-    //                         'post_id' => $post->id,
-    //                         'creator_id' => Auth::user()->id,
-    //                         'image' => $img
-    //                     ]);
-    //                 }
-    //             }
-
-    //             if ($storageVideo) {
-    //                 PostVideos::create([
-    //                     'post_id' => $post->id,
-    //                     'creator_id' => Auth::user()->id,
-    //                     'video' => $storageVideo
-    //                 ]);
-    //             }
-    //         }
-    //     }
-
-    //     return $messages;
-    //     // return redirect()->back()->with('postStatusForPublishing', $messages);
-    // }
+        return [
+            'youtubeVideoPath' => $youtubeVideoPath,
+            'twitterVideoPath' => $twitterVideoPath,
+            'storageVideo' => $storageVideo,
+        ];
+    }
 
     public function publishPost($requestData, $images, $youtubeVideoPath, $twitterVideoPath)
     {
@@ -394,7 +240,6 @@ class PostService {
         }
     }
 
-
     public function instaPublish($requestData)
     {
         $instaToken = '';
@@ -462,161 +307,6 @@ class PostService {
         }
     }
 
-    // publish on text   
-    // public function twitterPublish($requestData, $imgPaths,$twitterVideoPath)
-    // {   
-    //     $accountsID = $requestData->accounts_id;
-    //     $twitterToken='';$twitterTokenSecret='';
-
-    //     foreach($accountsID as $id){
-    //         $accounts = Api::where('account_type', 'twitter')->where('account_id',$id)->where('creator_id', Auth::user()->id)->get();
-    //         foreach($accounts as $account)
-    //         {
-    //             $twitterToken = $account->token;
-    //             $twitterTokenSecret = $account->token_secret;
-    //         }       
-    //     }
-
-    //     $twitterSettings = settingsApi::where('appType', 'twitter')->first(); 
-    //     $consumer_key = $twitterSettings['appID'];
-    //     $consumer_secret = $twitterSettings['appSecret'];
-    
-    //     $connection = new TwitterOAuth($consumer_key, $consumer_secret, $twitterToken, $twitterTokenSecret);
-    //     $connection->setApiVersion('2');
-    //     $connected = $connection->get("account/verify_credentials");
-
-    //     $tweet = $requestData['postData'];
-
-    //     $response = $connection->post('tweets', ['text' => $tweet]);
-    //     if ($connection->getLastHttpCode() === 201) { // HTTP status code 201 indicates a successful tweet creation
-    //         return 'postCreated';
-    //     } else {
-    //         return 'postFailed';
-    //     }
-
-    //     // $realPath = Str::replace('\\', '/', $realPath);
-    //     // dd($realPath);
-    // }
-
-    // publish on multiple image
-    // public function twitterPublish($requestData, $imgPaths,$twitterVideoPath)
-    // {   
-    //     $accountsID = $requestData->accounts_id;
-    //     $twitterToken='';$twitterTokenSecret='';
-
-    //     foreach($accountsID as $id){
-    //         $accounts = Api::where('account_type', 'twitter')->where('account_id',$id)->where('creator_id', Auth::user()->id)->get();
-    //         foreach($accounts as $account)
-    //         {
-    //             $twitterToken = $account->token;
-    //             $twitterTokenSecret = $account->token_secret;
-    //         }       
-    //     }
-
-    //     $twitterSettings = settingsApi::where('appType', 'twitter')->first(); 
-    //     $consumer_key = $twitterSettings['appID'];
-    //     $consumer_secret = $twitterSettings['appSecret'];
-    
-    //     $connection = new TwitterOAuth($consumer_key, $consumer_secret, $twitterToken, $twitterTokenSecret);
-    //     $connected = $connection->get("account/verify_credentials");
-        
-    //     $text = $requestData['postData'] ?? '';
-
-    //     if ($imgPaths) 
-    //     {
-    //         $mediaIds = [];
-    //         foreach ($imgPaths as $imgPath) {
-    //             if (file_exists($imgPath)) {
-    //                 $connection->setApiVersion(1.1);
-    //                 $connection->setTimeouts(60, 10);
-    //                 $media = $connection->upload('media/upload', ['media' => $imgPath]);
-    //                 $mediaIds[] = $media->media_id_string;
-    //             } else {
-    //                 dd('File does not exist: ' . $imgPath);
-    //             }
-    //         }
-
-    //         $connection->setApiVersion(2);
-    //         $parameters = [
-    //             'text' => $text,
-    //             'media' => ['media_ids' => $mediaIds],
-    //         ];
-    //         $result = $connection->post('tweets', $parameters, true);
-    //         if ($connection->getLastHttpCode() === 201) { 
-    //             return 'postCreated';
-    //         } else {
-    //             return 'postFailed';
-    //         }
-    //     }
-
-    //     $response = $connection->post('tweets', ['text' => $text]);
-
-
-    //     if ($connection->getLastHttpCode() === 201) { // HTTP status code 201 indicates a successful tweet creation
-    //         return 'postCreated';
-    //     } else {
-    //         return 'postFailed';
-    //     }
-    // }
-
-    // publish on multiple account in same time    
-    // public function twitterPublish($requestData, $imgPaths,$twitterVideoPath)
-    // {   
-    //     $accountsID = $requestData->accounts_id;
-    //     $twitterSettings = settingsApi::where('appType', 'twitter')->first(); 
-    //     $consumer_key = $twitterSettings['appID'];
-    //     $consumer_secret = $twitterSettings['appSecret'];
-    //     $mediaIds = [];
-    
-    //     foreach ($accountsID as $id) {
-    //         $accounts = Api::where('account_type', 'twitter')
-    //             ->where('account_id', $id)
-    //             ->where('creator_id', Auth::user()->id)
-    //             ->get();
-    
-    //         foreach ($accounts as $account) {
-    //             $twitterToken = $account->token;
-    //             $twitterTokenSecret = $account->token_secret;
-    
-    //             // Modify the text to include a unique identifier
-    //             $text = $requestData['postData'];
-    
-    //             $connection = new TwitterOAuth($consumer_key, $consumer_secret, $twitterToken, $twitterTokenSecret);
-    //             $connected = $connection->get("account/verify_credentials");
-    
-    //             if ($imgPaths) {
-    //                 foreach ($imgPaths as $imgPath) {
-    //                     if (file_exists($imgPath)) {
-    //                         $connection->setApiVersion(1.1);
-    //                         $connection->setTimeouts(60, 10);
-    //                         $media = $connection->upload('media/upload', ['media' => $imgPath]);
-    //                         $mediaIds[] = $media->media_id_string;
-    //                     } else {
-    //                         dd('File does not exist: ' . $imgPath);
-    //                     }
-    //                 }
-    
-    //                 $connection->setApiVersion(2);
-    //                 $parameters = [
-    //                     'text' => $text,
-    //                     'media' => ['media_ids' => $mediaIds],
-    //                 ];
-    //                 $result = $connection->post('tweets', $parameters, true);
-    //                 $mediaIds = [];                
-    //             }
-    //             else {
-    //                 $result = $connection->post('tweets', ['text' => $text]);
-    //             }
-    //         }
-    //     }
-    
-    //     if ($connection->getLastHttpCode() === 201) {
-    //         return 'postCreated';
-    //     } else {
-    //         return 'postFailed';
-    //     }
-    // }
-
     public function twitterPublish($requestData, $imgPaths,$videoPath)
     {   
         $accountsID = $requestData->accounts_id;
@@ -647,15 +337,29 @@ class PostService {
                 elseif (!empty($imgPaths))
                 {
                     foreach ($imgPaths as $imgPath) {
-                        $imgPath = Str::replace('storage\\','storage\app/public/',$imgPath);
-                        if (file_exists($imgPath)) {
+                        // $imgPath = Str::replace('storage\\','storage\app/public/',$imgPath);
+                        // if (file_exists($imgPath)) {
+                        //     // dd('exist');
+                        //     $connection->setApiVersion(1.1);
+                        //     $connection->setTimeouts(60, 10);
+                        //     $media = $connection->upload('media/upload', ['media' => $imgPath]);
+                        //     $mediaIds[] = $media->media_id_string;
+                        // } else {
+                        //     dd('File does not exist: ' . $imgPath);
+                        // }
+
+                        $rm_urlPath = parse_url($imgPath, PHP_URL_PATH);
+                        $storagePath = Str::replace('public\/storage/','storage\app/public/',public_path($rm_urlPath));
+
+                        // Check if the file exists
+                        if (file_exists($storagePath)) {
                             // dd('exist');
                             $connection->setApiVersion(1.1);
                             $connection->setTimeouts(60, 10);
-                            $media = $connection->upload('media/upload', ['media' => $imgPath]);
+                            $media = $connection->upload('media/upload', ['media' => $storagePath]);
                             $mediaIds[] = $media->media_id_string;
                         } else {
-                            dd('File does not exist: ' . $imgPath);
+                            dd('File does not exist: ' . $storagePath);
                         }
                     }
 
@@ -730,7 +434,8 @@ class PostService {
                                 dd('Error finalizing video upload: ' . $connection->response['response']);
                             }
                         } else {
-                            dd('Error initializing video upload: ' . $connection->response['response']);
+                            dd('Error initializing video upload: ' . json_encode($connection->response));
+                            // dd('Error initializing video upload: ' . $connection->response['response']);
                         }
                     }
                     catch(Exception $e){
@@ -749,68 +454,6 @@ class PostService {
             return 'postFailed';
         }
     }
-
-
-    // public function youtubePublish($requestData, $videoPath)
-    // {
-    //     $accountsID = $requestData->accounts_id;
-    //     $refreshToken='';
-
-    //     foreach($accountsID as $id){
-    //         $accounts = Api::where('account_type', 'youtube')->where('account_id',$id)->where('creator_id', Auth::user()->id)->get();
-    //         foreach($accounts as $account)
-    //         {
-    //             $refreshToken = $account->token_secret;
-    //         }       
-    //     }
-
-    //     $youtubeSettings = settingsApi::where('appType', 'youtube')->first();
-
-    //     $client = new Google_Client();
-    //     $client->setClientId($youtubeSettings['appID']);
-    //     $client->setClientSecret($youtubeSettings['appSecret']);
-    //     $client->setRedirectUri(route('youtube.callback'));
-    //     $client->setScopes(['https://www.googleapis.com/auth/youtube.upload']);
-
-    //     $client->fetchAccessTokenWithRefreshToken($refreshToken);
-    //     $newAccessToken = $client->getAccessToken();
-    //     $videoPath = storage_path('app/' . $videoPath);
-    //     $fullPathToVideo = Str::replace('\\', '/', $videoPath);
-
-    //     $youTubeService = new Google_Service_YouTube($client);
-
-    //     $tags = !empty($requestData->youtubeTags) ? explode(',', $requestData->youtubeTags) : ['tag1', 'tag2'];
-    //     $category_id = !empty($requestData->youtubeCategory) ? $requestData->youtubeCategory : '22';
-
-    //     if($client->getAccessToken()) {
-    //         $snippet = new Google_Service_YouTube_VideoSnippet();
-    //         $snippet->setTitle($requestData->videoTitle);
-    //         $snippet->setDescription($requestData->postData);
-    //         // $snippet->setTags(array("tag1","tag2"));
-    //         $snippet->setTags($tags);
-    //         $snippet->setCategoryId($category_id);
-    //         $snippet->setChannelId($requestData->channel);
-        
-    //         $status = new Google_Service_YouTube_VideoStatus();
-    //         $status->privacyStatus = $requestData->youtubePrivacy ? $requestData->youtubePrivacy : 'public';
-        
-    //         $video = new Google_Service_YouTube_Video();
-    //         $video->setSnippet($snippet);
-    //         $video->setStatus($status);
-
-    //         try {
-    //             $obj = $youTubeService->videos->insert("status,snippet", $video,
-    //                                             array("data"=>file_get_contents($fullPathToVideo), 
-    //                                             "mimeType" => "video/*"));
-    //             dd($obj);
-    //             return 'postCreated';
-    //         } catch(Google_Service_Exception $e) {
-    //             dd ("Caught Google service Exception ".$e->getCode(). " message is ".$e->getMessage(). " <br>");
-    //             dd ("Stack trace is ".$e->getTraceAsString());
-    //             return 'postFailed';
-    //         }
-    //     }
-    // }
 
     public function youtubePublish($requestData, $videoPath)
     {
@@ -930,43 +573,4 @@ class PostService {
         }
     }
 
-    // $file = $request->file('image');
-    // $ext = $file->getClientOriginalExtension();
-    // $filename = time().'.'.$ext;
-    // // $img = $file->move('postImages/',$filename); 
-    // $img = Image::make($file->getRealPath());
-    // $img->fit(100); // fit(100,100) -> 100x100
-    // $img = $img->save('postImages/'.$filename); 
-
-    // public function instaPublish($requestData)
-    // {
-    //     $accessToken = 'EAAS9OZAZBDis4BO11LOZBmZAsfJRb1ZB7X0XgLOjJbP2aoZAdjjVWnonOREEVsi9CTV5WRIGVPi5WQJxUZBwNZBisLrWbVtxuojjQBgNAZC2sApJunxhPCPDzQwMhQ5bDLNkmQImq1kFH1iZBb3l8ANHFnidSMBNUIXjBj1k5ZAHLw1HRGZBns2qyLe9PifFkVagZAs8ESqveB3LXq0E20J3oNghktWG2URWgQOdQkHx3uhDhsr85hvB4X1WZCIb5d8huIZBAZDZD';
-    //     $pageId = '17841453423356345';
-    //     $caption = $requestData->postData;
-
-    //     try {
-    //         if ($requestData->hasFile('image')) {
-    //             $file = $requestData->file('image');
-    //             $mediaResponse = Http::attach(
-    //                 'image',
-    //                 file_get_contents($file->path()),
-    //                 $file->getClientOriginalName()
-    //             )->post("https://graph.facebook.com/v12.0/{$pageId}/photos", [
-    //                 'caption' => $caption,
-    //                 'access_token' => $accessToken,
-    //             ]);
-
-    //             // dd($mediaResponse);
-    //             if ($mediaResponse->successful()) {
-    //                 return 'postCreated';
-    //             } else {
-    //                 return redirect()->route('adminSocail')->with('publishError', $mediaResponse->status());
-    //             }
-    //         } else {
-    //             return redirect()->route('adminSocail')->with('publishError', 'You should choose an image for Instagram');
-    //         }
-    //     } catch (\Exception $e) {
-    //         return redirect()->route('adminSocail')->with('publishError', $e->getMessage());
-    //     }
-    // }
 }

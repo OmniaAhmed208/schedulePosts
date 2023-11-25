@@ -13,7 +13,7 @@
     <div class="container">
 
         @if (Auth::user()->user_type === 'admin')
-            <a href="{{ route('adminSocail') }}" class="btn btn-success">Admin Social Media</a>
+            <a href="{{ route('dashboard.index') }}" class="btn btn-success">Admin Social Media</a>
 
         @else
             {{ __('Dashboard') }}

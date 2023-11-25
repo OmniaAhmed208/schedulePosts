@@ -14,6 +14,7 @@ class Subscriber extends Model
 
     public function subscriberRequests(): HasMany
     {
-        return $this->hasMany(subscriberRequest::class, 'subscriber_id');
+        return $this->hasMany(SubscriberRequest::class, 'subscriber_id');
     }
+
 }

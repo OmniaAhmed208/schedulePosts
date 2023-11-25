@@ -7,11 +7,13 @@ use App\Models\User;
 use App\Mail\VerifyEmail;
 use App\Models\PublishPost;
 use App\Models\settingsApi;
+use Illuminate\Support\Str;
 use App\Mail\ForgetPassword;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
+use App\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -51,21 +53,21 @@ class UserController extends Controller
                 ],422);
             }
 
-            $token = rand(100000,999999);
+            $token = random_int(100000, 999999);
 
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
-                'verification_token' => $token,
                 'password' => Hash::make($request->password), // bcrypt($request->password)
+                'verification_token' => $token,
             ]);
 
             $cc = User::where('email', $request->email)->first();
             $bcc = User::where('email', $request->email)->first();
-            Mail::to($request->email)
+            Mail::to($request->user())
             ->cc($cc)
             ->bcc($bcc)
-            ->send(new VerifyEmail($token));
+            ->send(new VerifyEmail($token));            
 
             return response()->json([
                 'message' => 'User created successfully',
@@ -73,7 +75,6 @@ class UserController extends Controller
                 'user' => $user,
                 'token' => $user->createToken("API TOKEN")->plainTextToken
             ],200);
-
         }
         catch(\Throwable $th){
             return response()->json([
@@ -98,6 +99,7 @@ class UserController extends Controller
                 ],422);
             }
 
+            // $user = User::where('email', $request->user()->email)->first();
             $user = User::where('verification_token', $request->token)->first();
 
             if (!$user) {
@@ -107,6 +109,7 @@ class UserController extends Controller
                 ], 404);
             }
 
+            // Optionally, you can check if the user is already verified
             if ($user->email_verified_at) {
                 return response()->json([
                     'message' => 'User is already verified',
@@ -128,6 +131,7 @@ class UserController extends Controller
                 'user' => $user,
                 'status' => true,
             ], 200);
+            
         }
         catch(\Throwable $th){
             return response()->json([
@@ -228,7 +232,7 @@ class UserController extends Controller
 
                 return response()->json([
                     'message' => 'Logged out'
-                ]);
+                ],200);
 
             } else {
                 return response()->json([
@@ -269,17 +273,17 @@ class UserController extends Controller
             'status' => true
         ],200);
     }
-
-    public function update(Request $request, $id)
+    
+    public function update(Request $request)
     {
-        try{
-            $user = User::find($id);
+        try {
+            $user = $request->user();
 
-            if($user == null){
+            if ($user == null) {
                 return response()->json([
                     'message' => 'User not found',
                     'status' => false
-                ],404);
+                ], 404);
             }
 
             $validator = Validator::make($request->all(), [
@@ -288,26 +292,34 @@ class UserController extends Controller
                 'image' => 'mimes:jpg,jpeg,png',
             ]);
 
-            if($validator->fails()){
+            if ($validator->fails()) {
                 return response()->json([
                     'message' => 'Validation error',
                     'errors' => $validator->errors(),
                     'status' => false
-                ],422);
+                ], 422);
             }
 
             $storageImage = $user->image;
+
+
             if ($request->hasFile('image'))
             {
+                if($user->image != null){
+                    $rm_urlPath = parse_url($user->image, PHP_URL_PATH);
+                    $path = Str::replace('/storage/', '', $rm_urlPath);
+                    unlink(storage_path('app/public/'. $path));
+                }
+
                 $image = $request->file('image');
                 $filename = time() . '_' . $image->getClientOriginalName();
                 $image->storeAs('public/profile_images', $filename);
-                $storageImage = Storage::url('profile_images/'. $filename);
+                $storageImage = url('storage/profile_images/'. $filename);
             }
             if ($request->reset_image == 1) {
-                $storageImage = 'tools/dist/img/user.png';
+                $storageImage = null;
             }
-
+            
             $user->update([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -317,72 +329,62 @@ class UserController extends Controller
             return response()->json([
                 'message' => 'User updated successfully',
                 'status' => true
-            ],200);
-        }
-        catch(\Throwable $th){
+            ], 200);
+
+        } catch (\Throwable $th) {
             return response()->json([
                 'message' => $th->getMessage(),
                 'status' => false,
-            ],500);
+            ], 500);
         }
     }
 
-    public function updatePassword(Request $request, $id)
+    public function updatePassword(Request $request)
     {
-        try{
-            $user = User::find($id);
-
-            if($user == null){
-                return response()->json([
-                    'message' => 'User not found',
-                    'status' => false
-                ],404);
-            }
-
+        try {
             $validator = Validator::make($request->all(), [
                 'old_password' => 'required',
-                'new_password' => ['required','min:8','regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'],
+                'new_password' => ['required', 'min:8', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'],
             ]);
 
-            if($validator->fails()){
+            if ($validator->fails()) {
                 return response()->json([
                     'message' => 'Validation error',
                     'errors' => $validator->errors(),
                     'status' => false
-                ],422);
+                ], 422);
             }
 
+            $user = $request->user();
             $password = $user->password;
-
-            if ($request->filled('old_password') && $request->filled('new_password'))
+    
+            if (Hash::check($request->old_password, $user->password))
             {
-                if (!Hash::check($request->old_password, $user->password))
-                {
-                    return response()->json([
-                        'message' => 'Old password does not match.',
-                        'status' => false
-                    ],404);
-                }
-                else{
-                    $password = Hash::make($request->new_password);
-                }
+                $password = Hash::make($request->new_password);
+
+                $user->update([
+                    'password' => $password,
+                ]);
+    
+                return response()->json([
+                    'message' => 'Password updated successfully',
+                    'status' => true
+                ], 200); 
             }
+            else{
+                return response()->json([
+                    'message' => 'Old password does not match.',
+                    'status' => false
+                ],404);
+            }
+    
+                  
 
-            $user->update([
-                'password' => $password,
-            ]);
-
-            return response()->json([
-                'message' => 'Password updated successfully',
-                'status' => true
-            ],200);
-
-        }
-        catch(\Throwable $th){
+        } catch (\Throwable $th) {
             return response()->json([
                 'message' => $th->getMessage(),
                 'status' => false,
-            ],500);
+            ], 500);
         }
     }
 
@@ -403,11 +405,11 @@ class UserController extends Controller
 
             $user = User::where('email',$request->email)->first();
 
-            if ($user == null) {
+            if($user == null){
                 return response()->json([
                     'status' => false,
                     'message' => 'Email not valid!',
-                ]);
+                ],422);
             }
 
             $token = rand(100000,999999);
@@ -425,12 +427,14 @@ class UserController extends Controller
                 'status' => true,
                 'message' => 'Code sent',
                 'token' => $user->createToken("API TOKEN")->plainTextToken
-            ]);
-        } catch (\Exception $e) {
+            ],200);
+
+        }
+        catch(\Throwable $th){
             return response()->json([
+                'message' => $th->getMessage(),
                 'status' => false,
-                'message' => $e->getMessage(),
-            ]);
+            ],500);
         }
     }
 
@@ -465,13 +469,22 @@ class UserController extends Controller
 
     public function resetPassword(Request $request)
     {
-        $validator = $request->validate([
+        $validator = Validator::make($request->all(),[
             'password' => ['required','nullable','confirmed','min:8', // confirmed ===> password_confirmation
-                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
-            ],
+                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
+                ],
         ]);
 
-        $user = $request->user();
+        if($validator->fails()){
+            return response()->json([
+                'message' => 'Validation error',
+                'errors' => $validator->errors(),
+                'status' => false
+            ],422);
+        }
+
+        $user = User::where('email',$request->user()->email)->first();
+        // $user = $request->user();
 
         if (!$user) {
             return response()->json([
@@ -479,6 +492,7 @@ class UserController extends Controller
                 'status' => false,
             ], 401);
         }
+
 
         $user->update([
             'password' => Hash::make($request->password)
@@ -491,8 +505,6 @@ class UserController extends Controller
             'message' => 'Password updated successfully',
         ],200);
     }
-
-
 
     public function destroy(string $id)
     {

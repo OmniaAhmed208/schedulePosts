@@ -21,7 +21,7 @@
 
                         <div class="col-sm-5 text-center text-sm-left">
                             <div class="card-body pb-0 px-0 px-md-4">
-                                <img src="tools/assets/img/illustrations/man-with-laptop-light.png"
+                                <img src="{{ asset('tools/assets/img/illustrations/man-with-laptop-light.png') }}"
                                 height="140" alt="View Badge User"
                                 data-app-dark-img="illustrations/man-with-laptop-dark.png"
                                 data-app-light-img="illustrations/man-with-laptop-light.png" />
@@ -38,7 +38,7 @@
                             <div class="card-body text-white">
                                 <div class="card-title d-flex align-items-start justify-content-between">
                                     <div class="avatar flex-shrink-0 p-2 rounded" style="background-color: #e0f7fc;">
-                                        <img src="tools/assets/img/icons/unicons/service.png" alt="chart success" class="rounded" />
+                                        <img src="{{ asset('tools/assets/img/icons/unicons/service.png') }}" alt="chart success" class="rounded" />
                                     </div>
                                 </div>
                                 <div class="d-flex justify-content-between">
@@ -59,7 +59,7 @@
                             <div class="card-body">
                                 <div class="card-title d-flex align-items-start justify-content-between">
                                     <div class="avatar flex-shrink-0 p-2 rounded" style="background-color: #e0f7fc;">
-                                        <img src="tools/assets/img/icons/unicons/post.png" alt="post" class="rounded" />
+                                        <img src="{{ asset('tools/assets/img/icons/unicons/post.png') }}" alt="post" class="rounded" />
                                     </div>
                                 </div>
                                 <div class="d-flex justify-content-between">
@@ -75,7 +75,7 @@
                             <div class="card-body">
                                 <div class="card-title d-flex align-items-start justify-content-between">
                                     <div class="avatar flex-shrink-0 p-2 rounded" style="background-color: #e0f7fc;">
-                                        <img src="tools/assets/img/icons/unicons/post.png" alt="post" />
+                                        <img src="{{ asset('tools/assets/img/icons/unicons/post.png') }}" alt="post" />
                                     </div>
                                 </div>
                                 <div class="d-flex justify-content-between">
@@ -121,12 +121,10 @@
         var calendarEl = document.getElementById('calendar');
         var posts = <?php echo $allPosts; ?>;
         var accounts = <?php echo $accounts; ?>;
-        // Create an empty array to hold the events
         var eventsArray = [];
         var popupDiv;
 
-        for (let i = 0; i < posts.length; i++)
-        {
+        for (let i = 0; i < posts.length; i++) {
             var post = posts[i];
             var dateStr = post.scheduledTime;
             var color = '#ebebeb';
@@ -145,9 +143,10 @@
 
             var postImage = '';
             if(post.post_images.length > 0){
+                // postImage = `{{asset('')}}`+post.post_images[0].image;
                 postImage = post.post_images[0].image;
             }
-            
+
             var event = {
                 title: post.account_name,
                 start: jsDate,
@@ -161,21 +160,19 @@
                 account_id: post.account_id
             };
 
-            // Push the event to the eventsArray
             eventsArray.push(event);
         }
 
         var calendar = new FullCalendar.Calendar(calendarEl, {
             headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
             },
-            // themeSystem: 'bootstrap',
             events: eventsArray,
 
             eventContent: function (arg) {
-            console.log(arg.event.extendedProps)
+            // console.log(arg.event.extendedProps)
 
                 var imageHtml = arg.event.extendedProps.image
                     ? '<img src="' + arg.event.extendedProps.image + '" class="event-image img-fluid rounded" style="max-width:50px" />'
@@ -199,90 +196,89 @@
                     html: eventContentHtml,
                 };
             },
+            
+            eventClick: function (info) {
+                var event = info.event;
 
-
-            editable: false,
-            droppable: false,
-
-            initialView: 'dayGridMonth', // Initial view when the calendar loads
-            height: 'auto', // Adjust the height as needed
-
-            eventMouseEnter: function (event) {
-                // Create a small popup div for event details if it doesn't exist
-                if (!popupDiv) {
-                popupDiv = document.createElement('div');
-                popupDiv.className = 'event-popup position-absolute';
-                document.body.appendChild(popupDiv);
-                }
-
-                var postId = parseInt(event.event.id);
+                var postId = parseInt(event.id);
                 var post = posts.find(function (p) {
-                return p.id === postId;
+                    return p.id === postId;
                 });
+                if(post.post_images.length > 0){
+                    var postImage = post.post_images[0].image;
+                }
+                var scheduledTime = post.scheduledTime.split(' ')[1];
+                var editUrl = "{{ route('posts.edit', ['post' => '__id__']) }}"; 
+                var editPost = editUrl.replace('__id__', post.id);
 
-                var accountID = event.event.extendedProps.account_id;
+                var deleteUrl = "{{ route('posts.destroy', ['post' => '__id__']) }}"; 
+                var deletePost = deleteUrl.replace('__id__', post.id);
+
+                var accountID = post.account_id;
                 var account = accounts.find(function (a) {
                     return a.account_id === accountID;
                 });
-                var account_img = "{{url('')}}" + account.account_pic;
+                var account_img = account.account_pic;
 
-                if (post) {
+                var deletePostBtn = '<a class="btn mx-1 fw-bold shadow-sm bg-white" id="deletePost">Delete</a>';
 
-                    var scheduledTime = post.scheduledTime.split(' ')[1];
-                    var popupContent = `
-                        <div class="accountInfo bg-white p-2 px-4">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="info position-relative">
-                                <img src="${account_img}" class="rounded-circle" style="width:50px" alt="">
-                                <span class="position-absolute socialLogo ${post.account_type}App"><i class="bx bxl-${post.account_type} p-1 rounded-circle"></i></span>
-                                <a href="${account.account_link}" class="text-dark">
-                                    <span class="ms-3 accountName" style="font-weight: bold">${post.account_name ? post.account_name : ''} </span>
-                                </a>
-                            </div>
-                            <div class="text-dark p-1 text-end">  ${scheduledTime}  </div>
-                        </div>
-                        </div>
-
-                        <div class="row p-3 px-4">
-                            <div class="col-7">
-                                <div class="postData">${post.content}</div>
-                            </div>
-                            <div class="col-5">
-                                ${post.post_images.length > 0 ? `<div><img src="${post.post_images[0].image}" alt="Image" class="popup-image img-fluid"/></div>` : ''}
+                var popoverContent = `
+                    <div class="popover-content popover-calender shadow-sm">
+                        <div class="accountInfo p-2 px-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="info position-relative d-flex align-items-center">
+                                    <img src="${account_img}" class="rounded-circle p-1 w-25 border ${post.account_type}App-border" alt="">
+                                    <span class="position-absolute socialLogo ${post.account_type}App"><i class="bx bxl-${post.account_type} p-1 rounded-circle"></i></span>
+                                    <div>
+                                        <a href="${account.account_link}" class="text-dark">
+                                            <span class="ms-3 accountName fw-bold">${post.account_name ? post.account_name : ''} </span>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="text-dark text-end time"> ${scheduledTime} </div>
                             </div>
                         </div>
 
-                        <div class="p-3 px-4 d-flex justify-content-end bg-white" style="border-top: 1px solid #dee2e6;">
-
+                        <div class="d-flex justify-content-between p-4 px-3 bg-white">
+                            <div class="postData w-100">${post.content}</div>
+                            ${postImage ? `<div class="w-50"><img src="${postImage}" alt="Image" class="popup-image w-100"/></div>` : ''}
                         </div>
-                    `;
-                // <a href="${post.link ? post.link: '#'}" target="_blank" class="postLink" style="font-weight: bold;color:#6c757d !important">View Post</a>
-                // ${account ? `<a href="${account.account_link ? account.account_link : '#'}" target="_blank" class="postLink" style="font-weight: bold;color:#6c757d !important">View Post</a></div> : '' `}
 
-                // Set the content of the popupDiv
-                popupDiv.innerHTML = popupContent;
-
-
-                var eventElement = event.el;
-                var rect = eventElement.getBoundingClientRect();
-                popupDiv.style.top = rect.bottom + 'px'; // Position below the event
-                popupDiv.style.left = rect.left + 50 + 'px'; // Align with the left of the event
-
-                // Show the popup
-                popupDiv.style.display = 'block';
-                }
-            },
-
-            eventMouseLeave: function () {
+                        ${post.status == 'pending' ? 
+                            `<div class="popoverFooter p-2 d-flex justify-content-end bg-white" style="border-top: 1px solid #dee2e6;">
+                                <a class="btn mx-1 fw-bold shadow-sm bg-white" href="${editPost}">Edit Post</a>
+                                <form action="${deletePost}" method="POST" id="deleteForm">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn mx-1 fw-bold shadow-sm bg-white" id="deletePostBtn" 
+                                    onclick="return confirm('Are you sure you want to delete this post?');">Delete</button>
+                                </form>
+                            </div>` 
+                        : ''}                        
+                    </div>
+                `;
+                
                 if (popupDiv) {
-                    popupDiv.style.display = 'none';
+                    popupDiv.popover('hide');
                 }
-            },
 
+                popupDiv = $(info.el).popover({
+                    // title: event.title,
+                    content: popoverContent,
+                    placement: 'auto',
+                    trigger: 'focus',
+                    html: true,
+                    sanitize: false, // to show buttons and forms inside popover
+                });
+
+                popupDiv.popover('show');
+            }
         });
+
         calendar.render();
     });
 </script>
+
 
 @endsection
 

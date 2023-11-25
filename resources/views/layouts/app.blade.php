@@ -7,7 +7,7 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Social Media') }}</title>
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
@@ -20,21 +20,21 @@
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="{{ asset('/tools/plugins/fontawesome-free/css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('tools/plugins/fontawesome-free/css/all.min.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- Toastr -->
-    <link rel="stylesheet" href="{{ asset('/tools/plugins/toastr/toastr.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('tools/plugins/toastr/toastr.min.css') }}">
     {{-- owl carousel --}}
-    <link rel="stylesheet" href="{{ asset('/tools/dist/owlCarousel/docs/assets/owlcarousel/assets/owl.carousel.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('/tools/dist/owlCarousel/docs/assets/owlcarousel/assets/owl.theme.default.min.css')}}">
+    <link rel="stylesheet" href="{{ asset('tools/dist/owlCarousel/docs/assets/owlcarousel/assets/owl.carousel.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('tools/dist/owlCarousel/docs/assets/owlcarousel/assets/owl.theme.default.min.css')}}">
     <!-- Select2 -->
-  <link rel="stylesheet" href="{{asset('/tools/plugins/select2/css/select2.min.css')}}">
-  <link rel="stylesheet" href="{{asset('/tools/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css')}}">
+  <link rel="stylesheet" href="{{asset('tools/plugins/select2/css/select2.min.css')}}">
+  <link rel="stylesheet" href="{{asset('tools/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css')}}">
   <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" async></script>
   <!-- Masonry scripts-->
   <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
     <!-- Theme style -->
-    <link rel="stylesheet" href="{{ asset('/tools/dist/css/adminlte.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('tools/dist/css/adminlte.min.css') }}">
 
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
@@ -60,7 +60,7 @@
             <div class="container">
                 <a class="navbar-brand" href="{{ url('/') }}">
                     {{-- {{ config('app.name', 'Laravel') }} --}}
-                    <img src="{{ asset('/tools/evolve/Logo/Logo-02.png') }}" style="width: 100px" alt="">
+                    <img src="{{ asset('tools/evolve/Logo/Logo-02.png') }}" style="width: 100px" alt="">
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                     <span class="navbar-toggler-icon"></span>
@@ -117,15 +117,15 @@
     </div>
 
     <!-- jQuery -->
-    <script src="{{ asset('/tools/plugins/jquery/jquery.min.js') }}"></script>
+    <script src="{{ asset('tools/plugins/jquery/jquery.min.js') }}"></script>
     <!-- Bootstrap 4 -->
-    <script src="{{ asset('/tools/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('tools/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <!-- Select2 -->
-    <script src="{{asset('/tools/plugins/select2/js/select2.full.min.js')}}"></script>
+    <script src="{{asset('tools/plugins/select2/js/select2.full.min.js')}}"></script>
     <!-- AdminLTE App -->
-    <script src="{{ asset('/tools/dist/js/adminlte.min.js') }}"></script>
+    <script src="{{ asset('tools/dist/js/adminlte.min.js') }}"></script>
     <!-- AdminLTE for demo purposes -->
-    {{-- <script src="{{ asset('/tools/dist/js/demo.js') }}"></script> --}}
+    {{-- <script src="{{ asset('tools/dist/js/demo.js') }}"></script> --}}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         $(function () {

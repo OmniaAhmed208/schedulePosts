@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Api;
 use App\Models\settingsApi;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -106,7 +107,7 @@ class TwitterController extends Controller
             $ext = pathinfo($profileImage, PATHINFO_EXTENSION);
             $filename = time() . '.' . $ext;
             Storage::put('public/profile_images/'. $filename, file_get_contents($profileImage));
-            $storageImage = Storage::url('profile_images/'. $filename);
+            $storageImage = url('storage/profile_images/'. $filename);
 
             $userData = [
                 'creator_id'=> Auth::user()->id,
@@ -123,8 +124,16 @@ class TwitterController extends Controller
 
             $existingApp = Api::where('account_id', $user->id)->where('creator_id', Auth::user()->id)->first();
 
-            if ($existingApp) {
+            if ($existingApp) 
+            {
+                if($existingApp->account_pic != null){
+                    $rm_urlPath = parse_url($existingApp->account_pic, PHP_URL_PATH);
+                    $path = Str::replace('/storage/', '', $rm_urlPath);
+                    unlink(storage_path('app/public/'. $path));
+                }
+                
                 $existingApp->update($userData);
+
             } else {
                 Api::create($userData);
             }

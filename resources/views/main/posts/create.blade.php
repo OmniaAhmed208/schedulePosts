@@ -21,7 +21,7 @@
                     </div>
 
                     @if ($userAccounts->isNotEmpty())
-                        <form class="form-horizontal" action="{{ route('posts.store')}}" method="post" enctype="multipart/form-data">
+                        <form class="form-horizontal" id="createPostForm" action="{{ route('posts.store')}}" method="post" enctype="multipart/form-data">
                             @csrf
                             <section class="socialAccounts pl-3">
                                 @foreach ($userAccounts as $account)
@@ -39,8 +39,13 @@
                                 @endforeach
 
                                 <textarea cols="30" rows="15" maxlength="5000" class="form-control mt-3" name="postData" placeholder="Whta's on your mind?" style="resize: none">{{ old('postData') }}</textarea>
+                                
                                 <div class="container">
                                     <div class="photoSec previewSec pb-4"></div>
+
+                                    {{-- <div class="progress my-3">
+                                        <div class="progress-bar" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">0 %</div>
+                                    </div> --}}
 
                                     <div class="card py-2 px-4 d-flex flex-row justify-content-between align-items-center">
                                         <p class="m-0">Add to your post</p>
@@ -54,7 +59,7 @@
 
                                                 <i class="bx bx-video text-primary px-2 fs-5"></i>
                                             </div>
-                                            <i class="bx bx-link text-info mx-1 mt-1 postLink fs-5" data-toggle="modal" data-target="#modal-default"></i>
+                                            <i class="bx bx-link text-info mx-1 mt-1 postLink fs-5" data-toggle="modal" data-target="#postData_link"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -122,29 +127,26 @@
                             </div>
 
 
-                            <div class="modal fade" id="modal-default">
-                                <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header bg-info">
-                                    <h4 class="modal-title">Add Link</h4>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
+                            <div class="modal fade" id="postData_link">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-body pb-0">
+                                            <div class="row">
+                                                <div class="col mb-3">
+                                                    <label for="data-link" class="form-label">Link</label>
+                                                    <input type="text" id="data-link" class="form-control" value="{{ old('link') }}" name="link"/>
+                                                    <br>
+                                                    <p>
+                                                        This link for <b>facebook</b> only.... <br>
+                                                        if you have an <b>image</b>, the link not allowed and <b>recommended</b> to put it in your text.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="modal-body">
-                                        <input type="text" class="form-control" name="link" value="{{ old('link') }}" placeholder="link">
-                                        <br>
-                                        <p>
-                                            This link for facebook only.... <br>
-                                            if you have an iamge, the link not allowed and recommended to put it in your text.
-                                        </p>
-                                    </div>
-                                    <div class="modal-footer justify-content-end">
-                                        <button type="button" class="btn btn-info" data-dismiss="modal" aria-label="Close">Ok</button>
-                                    </div>
-                                </div>
                                 </div>
                             </div>
+                            
                         </form>
                     @else
                         <a href="{{ route('users.show',Auth::user()->id) }}" class="ms-2">Login to your account first</a>    
@@ -157,6 +159,36 @@
     </div>
 </div>
 
+
+
+{{-- // create post --}}
+{{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.3.0/jquery.form.min.js"></script>
+<script>
+    $(document).ready(function () {
+
+        var persent = $('.progress-bar');
+
+        $('#createPostForm').ajaxForm({
+            beforeSend:function(){
+                var persentVal = '0%';
+                persent.width(persentVal);
+                persent.html(persentVal);
+            },
+            uploadProgress:function(event,position,total,percentComplete){
+                var persentVal=percentComplete+'%';
+                persent.css('width', persentVal+'%', function(){
+                    return $(this).attr('aria-valuenow',persentVal) + '%';
+                })
+                // persent.width(persentVal);
+                // persent.html(persentVal);
+            }
+            complete:function(xhr){
+                alert('File uploaded successfully!');
+            }
+        })
+    });
+
+</script> --}}
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -225,6 +257,7 @@
             <span aria-hidden="true" style="cursor:pointer;margin-right: 6px;" onclick="closeFile(this)">&times;</span>`;
             container.innerHTML += html;
         }
+        uploadVideo();
     }
 
     function closeFile(closeButton) {
@@ -247,6 +280,8 @@
         }
     }
 </script>
+
+
 
 
 @endsection

@@ -48,7 +48,17 @@ class DashboardController extends Controller
         $userTz = new DateTimeZone($userTimezoneString);
         $userNow = new DateTime('now', $userTz);
         echo $userNow->format('Y-m-d H:i:s'); // 2023-05-09 12:22:46
+        
         // dd($time, $userTz, $userNow);
+
+        dd('$ip = request()->ip() => '. $ip, 
+        '$publicIp = $request->server("REMOTE_ADDR") => '. $publicIp,
+        '$data = Location::get($ip) => '. $data,
+        '$time = Carbon::now("Africa/Cairo") => '.$time, 
+        '$userTz = new DateTimeZone("Africa/Cairo") => ', $userTz, 
+        '$userNow = new DateTime("now", $userTz) => ', $userNow,
+        '$userNow->format("Y-m-d H:i:s") => '. $userNow->format('Y-m-d H:i:s'));
+
         return view('main.test');
     }
 

@@ -2,16 +2,19 @@
 
 @section('content')
 
-<div class="content-wrapper publishPostContainer">
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
     <div class="content-header">
-        <div class="container">
-            <section class="content">
+        <div class="container-fluid">
+            <section class="content publishPostContainer py-4">
+
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
 
-                <div class="card p-3">
+                <div class="card p-3 my-2">
                     <div class="card-header border-0">
+                        <h3 class="card-title my-3"><b>Edit Post</b></h3>
                         <div class="card-tools socialIcons" id="socialIcons"></div>
                     </div>
 
@@ -19,18 +22,19 @@
                         @csrf
                         @method('put')
                         <section class="socialAccounts pl-3">
-                            <label for="{{ $post['account_id'] }}" style="width:50px;height:50px" class="user-info position-relative mr-3" title="{{ $post['account_name'] }}">
+                            <label for="{{ $post['account_id'] }}" style="width:50px;height:50px" class="user-info position-relative me-3" title="{{ $post['account_name'] }}">
                                 @if ($post['account_pic'])
-                                    <img src="{{ asset($post['account_pic']) }}" class="img-circle p-1 w-100 {{ $post['account_type'] }}App-border" alt="User Image">
+                                    <img src="{{ asset($post['account_pic']) }}" class="rounded-circle p-1 w-100 {{ $post['account_type'] }}App-border" alt="User Image">
                                 @else
-                                    <img src="{{ asset('tools/dist/img/user.png') }}" class="img-circle p-1 w-100 {{ $post['account_type'] }}App-border" alt="User Image">
+                                    <img src="{{ asset('tools/dist/img/user.png') }}" class="rounded-circle p-1 w-100 {{ $post['account_type'] }}App-border" alt="User Image">
                                 @endif
                                 <span class="rounded position-absolute {{ $post['account_type'] }}App" style="background: transparent;left: 33px;top: 29px;">
-                                    <i class="fab fa-{{ $post['account_type'] }} rounded" style="font-size: 15px;"></i>
+                                    <i class="bx bxl-{{ $post['account_type'] }} fs-large rounded-circle" style="font-size: 15px;"></i>
                                 </span>
                             </label>
 
                             <textarea cols="30" rows="15" maxlength="5000" class="form-control mt-3" name="postData" placeholder="Whta's on your mind?" style="resize: none">{{ $post->content }}</textarea>
+                            
                             <div class="container">
                                 <div class="photoSec previewSec pb-4">
                                     @if (!empty($images))
@@ -63,12 +67,13 @@
                                             <input type="file" class="form-control position-absolute" name="video" onchange="getVideoPreview(event)" accept="video/*">
                                             <i class="bx bx-video fs-5 text-primary px-2"></i>
                                         </div>
-                                        <i class="bx bx-link fs-5 text-info mx-1 mt-1 postLink" data-toggle="modal" data-target="#modal-default"></i>
+                                        <i class="bx bx-link fs-5 text-info mx-1 mt-1 postLink" data-toggle="modal" data-target="#postData_link"></i>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="form-group container" id="youtubeSelectBlock" style="display: none;">
+
+                            <div class="form-group container mt-4" id="youtubeSelectBlock" style="display: none;">
                                 <div class="row">
                                     <div class="col-2 d-flex align-items-center mb-3">
                                         <span><b>Video title</b></span>
@@ -81,8 +86,7 @@
                                         <div class="row mb-3">
                                             <div class="col-4"><span><b>Category</b></span></div>
                                             <div class="col-8">
-                                                <select class="form-control select2 w-100" name="youtubeCategory">
-                                                    <option selected disabled>Choose category of video on youtube</option>
+                                                <select class="form-select"  name="youtubeCategory">
                                                     @foreach($youtubeCategories as $category)
                                                         <option value="{{$category['category_id']}}">{{$category['category_name']}}</option>
                                                     @endforeach
@@ -90,14 +94,14 @@
                                             </div>
                                         </div>
                                     </div>
+
                                     <div class="col-lg-6">
                                         <div class="row mb-3">
                                             <div class="col-4"><span><b>Visibility</b></span></div>
                                             <div class="col-8">
-                                                <select class="form-control select2 w-100" name="youtubePrivacy">
-                                                    <option value="{{ $post->privacy }}"></option>
-                                                    <option value="public">Public</option>
-                                                    <option value="private">Private</option>
+                                                <select class="form-select" name="youtubePrivacy">
+                                                  <option value="public">Public</option>
+                                                  <option value="Private">Private</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -112,47 +116,46 @@
                                 </div>
                             </div>
 
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="far fa-calendar-times text-info mr-2"></i>
-                                <label class="pt-1">schedule your post</label>
-                                <i class="far fa-hand-point-right text-info mx-2"></i>
-                                <input type="checkbox" id="checkDate" data-bootstrap-switch onchange="statusChange()">
+                            <div class="d-flex align-items-center form-check form-switch my-3">
+                                <i class="bx bx-calendar text-info mx-2"></i>
+                                <label class="pt-1" for="checkDate"> Schedule your post </label>
+                                <input type="checkbox" class="form-check-input mx-1" id="checkDate" onchange="statusChange()">
                             </div>
 
                             <div class="form-group w-25 schedule" style="display: none">
-                                <div class="row">
-                                    <input type="datetime-local" id="scheduledTime" class="form-control mb-0" name="scheduledTime">
+                                <div class="row m-0 p-0">
+                                    <input type="datetime-local" id="scheduledTime" class="form-control ms-5" name="scheduledTime">
                                 </div>
                             </div>
 
-                            <input type="text" value="{{ $post->scheduledTime }}" disabled>
-
-                            <button type="submit" class="btn publishBtn float-right border border-info px-4">Update</button>
+                            <input type="text" class="form-control w-25 mt-3 mb-0 ms-5" value="{{ $post->scheduledTime }}" disabled>
                         </section>
+                        
+                        <div class="rounded d-flex justify-content-end">
+                            <button type="submit" class="btn publishBtn float-right border border-info px-4">Update</button>
+                        </div>
 
-                        <div class="modal fade" id="modal-default">
-                            <div class="modal-dialog">
-                              <div class="modal-content">
-                                <div class="modal-header bg-info">
-                                  <h4 class="modal-title">Add Link</h4>
-                                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                  </button>
+                        {{-- &times; --}}
+                        <div class="modal fade" id="postData_link">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-body pb-0">
+                                        <div class="row">
+                                            <div class="col mb-3">
+                                                <label for="data-link" class="form-label">Link</label>
+                                                <input type="text" id="data-link" class="form-control" name="link"/>
+                                                <br>
+                                                <p>
+                                                    This link for <b>facebook</b> only.... <br>
+                                                    if you have an <b>image</b>, the link not allowed and <b>recommended</b> to put it in your text.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="modal-body">
-                                    <input type="text" class="form-control" name="link" value="{{ old('link') }}" placeholder="link">
-                                    <br>
-                                    <p>
-                                        This link for facebook only.... <br>
-                                        if you have an iamge, the link not allowed and recommended to put it in your text.
-                                    </p>
-                                </div>
-                                <div class="modal-footer justify-content-end">
-                                    <button type="button" class="btn btn-info" data-dismiss="modal" aria-label="Close">Ok</button>
-                                </div>
-                              </div>
                             </div>
                         </div>
+
                     </form>
                 </div>
 
@@ -160,10 +163,6 @@
         </div>
     </div>
 </div>
-
-<script>
-
-</script>
 
 
 <script>
@@ -190,7 +189,7 @@
             var img = URL.createObjectURL(event.target.files[i]);
             var container = document.querySelector('.previewSec');
             // container.innerHTML = '';
-            var html = `<img src="${img}" style='width:100px;height:100px'>
+            var html = `<img src="${img}">
             <span aria-hidden="true" style="cursor:pointer;margin-right: 6px;" onclick="closeFile(this)">&times;</span>`;
             container.innerHTML += html;
         }

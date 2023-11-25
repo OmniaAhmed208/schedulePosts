@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Api;
+use App\Models\User;
 use Facebook\Facebook;
 use App\Models\settingsApi;
+use Illuminate\Support\Str;
 use App\Models\social_posts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Socialite\Facades\Socialite;
 
 class FacebookController extends Controller
@@ -17,33 +20,68 @@ class FacebookController extends Controller
         return view('social.facebook');
     }
 
-    public function socialStatusFacebook(){
-        if(Api::count() > 0){
-            Api::truncate();
-        }
-        return response()->json(['status' => 'success']);
-    }
+    // public function socialStatusFacebook(){
+    //     if(Api::count() > 0){
+    //         Api::truncate();
+    //     }
+    //     return response()->json(['status' => 'success']);
+    // }
 
     public function callback(){
-        $facebookUser = Socialite::driver('facebook')->user();
+        try{
+            $user = Socialite::driver('facebook')->user();
 
-        $userData = [
-            'creator_id'=> Auth::user()->id,
-            'user_name' => $facebookUser->name,
-            'user_account_id' => $facebookUser->id,
-            'token' => $facebookUser->token,
-            'email' => $facebookUser->email ?? 'default@example.com'
-        ];
-    
-        $apiData = Api::updateOrCreate($userData);
+            $data = User::where('email',$user->email)->first();
+            
+            $response = Http::get("https://graph.facebook.com/v12.0/me/accounts?access_token={$user->token}");
+            $pages = $response->json()['data'];
 
-        $showLink = false;
-        $accessToken = $facebookUser->token;
-        $response = Http::get("https://graph.facebook.com/v12.0/me/accounts?access_token={$accessToken}");
-        $pages = $response->json()['data'];
+            dd($pages);
 
-        // return view('social.faceCreate')->with(compact('showLink', 'pages'));
-        return view('AdminSocialMedia.faceCreate')->with(compact('showLink', 'pages'));
+            $profileImage = $user->avatar;
+            $ext = pathinfo($profileImage, PATHINFO_EXTENSION);
+            $filename = time() . '.' . $ext;
+            Storage::put('public/profile_images/' . $filename, file_get_contents($profileImage));
+            $storageImage = url('storage/profile_images/' . $filename);
+
+            // Get Facebook user profile
+            $facebookApiUrl = 'https://graph.facebook.com/v12.0/' . $user->id;
+            $facebookApiResponse = json_decode(file_get_contents($facebookApiUrl), true);
+            $facebookLink = isset($facebookApiResponse['link']) ? $facebookApiResponse['link'] : '';
+
+            $userData = [
+                'creator_id' => Auth::user()->id,
+                'account_type' => 'facebook', // Corrected account type to 'facebook'
+                'account_id' => $user->id,
+                'account_name' => $user->name,
+                'email' => $user->email,
+                'account_pic' => $storageImage,
+                'account_link' => $facebookLink,
+                'token' => $user->token,
+                'token_secret' => $user->tokenSecret 
+            ];
+
+            $existingApp = Api::where('account_id', $user->id)->where('creator_id', Auth::user()->id)->first();
+
+            if ($existingApp) 
+            {
+                if($existingApp->account_pic != null){
+                    $rm_urlPath = parse_url($existingApp->account_pic, PHP_URL_PATH);
+                    $path = Str::replace('/storage/', '', $rm_urlPath);
+                    unlink(storage_path('app/public/'. $path));
+                }
+                
+                $existingApp->update($userData);
+
+            } else {
+                Api::create($userData);
+            }
+            
+            return redirect()->back();
+
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+        }
     }
 
     public function getData($pageId,$accessToken,$url){
@@ -358,6 +396,7 @@ class FacebookController extends Controller
                 // Handle the error here, log it, and return an appropriate response
                 return response()->json(['error' => 'Failed to fetch Facebook pages data'], 500);
             }
+
             $pagesData = $response->json();
 
             if (isset($pagesData['error'])) {
@@ -397,6 +436,104 @@ class FacebookController extends Controller
             return response()->json(['error' => 'Internal Server Error'], 500);
         }
         
+    }
+
+    public function getPages2(Request $request)
+    {
+        try {
+            $responseData = [];
+            $requestData = json_decode($request->getContent(), true);
+
+            $userID = $requestData['userID'];
+            $access_token = $requestData['access_token'];
+
+            // Fetch user data
+            $urlUser = "https://graph.facebook.com/v12.0/me?fields=id,name,email,picture&access_token={$access_token}";
+            $userData = $this->curlFun($urlUser);
+
+            // Fetch pages data
+            $urlPages = "https://graph.facebook.com/{$userID}/accounts?fields=name,access_token,picture,perms&access_token={$access_token}";
+            $response = Http::get($urlPages);
+
+            if ($response->failed()) {
+                return response()->json(['error' => 'Failed to fetch Facebook pages data'], 500);
+            }
+
+            $pagesData = $response->json();
+
+            if (isset($pagesData['error'])) {
+                return response()->json(['error' => $pagesData['error']], 500);
+            }
+
+            $pages = [];
+            foreach ($pagesData['data'] as $page) {
+                $pageInfo = [
+                    'id' => $page['id'],
+                    'access_token' => $page['access_token'],
+                    'image' => $page['picture']['data']['url'],
+                    'type' => $page['perms'][0],
+                ];
+                $pages[] = $pageInfo;
+            }
+
+            $responseData['userData'] = $userData;
+            $responseData['pagesData'] = $pages;
+
+            return response()->json($responseData);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Internal Server Error'], 500);
+        }
+    }
+
+    // function saveUserData(responseData) {
+    //     console.log('getPages', responseData);
+        
+    //     // Assuming responseData is the JSON structure from the server
+    //     var userData = responseData.userData;
+    //     var pagesData = responseData.pagesData;
+    
+    //     // Handle user data
+    //     console.log('User ID:', userData.id);
+    //     console.log('User Name:', userData.name);
+    //     console.log('User Email:', userData.email);
+    
+    //     // Assuming you have an image element for the user profile picture
+    //     var userImageElement = document.getElementById('userProfilePicture');
+    //     userImageElement.src = userData.picture.data.url;
+    
+    //     // Handle pages data
+    //     for (var i = 0; i < pagesData.length; i++) {
+    //         var page = pagesData[i];
+    //         console.log('Page ID:', page.id);
+    //         console.log('Page Access Token:', page.access_token);
+    //         console.log('Page Image:', page.image);
+    //         console.log('Page Type:', page.type);
+    
+    //         // Assuming you have a container element for displaying pages
+    //         var pagesContainer = document.getElementById('pagesContainer');
+    
+    //         // Create a new element for each page and append it to the container
+    //         var pageElement = document.createElement('div');
+    //         pageElement.innerHTML = `
+    //             <div class="d-flex justify-content-between align-items-center mb-2">
+    //                 <div class="position-relative">
+    //                     <img src="${page.image}" class="rounded-circle border-primary p-1" alt="Page Image">
+    //                     <i class="fab fa-facebook position-absolute rounded-circle text-primary icon"></i>
+    //                     ${page.name} <!-- Assuming there is a name property in your pagesData -->
+    //                 </div>
+    //                 <div><input type="checkbox"></div>
+    //             </div>
+    //         `;
+    //         pagesContainer.appendChild(pageElement);
+    //     }
+    
+    //     // Rest of your code...
+    // }
+    
+    public function store(Request $request) 
+    {
+        dd($request);
     }
 
     public function curlFun($url)

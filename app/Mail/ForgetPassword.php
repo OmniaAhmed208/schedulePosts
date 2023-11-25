@@ -22,6 +22,7 @@ class ForgetPassword extends Mailable
         $this->token = $token;
     }
 
+
     /**
      * Get the message envelope.
      */

@@ -7,6 +7,8 @@
     <div class="container">
       <section class="content">
 
+        {{-- <a href="{{ url('/auth/redirect') }}" class="btn btn-primary">Login with facebook</a> --}}
+
         {{-- @php
             // 1 to 1
             $time = App\Models\User::find(1)->time_think; 
@@ -48,13 +50,13 @@
 
         @endphp --}}
 
-        @php
-        $mediaImages = App\Models\User::find(Auth::user()->id)->getMedia('profile_images');
-            
+        {{-- @php
+          $mediaImages = App\Models\User::find(Auth::user()->id)->getMedia('profile_images');
         @endphp
+        
         @foreach($mediaImages as $image)
         <img src="{{ $image->getUrl() }}" alt=""> 
-        @endforeach
+        @endforeach --}}
 
       </section>
     </div>

@@ -47,11 +47,9 @@ Route::resource('subscribers', SubscriberController::class);
 //protected routes
 Route::middleware('auth:sanctum')->group(function ()
 {
-    Route::get('/email_verification', [UserController::class, 'sendEmailVerification']);
-    Route::post('/email_verification', [UserController::class, 'email_verification']);
-
+    
     Route::post('/logout', [UserController::class, 'logout']);
-    Route::put('updatePassword/{id}', [UserController::class,'updatePassword']);
+    Route::post('updatePassword', [UserController::class,'updatePassword']);
 
     Route::resource('users', UserController::class);
     Route::resource('dashboard', DashboardController::class);

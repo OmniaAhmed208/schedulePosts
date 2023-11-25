@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\NewsLetter;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -38,7 +39,7 @@ class NewsLetterController extends Controller
             $image = $request->file('image');
             $filename = time() . '_' . $image->getClientOriginalName();
             $image->storeAs('public/newsLetter', $filename);
-            $storageImage = Storage::url('newsLetter/'. $filename);
+            $storageImage = 'newsLetter/'. $filename;
         }
 
         $validator =  $request->validate($validationRules);
@@ -66,6 +67,7 @@ class NewsLetterController extends Controller
         $storageImage = '';
 
         $oldImage = $newsLetter->oldImage;
+
         if($oldImage != null){
             $storageImage = $oldImage;
             unset($validationRules['content']);
@@ -75,10 +77,17 @@ class NewsLetterController extends Controller
         {
             unset($validationRules['content']);
 
+            if($newsLetter->image != null){
+                $rm_urlPath = parse_url($newsLetter->image, PHP_URL_PATH);
+                $path = Str::replace('/storage/', '', $rm_urlPath);
+                unlink(storage_path('app/public/'. $path));
+                // unlink(storage_path('app/public/'. $newsLetter->image));
+            }
             $image = $request->file('image');
             $filename = time() . '_' . $image->getClientOriginalName();
             $image->storeAs('public/newsLetter', $filename);
-            $storageImage = Storage::url('newsLetter/'. $filename);
+            // $storageImage = 'newsLetter/'. $filename;
+            $storageImage = url('storage/newsLetter/'. $filename);
         }
 
         $validator =  $request->validate($validationRules);

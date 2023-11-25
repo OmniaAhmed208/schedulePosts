@@ -37,8 +37,9 @@ class VerifyEmail extends Mailable
      */
     public function content(): Content
     {
+
         return new Content(
-            view: 'emails.verifyEmail',
+            view: 'emails.verify',
             with: [$this->token]
         );
     }

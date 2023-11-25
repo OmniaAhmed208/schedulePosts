@@ -15,9 +15,6 @@ use App\Models\youtube_category;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Storage;
-use Madcoda\compat;
-use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 
 class PostController extends Controller
 {
@@ -27,7 +24,7 @@ class PostController extends Controller
     {
         $this->postStore = $post;
     }
-
+    
     public function index()
     {
         $allPosts = PublishPost::where('creator_id', Auth::user()->id)->with(['postImages', 'postVideos'])->get();
@@ -59,29 +56,20 @@ class PostController extends Controller
         return view('main.posts.create',compact('userApps','userAccounts','channels','timeThink','youtubeCategories'));
     }
 
-    // public function store(Request $request)
-    // {
-    //     $messages = $this->postStore->store($request);
-    //     return redirect()->back()->with('postStatusForPublishing', $messages);
-    // }
-
     public function store(Request $request)
     {
         $validator = $request->validate([
             'postData' => 'max:5000',
-            // 'video' => 'mimetypes:video/mov,video/mp4,video/mpg,video/mpeg,video/avi,video/webm',
-            // 'images' => 'mimes:jpeg,jpg,png',
-
-            'video' => 'mimetypes:video/quicktime,video/mp4,video/mpeg,video/avi,video/webm',
-            'images' => 'required|array',
-            'images.*' => 'required|file|image|mimes:jpeg,jpg,png',
-
+            'video' => 'mimetypes:video/quicktime,video/mp4,video/mpeg,video/mpg,video/mov,video/avi,video/webm',
+            'images' => 'array',
+            'images.*' => 'file|image|mimes:jpeg,jpg,png',
             'accounts_id' => 'required'
         ]);
 
         $validationRules = [
             'postData' => 'required',
         ];
+
         if ($request->has('images') || $request->has('video')) {
             unset($validationRules['postData']); // If there's an image or video, text is not required
         }
@@ -128,48 +116,24 @@ class PostController extends Controller
 
         $request->validate($validationRules);
 
-        $imgUpload = []; $imgLocation = []; $filename = '';
+        $imgUpload = []; 
         $publishPosts = [];
 
         if ($request->hasFile('images'))
         {
             $images = $request->file('images');
-            foreach ($images as $image) {
-                $filename = time() . '_' . $image->getClientOriginalName(); // Generate a unique filename
-                $image->storeAs('public/uploadImages', $filename); // Store the file with the unique filename
-                $localFilePath = storage_path('uploadImages/' . $filename); // Get the local file path (fullPath)
-                $storageImage = Storage::url('uploadImages/'. $filename); //storage/uploadImages/img_name
-                $imgUpload[] = $localFilePath;
-                $imgLocation[] = $storageImage;
-            }
+            $imgUpload = $this->postStore->saveImages($images);
         }
 
         $youtubeVideoPath='';$twitterVideoPath='';$storageVideo='';
         if ($request->hasfile('video'))
         {
             $video = $request->file('video');
-            $filename = $video->getClientOriginalName();
-            $storagePath = 'uploadVideos';
-            if (!Storage::exists($storagePath)) {
-                Storage::makeDirectory($storagePath);
-            }
+            $videoUpload = $this->postStore->saveVideo($video);
 
-            $video->storeAs($storagePath, $filename);
-            $OriginalVideo = $storagePath . '/' . $filename;
-
-            $newVideo = FFMpeg::fromDisk('local')->open($OriginalVideo)->addFilter(function ($filters) {
-                $filters->resize(new \FFMpeg\Coordinate\Dimension(2000, 2000));
-            });
-
-            $commpressedVideo = $storagePath . '/' . 'compressed_' . $filename;
-            $youtubeVideoPath = $commpressedVideo; // for youtube
-            $twitterVideoPath = storage_path('app/'. $commpressedVideo); // Get the local file path // twitter
-            $storageVideo = Storage::url('app/'. $commpressedVideo);
-
-            $newVideo->export()
-            ->toDisk('local')
-            ->inFormat(new \FFMpeg\Format\Video\X264())
-            ->save($storagePath . '/' . 'compressed_' . $filename);
+            $youtubeVideoPath = $videoUpload['youtubeVideoPath'];
+            $twitterVideoPath = $videoUpload['twitterVideoPath'];
+            $storageVideo = $videoUpload['storageVideo'];
         }
 
         if($request->scheduledTime){
@@ -181,7 +145,6 @@ class PostController extends Controller
             $diff_time = time_think::where('creator_id', Auth::user()->id)->first()->time;
             $postTime = $now->copy()->addHours($diff_time)->format('Y-m-d H:i');
             $status = 'published';
-            // $publishPosts[] = $this->publishPost($request, $imgUpload, $youtubeVideoPath, $twitterVideoPath);
             $publishPosts[] = $this->postStore->publishPost($request, $imgUpload, $youtubeVideoPath, $twitterVideoPath);
         }
 
@@ -249,8 +212,8 @@ class PostController extends Controller
                 $post->fill($attributes); // Set the attributes for the model
                 $post->save(); // Save the model to the database
 
-                if (is_array($imgLocation) && !empty($imgLocation)) {
-                    foreach ($imgLocation as $img) {
+                if (is_array($imgUpload) && !empty($imgUpload)) {
+                    foreach ($imgUpload as $img) {
                         PostImages::create([
                             'post_id' => $post->id,
                             'creator_id' => Auth::user()->id,
@@ -313,7 +276,7 @@ class PostController extends Controller
         $now = Carbon::now()->addHours($diff_time)->format('Y-m-d H:i');
         $oldTime = $post->scheduledTime;
 
-        if($request->scheduledTime){
+        if($request->scheduledTime != null){
             $scheduledTime = Carbon::parse($request->scheduledTime)->format('Y-m-d H:i');
             if ($scheduledTime > $now){
                 $post->status = 'pending';
@@ -376,20 +339,13 @@ class PostController extends Controller
 
         if($request->file('images') || $request->file('video')){
 
-            $imgUpload = []; $imgLocation = []; $filename = '';
+            $imgUpload = []; 
             if($request->file('images')){
                 $images = $request->file('images');
-                foreach ($images as $image) {
-                    $filename = time() . '_' . $image->getClientOriginalName();
-                    $image->storeAs('public/uploadImages', $filename); // Store the file with the unique filename
-                    $localFilePath = storage_path('uploadImages/' . $filename); // Get the local file path (fullPath)
-                    $storageImage = Storage::url('uploadImages/'. $filename); //storage/uploadImages/img_name
-                    $imgUpload[] = $localFilePath;
-                    $imgLocation[] = $storageImage;
-                }
+                $imgUpload = $this->postStore->saveImages($images);
 
-                if (is_array($imgLocation) && !empty($imgLocation)) {
-                    foreach ($imgLocation as $img) {
+                if (is_array($imgUpload) && !empty($imgUpload)) {
+                    foreach ($imgUpload as $img) {
                         $postImages = PostImages::where('post_id',$post->id)->get();
                         PostImages::create([
                             'post_id' => $post->id,
@@ -403,26 +359,8 @@ class PostController extends Controller
             if ($request->hasfile('video'))
             {
                 $video = $request->file('video');
-                $filename = $video->getClientOriginalName();
-                $storagePath = 'uploadVideos';
-                if (!Storage::exists($storagePath)) {
-                    Storage::makeDirectory($storagePath);
-                }
-
-                $video->storeAs($storagePath, $filename);
-                $OriginalVideo = $storagePath . '/' . $filename;
-
-                $newVideo = FFMpeg::fromDisk('local')->open($OriginalVideo)->addFilter(function ($filters) {
-                    $filters->resize(new \FFMpeg\Coordinate\Dimension(2000, 2000));
-                });
-
-                $commpressedVideo = $storagePath . '/' . 'compressed_' . $filename;
-                $storageVideo = Storage::url('app/'. $commpressedVideo);
-
-                $newVideo->export()
-                ->toDisk('local')
-                ->inFormat(new \FFMpeg\Format\Video\X264())
-                ->save($storagePath . '/' . 'compressed_' . $filename);
+                $videoUpload = $this->postStore->saveVideo($video);
+                $storageVideo = $videoUpload['storageVideo'];
 
                 if ($storageVideo) {
                     PostVideos::create([

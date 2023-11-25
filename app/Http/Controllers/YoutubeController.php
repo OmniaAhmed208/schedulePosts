@@ -169,7 +169,8 @@ class YoutubeController extends Controller
                 if (isset($accessToken['access_token'])) 
                 {
                     $access_token = $accessToken['access_token'];
-                    $refresh_token = $accessToken['refresh_token'];
+                    // $refresh_token = $accessToken['refresh_token'];
+                    $refresh_token = isset($accessToken['refresh_token']) ? $accessToken['refresh_token'] : null;
                     
                     $url = "https://www.googleapis.com/youtube/v3/channels?access_token=$access_token&part=snippet&mine=true";
                     
@@ -230,8 +231,7 @@ class YoutubeController extends Controller
         } catch (\Exception $e) {
             dd($e->getMessage());
             // return redirect()->route('socialAccounts')->with('error', $e->getMessage());
-        } 
-        
+        }  
     }
     
 

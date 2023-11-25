@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\ForgetPassword;
 use App\Models\Api;
 use App\Models\User;
 use App\Mail\VerifyEmail;
 use App\Models\settingsApi;
+use Illuminate\Support\Str;
+use App\Mail\ForgetPassword;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -26,91 +25,29 @@ class UserController extends Controller
         return view('main.users.index',compact('allUsers','roles','user_roles'));
     }
 
-    public function show($userId) // profile
-    {
-        $user = User::find($userId);
-
-        $apiAccounts = Api::all()->where('creator_id', Auth::user()->id);
-        $userApps = settingsApi::all(); // all App on website
-
-        return view('main.users.show',compact('user','apiAccounts','userApps'));
-    }
-
-    public function update(Request $request, $id)
-    {
-        // dd($request);
-        $user = User::find($id);
-        if($user == null){
-            return back()->with('error','User not found');
-        }
-
-        $validator = $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'image' => 'mimes:jpg,jpeg,png',
-        ]);
-
-        // $password = $user->password;
-
-        // if ($request->filled('old_password') && $request->filled('new_password')) {
-        //     if (!Hash::check($request->old_password, $user->password)) {
-        //         return redirect()->back()->with('error', 'Old password does not match.');
-        //     }
-        //     else{
-        //         $request->validate([
-        //             'new_password' => ['nullable','min:8','regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'],
-        //         ]);
-        //         $password = Hash::make($request->new_password);
-        //     }
-        // }
-
-        $storageImage = $user->image;
-        if ($request->hasFile('image'))
-        {
-            $image = $request->file('image');
-            $filename = time() . '_' . $image->getClientOriginalName();
-            $image->storeAs('public/profile_images', $filename);
-            $storageImage = Storage::url('profile_images/'. $filename);
-        }
-        if ($request->reset_image == 1) {
-            $storageImage = 'tools/dist/img/user.png';
-        }
-
-        $user->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'image' => $storageImage
-        ]);
-
-        // $user->addMediaFromRequest('image')->toMediaCollection('profile_images');
-
-        return back()->with('success','User updated successfully');
-    }
-
     public function register(Request $request)
     {
         try{
-            $validator = $request->validate([
+            $validator =$request->validate([
                 'name' => 'required',
                 'email' => 'required|email|unique:users,email',
                 'password' => ['required','nullable','confirmed','min:8', // confirmed ===> password_confirmation
                     'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
                 ],
             ]);
-            //  At least one lowercase letter, At least one uppercase letter, At least one digit, At least one special character
 
-            $token = rand(100000,999999);
+            $token = random_int(100000, 999999);
 
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
-                'verification_token' => $token,
                 'password' => Hash::make($request->password), // bcrypt($request->password)
+                'verification_token' => $token,
             ]);
 
             $cc = User::where('email', $request->email)->first();
             $bcc = User::where('email', $request->email)->first();
-            Mail::to($request->email)
+            Mail::to($request->user())
             ->cc($cc)
             ->bcc($bcc)
             ->send(new VerifyEmail($token));
@@ -121,7 +58,6 @@ class UserController extends Controller
                 'user' => $user,
                 'token' => $user->createToken("API TOKEN")->plainTextToken
             ],200);
-
         }
         catch(\Throwable $th){
             return response()->json([
@@ -138,6 +74,7 @@ class UserController extends Controller
                 'token' => 'required|max:6',
             ]);
 
+            // $user = User::where('email', $request->user()->email)->first();
             $user = User::where('verification_token', $request->token)->first();
 
             if (!$user) {
@@ -171,7 +108,6 @@ class UserController extends Controller
             ], 200);
         }
         catch (\Throwable $th) {
-            Log::error($th); // Log the exception
             return response()->json([
                 'message' => $th->getMessage(),
                 'status' => false,
@@ -210,12 +146,64 @@ class UserController extends Controller
             //after code send it to email_verification method
         }
         catch (\Throwable $th) {
-            Log::error($th); // Log the exception
             return response()->json([
                 'message' => $th->getMessage(),
                 'status' => false,
             ], 500);
         }
+    }
+
+    public function show($userId) // profile
+    {
+        $user = User::find($userId);
+
+        $apiAccounts = Api::all()->where('creator_id', Auth::user()->id);
+        $userApps = settingsApi::all(); // all App on website
+
+        return view('main.users.show',compact('user','apiAccounts','userApps'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        // dd($request);
+        $user = User::find($id);
+        if($user == null){
+            return back()->with('error','User not found');
+        }
+
+        $validator = $request->validate([
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'image' => 'mimes:jpg,jpeg,png',
+        ]);
+
+        $storageImage = $user->image;
+        if ($request->hasFile('image'))
+        {
+            if($user->image != null){
+                $rm_urlPath = parse_url($user->image, PHP_URL_PATH);
+                $path = Str::replace('/storage/', '', $rm_urlPath);
+                unlink(storage_path('app/public/'. $path));
+            }
+
+            $image = $request->file('image');
+            $filename = time() . '_' . $image->getClientOriginalName();
+            $image->storeAs('public/profile_images', $filename);
+            $storageImage = url('storage/profile_images/'. $filename);
+        }
+        if ($request->reset_image == 1) {
+            $storageImage = null;
+        }
+
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'image' => $storageImage
+        ]);
+
+        // $user->addMediaFromRequest('image')->toMediaCollection('profile_images');
+
+        return back()->with('success','User updated successfully');
     }
 
     public function updatePassword(Request $request, $id)
@@ -248,7 +236,6 @@ class UserController extends Controller
         ]);
 
         return back()->with('success','Password updated successfully');
-
     }
 
     public function forgetPassword(Request $request)
@@ -264,7 +251,7 @@ class UserController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Email not valid!',
-                ]);
+                ],422);
             }
 
             $token = rand(100000,999999);
@@ -282,12 +269,13 @@ class UserController extends Controller
                 'status' => true,
                 'message' => 'Code sent',
                 'token' => $user->createToken("API TOKEN")->plainTextToken
-            ]);
+            ],200);
+
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage(),
-            ]);
+            ],500);
         }
     }
 
@@ -341,16 +329,16 @@ class UserController extends Controller
         ],200);
     }
 
-    public function destroy(string $id)
-    {
-        $user = User::find($id);
+    // public function destroy(string $id)
+    // {
+    //     $user = User::find($id);
 
-        if($user == null){
-            return back()->with('error','User not found');
-        }
+    //     if($user == null){
+    //         return back()->with('error','User not found');
+    //     }
 
-        $user->delete();
+    //     $user->delete();
 
-        return back()->with('error','User deleted successfully');
-    }
+    //     return back()->with('error','User deleted successfully');
+    // }
 }

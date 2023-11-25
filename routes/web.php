@@ -20,6 +20,7 @@ use App\Http\Controllers\PostStatusController;
 use App\Http\Controllers\SubscriberController;
 use App\Http\Controllers\YoutubeCategoryController;
 use App\Http\Controllers\RolesPermissionsController;
+use Facebook\Facebook;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,7 +38,7 @@ Route::middleware(['guest'])->get('/', function () {
     return view('welcome');
 });
 
-Route::post('auth/register', [UserController::class,'register']);
+Route::post('/auth/register',[UserController::class,'register']);
 Route::post('email_verification', [UserController::class,'email_verification']);
 Route::post('code_verification_from_profile', [UserController::class,'code_verification_from_profile']);
 
@@ -49,17 +50,17 @@ Auth::routes();
 
 Route::group(['middleware' => ['auth']], function ()
 {
-    Route::get('/home', [DashboardController::class, 'index'])->name('admin.index');
     Route::get('/test', [DashboardController::class, 'test'])->name('test');
+    Route::get('/home', [DashboardController::class, 'index'])->name('admin.index');
     Route::put('updatePassword/{id}', [UserController::class,'updatePassword']);
     Route::post('chartJS/{id}', [DashboardController::class,'chartJS']);
-
 
     Route::resource('services', ServiceController::class)->middleware('permission:services');
     Route::resource('users', UserController::class);
     Route::resource('dashboard', DashboardController::class)->only(['show'])->middleware('permission:dashboard.forEachUser');
     Route::resource('accounts', AccountController::class);
     Route::resource('posts', PostController::class);
+    Route::resource('facebook', FacebookController::class);
     Route::resource('twitter', TwitterController::class);
     Route::resource('youtube', YoutubeController::class);
     Route::resource('youtubeCategories', YoutubeCategoryController::class);

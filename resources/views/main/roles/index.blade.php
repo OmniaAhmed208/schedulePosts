@@ -50,14 +50,14 @@
                                                                         $permission = $permissions->find($item->permission_id)->name;
                                                                     @endphp
 
-                                                                    <div class="col-md-4 p-2">{{ $permission }}</div>
+                                                                    <div class="col-md-6 col-lg-4 p-2">{{ $permission }}</div>
 
-                                                                    @if (($loop->index + 1) % 4 == 0 || $loop->last)
+                                                                    {{-- @if (($loop->index + 1) % 4 == 0 || $loop->last)
                                                                         </div>
                                                                         @if (!$loop->last)
                                                                             <div class="row">
                                                                         @endif
-                                                                    @endif
+                                                                    @endif --}}
                                                                 @endif
                                                             @endforeach
                                                         </div>

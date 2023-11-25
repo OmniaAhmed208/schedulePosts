@@ -190,7 +190,7 @@
                     // Check if there is an image
                     if (newsletterData.image !== null && newsletterData.image !== '') {
                         const existingImage = document.createElement('img');
-                        existingImage.src = "{{url('')}}" + newsletterData.image;
+                        existingImage.src = "{{asset('')}}" + newsletterData.image;
                         existingImage.className = 'rounded p-1 w-100';
 
                         removeImage.addEventListener('click', function () {
