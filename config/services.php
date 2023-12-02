@@ -40,11 +40,12 @@ return [
     //     // 'redirect' => 'https://social.evolvetechsys.com/auth/callback',
     // ],
 
-    'facebook' => [
-        'client_id' => config('services.facebook.client_id'),
-        'client_secret' => config('services.facebook.client_secret'),
-        'redirect' => config('services.facebook.redirect'),
-    ],
+    
+    // 'facebook' => [ //test app in evolve
+    //     'client_id' => '6649375938488429',
+    //     'client_secret' => '0d4efbf6b02dbf3c8a3e013636133a00',
+    //     'redirect' => 'http://192.168.1.15:8000/auth/callback',
+    // ],
 
     'instagram' => [
         'client_id' => env('INSTAGRAM_CLIENT_ID'),
@@ -52,15 +53,15 @@ return [
         'redirect' => 'https://www.google.com.eg/instagram/public/login/instagram/callback',
     ],
 
-    'twitter' => [
-        'client_id' => env('TWITTER_CONSUMER_KEY'),
-        'client_secret' => env('TWITTER_CONSUMER_SECRET'),
-        'redirect' => 'http://192.168.1.15:8000/auth/twitter/callback',
-        // 'redirect' => 'http://localhost/e-commerce/Social/schedual-posts/auth/twitter/callback',
-    ],
+    // 'twitter' => [
+    //     'client_id' => env('TWITTER_CONSUMER_KEY'),
+    //     'client_secret' => env('TWITTER_CONSUMER_SECRET'),
+    //     'redirect' => 'http://192.168.1.15:8000/auth/twitter/callback',
+    //     // 'redirect' => 'http://localhost/e-commerce/Social/schedual-posts/auth/twitter/callback',
+    // ],
 
-    'youtube' => [
-        'api_key' => env('YOUTUBE_API_KEY'),
-        'redirect' => 'http://localhost/e-commerce/Social/schedual-posts/auth/youtube/callback',
-    ],
+    // 'youtube' => [
+    //     'api_key' => env('YOUTUBE_API_KEY'),
+    //     'redirect' => 'http://localhost/e-commerce/Social/schedual-posts/auth/youtube/callback',
+    // ],
 ];
