@@ -76,6 +76,7 @@ Route::group(['middleware' => ['auth']], function ()
     Route::resource('permissions', PermissionController::class);
 
     Route::post('/getPages', [FacebookController::class, 'getPages'])->name('getPages');
+    Route::get('/pagesFacebook', [FacebookController::class, 'pagesFacebook'])->name('pagesFacebook');
     Route::get('/policy', [DashboardController::class, 'policy']);
     Route::get('/checkPostStatus', [PostStatusController::class, 'checkPostStatus'])->name('checkPostStatus'); //cron
 });

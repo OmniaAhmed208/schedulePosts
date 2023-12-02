@@ -207,6 +207,9 @@
                 if(post.post_images.length > 0){
                     var postImage = post.post_images[0].image;
                 }
+                if(post.post_videos.length > 0){
+                    var postVideo = post.post_videos[0].video;
+                }
                 var scheduledTime = post.scheduledTime.split(' ')[1];
                 var editUrl = "{{ route('posts.edit', ['post' => '__id__']) }}"; 
                 var editPost = editUrl.replace('__id__', post.id);
@@ -242,6 +245,7 @@
                         <div class="d-flex justify-content-between p-4 px-3 bg-white">
                             <div class="postData w-100">${post.content}</div>
                             ${postImage ? `<div class="w-50"><img src="${postImage}" alt="Image" class="popup-image w-100"/></div>` : ''}
+                            ${postVideo ? `<div class="w-50"><video src="${postVideo}" alt="video" class="popup-image w-100"/></video></div>` : ''}
                         </div>
 
                         ${post.status == 'pending' ? 

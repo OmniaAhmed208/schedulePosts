@@ -15,6 +15,7 @@ use App\Http\Controllers\api\YoutubeController;
 use App\Http\Controllers\api\AnalyticsController;
 use App\Http\Controllers\api\DashboardController;
 use App\Http\Controllers\api\TimeThinkController;
+use App\Http\Controllers\api\NewsLetterController;
 use App\Http\Controllers\api\PermissionController;
 use App\Http\Controllers\api\SubscriberController;
 use App\Http\Controllers\api\PublishPostController;
@@ -42,12 +43,12 @@ Route::post('/forgetPassword', [UserController::class,'forgetPassword']);
 Route::post('/passwordCode', [UserController::class,'passwordCode']);
 Route::post('/resetPassword', [UserController::class,'resetPassword']);
 
+Route::get('newsletter', [NewsLetterController::class,'index']);
 Route::resource('subscribers', SubscriberController::class);
 
 //protected routes
 Route::middleware('auth:sanctum')->group(function ()
 {
-    
     Route::post('/logout', [UserController::class, 'logout']);
     Route::post('updatePassword', [UserController::class,'updatePassword']);
 
@@ -59,6 +60,7 @@ Route::middleware('auth:sanctum')->group(function ()
     Route::resource('timeThink', TimeThinkController::class);
     Route::resource('posts', PostController::class);
     Route::resource('publishPosts', PublishPostController::class);
+    Route::resource('newsletter', NewsLetterController::class);
     Route::resource('cron', CronController::class);
     Route::resource('media', MediaController::class);
 

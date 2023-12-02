@@ -142,9 +142,7 @@
         </tr>
     </table>
 
-
-
-
+    
     <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
@@ -441,185 +439,178 @@
     </div>
     
     
-<script src="{{asset('tools/assets/vendor/libs/jquery/jquery.js')}}"></script>
-<script src="{{asset('tools/assets/vendor/libs/popper/popper.js')}}"></script>
-<script src="{{asset('tools/assets/vendor/js/bootstrap.js')}}"></script>
+    <script src="{{asset('tools/assets/vendor/libs/jquery/jquery.js')}}"></script>
+    <script src="{{asset('tools/assets/vendor/libs/popper/popper.js')}}"></script>
+    <script src="{{asset('tools/assets/vendor/js/bootstrap.js')}}"></script>
 
-{{-- email verification --}}
-<script>
-    $(document).ready(function() {
-        // Intercept form submission
-        $('#registerForm').submit(function(e) {
-            e.preventDefault(); // Prevent the default form submission
-            var formData = $(this).serialize();
-            // Disable the submit button to prevent multiple submissions
-            $('#registerBtn').prop('disabled', true);
+    {{-- email verification --}}
+    <script>
+        $(document).ready(function() {
 
-            $.ajax({
-                url: $(this).attr('action'),
-                type: 'POST',
-                data: formData,
-                success: function(response) {
-                    // Handle successful registration here
-                    // console.log(response.status);
-                    // alert('User registered successfully!\n' + response.message);
-                    $('#verification-message').html(response.message);
-                    $('#emailVerifyModal').modal('show');  // Use modal('show') to display the modal
-                    $('#registerModal').modal('hide');
-                },
-                error: function(xhr, status, error) {
-                    try {
-                        var response = JSON.parse(xhr.responseText);
-                        // console.log(response.message);
-                    } catch (e) {
-                        console.error('Error parsing JSON response:', e);
-                        console.error('Original response:', xhr.responseText);
-                    }
+            $('#registerForm').submit(function(e) {
+                e.preventDefault(); // Prevent the default form submission
+                var formData = $(this).serialize();
+                // Disable the submit button to prevent multiple submissions
+                $('#registerBtn').prop('disabled', true);
 
-                    // Rest of your error handling code...
-                    // alert('Error: ' + xhr.responseText);
-                    $('#verification-message').html(response.message);
-                    $('#verification-message').addClass('text-danger');
-                    $('#registerBtn').prop('disabled', false);
-                },
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        // Handle successful registration here
+                        // console.log(response.status);
+                        // alert('User registered successfully!\n' + response.message);
+                        $('#verification-message').html(response.message);
+                        $('#emailVerifyModal').modal('show');  // Use modal('show') to display the modal
+                        $('#registerModal').modal('hide');
+                    },
+                    error: function(xhr, status, error) {
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            // console.log(response.message);
+                        } catch (e) {
+                            console.error('Error parsing JSON response:', e);
+                            console.error('Original response:', xhr.responseText);
+                        }
 
+                        // Rest of your error handling code...
+                        // alert('Error: ' + xhr.responseText);
+                        $('#verification-message').html(response.message);
+                        $('#verification-message').addClass('text-danger');
+                        $('#registerBtn').prop('disabled', false);
+                    },
+
+                });
+            });
+
+            $('#emailVerifyForm').submit(function(e) {
+                e.preventDefault(); 
+                var formData = $(this).serialize();
+
+                $('#verifyBtn').prop('disabled', true);
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        $('#emailVerifyModal').modal('hide');
+                        $('#loginModal').modal('show');
+                    },
+                    error: function(xhr, status, error) {
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            $('#verification-code').html(response.message);
+                            $('#verification-code').addClass('text-danger');
+                        } catch (e) {
+                            console.error('Error parsing JSON response:', e);
+                            console.error('Original response:', xhr.responseText);
+                        }
+
+                        $('#verifyBtn').prop('disabled', false);
+                    },
+                });
             });
         });
+    </script>
 
-        $('#emailVerifyForm').submit(function(e) {
-            e.preventDefault(); // Prevent the default form submission
-            var formData = $(this).serialize();
-            // Disable the submit button to prevent multiple submissions
-            $('#verifyBtn').prop('disabled', true);
+    {{-- forget password --}}
+    <script>
+        $(document).ready(function()
+        {
+            $('#forgetPasswordBtn').click(function(e){
+                $('#loginModal').modal('hide');
+                $('#forgetPasswordModal').modal('show');
+            });
 
-            $.ajax({
-                url: $(this).attr('action'),
-                type: 'POST',
-                data: formData,
-                success: function(response) {
-                    // console.log(response.status);
-                    // alert('User registered successfully!\n' + response.message);
-                    $('#emailVerifyModal').modal('hide');
-                    $('#loginModal').modal('show');
-                },
-                error: function(xhr, status, error) {
-                    try {
-                        var response = JSON.parse(xhr.responseText);
-                        $('#verification-code').html(response.message);
-                        $('#verification-code').addClass('text-danger');
-                    } catch (e) {
-                        console.error('Error parsing JSON response:', e);
-                        console.error('Original response:', xhr.responseText);
-                    }
+            $('#forgetPasswordForm').submit(function(e) {
+                e.preventDefault();
+                var formData = $(this).serialize();
+                $('#forgetBtn').prop('disabled', true);
 
-                    // Rest of your error handling code...
-                    // alert('Error: ' + xhr.responseText);
-                    $('#verifyBtn').prop('disabled', false);
-                },
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        $('#forget-message').html(response.message);
+                        $('#forgetPasswordModal').modal('hide');
+                        $('#passwordCodeModal').modal('show');
+                    },
+                    error: function(xhr, status, error) {
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                        } catch (e) {
+                            console.error('Error parsing JSON response:', e);
+                            console.error('Original response:', xhr.responseText);
+                        }
+
+                        $('#forget-message').html(response.message);
+                        $('#forget-message').addClass('text-danger');
+                        $('#forgetBtn').prop('disabled', false);
+                    },
+
+                });
+            });
+            
+            $('#passwordCodeForm').submit(function(e) {
+                e.preventDefault();
+                var formData = $(this).serialize();
+                $('#passwordCodeBtn').prop('disabled', true);
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        $('#passwordCodeModal').modal('hide');
+                        $('#resetPasswordModal').modal('show');
+                    },
+                    error: function(xhr, status, error) {
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            $('#password-code').html(response.message);
+                            $('#password-code').addClass('text-danger');
+                        } catch (e) {
+                            console.error('Error parsing JSON response:', e);
+                            console.error('Original response:', xhr.responseText);
+                        }
+
+                        $('#passwordCodeBtn').prop('disabled', false);
+                    },
+                });
+            });
+
+            $('#resetPasswordForm').submit(function(e) {
+                e.preventDefault();
+                var formData = $(this).serialize();
+                $('#resetBtn').prop('disabled', true);
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        $('#resetPasswordModal').modal('hide');
+                        $('#loginModal').modal('show');
+                    },
+                    error: function(xhr, status, error) {
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            $('#password-reset').html(response.message);
+                            $('#password-reset').addClass('text-danger');
+                        } catch (e) {
+                            console.error('Error parsing JSON response:', e);
+                            console.error('Original response:', xhr.responseText);
+                        }
+
+                        $('#resetBtn').prop('disabled', false);
+                    },
+                });
             });
         });
-    });
-</script>
-
-{{-- forget password --}}
-<script>
-    $(document).ready(function()
-    {
-        $('#forgetPasswordBtn').click(function(e){
-            $('#loginModal').modal('hide');
-            $('#forgetPasswordModal').modal('show');
-        });
-
-        $('#forgetPasswordForm').submit(function(e) {
-            e.preventDefault();
-            var formData = $(this).serialize();
-            $('#forgetBtn').prop('disabled', true);
-
-            $.ajax({
-                url: $(this).attr('action'),
-                type: 'POST',
-                data: formData,
-                success: function(response) {
-                    $('#forget-message').html(response.message);
-                    $('#forgetPasswordModal').modal('hide');
-                    $('#passwordCodeModal').modal('show');
-                },
-                error: function(xhr, status, error) {
-                    try {
-                        var response = JSON.parse(xhr.responseText);
-                        // console.log(response.message);
-                    } catch (e) {
-                        console.error('Error parsing JSON response:', e);
-                        console.error('Original response:', xhr.responseText);
-                    }
-
-                    // Rest of your error handling code...
-                    // alert('Error: ' + xhr.responseText);
-                    $('#forget-message').html(response.message);
-                    $('#forget-message').addClass('text-danger');
-                    $('#forgetBtn').prop('disabled', false);
-                },
-
-            });
-        });
-        
-        $('#passwordCodeForm').submit(function(e) {
-            e.preventDefault();
-            var formData = $(this).serialize();
-            $('#passwordCodeBtn').prop('disabled', true);
-
-            $.ajax({
-                url: $(this).attr('action'),
-                type: 'POST',
-                data: formData,
-                success: function(response) {
-                    $('#passwordCodeModal').modal('hide');
-                    $('#resetPasswordModal').modal('show');
-                },
-                error: function(xhr, status, error) {
-                    try {
-                        var response = JSON.parse(xhr.responseText);
-                        $('#password-code').html(response.message);
-                        $('#password-code').addClass('text-danger');
-                    } catch (e) {
-                        console.error('Error parsing JSON response:', e);
-                        console.error('Original response:', xhr.responseText);
-                    }
-
-                    $('#passwordCodeBtn').prop('disabled', false);
-                },
-            });
-        });
-
-        $('#resetPasswordForm').submit(function(e) {
-            e.preventDefault();
-            var formData = $(this).serialize();
-            $('#resetBtn').prop('disabled', true);
-
-            $.ajax({
-                url: $(this).attr('action'),
-                type: 'POST',
-                data: formData,
-                success: function(response) {
-                    $('#resetPasswordModal').modal('hide');
-                    $('#loginModal').modal('show');
-                },
-                error: function(xhr, status, error) {
-                    try {
-                        var response = JSON.parse(xhr.responseText);
-                        $('#password-reset').html(response.message);
-                        $('#password-reset').addClass('text-danger');
-                    } catch (e) {
-                        console.error('Error parsing JSON response:', e);
-                        console.error('Original response:', xhr.responseText);
-                    }
-
-                    $('#resetBtn').prop('disabled', false);
-                },
-            });
-        });
-    });
-</script>
+    </script>
 
 </body>
 </html>

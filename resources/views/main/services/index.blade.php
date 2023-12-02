@@ -82,69 +82,64 @@
                     </div>
                 </div>
                 <!-- Tabs -->
-        
-        
-                <!-- Add category Modal -->
+
+
                 <div class="modal fade" id="youtubeCategory" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-lg modal-simple modal-dialog-centered modal-add-new-category">
-                        <div class="modal-content p-3 p-md-3">
-                            <div class="modal-body">
-                                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
-                                <div class="text-center mb-4">
-                                    <h3 class="category-title">Add New Category</h3>
-                                    <p>Categories you may use and assign to youtube video.</p>
-                                </div>
-                                <!-- Add category form -->
-                                <form id="addCategoryForm" class="row g-3" action="{{route('youtubeCategories.store')}}" method="post">
-                                    @csrf
-                                    <div class="col-6">
-                                    <label class="form-label" for="modalCategoryId">Category Id</label>
-                                    <input type="number" id="categoryID" name="categoryID" required class="form-control" placeholder="Enter a category id" tabindex="-1" />
-                                    </div>
-                                    <div class="col-6">
-                                        <label class="form-label" for="modalCategoryName">Category Name</label>
-                                        <input type="text" id="categoryName" name="categoryName" required class="form-control" placeholder="Enter a category name" tabindex="-1" />
-                                    </div>
-                                    <div class="col-12 text-center">
-                                        <button type="submit" class="btn btn-info me-sm-3 me-1">Create Category</button>
-                                        <button type="reset" class="btn text-white" style="background-color: #BEBEBE">Reset</button>
-                                    </div>
-    
-                                    <div class="categories">
-                                    <div class="row p-4">
-                                        <div class="col-12">
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <table id="" class="table table-bordered table-striped">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Category ID</th>
-                                                                <th>Category Name</th>
-                                                                {{-- <th></th> --}}
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                        @foreach ($youtubeCategories as $category)
-                                                        <tr>
-                                                            <td>{{ $category->category_id }}</td>
-                                                            <td>{{ $category->category_name }}</td>
-                                                            {{-- <td><span data-target="#" data-toggle="modal" data-userId='' style="color: #06283D"><i class="far fa-edit"></i></span></td> --}}
-                                                        </tr>  
-                                                        @endforeach
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header flex-column">
+                                <h5 class="modal-title">Add New Category</h5>
+                                <p>Categories you may use and assign to youtube video.</p>
+                            </div>
+
+                            <form id="addCategoryForm" action="{{route('youtubeCategories.store')}}" method="post">
+                                @csrf
+                                <div class="modal-body mt-3">
+                                    <div class="row">
+                                        <div class="col-6 mb-3">
+                                            <label class="form-label"  for="modalCategoryId">Category Id</label>
+                                            <input type="number" id="categoryID" name="categoryID" required class="form-control" tabindex="-1" />
+                                        </div>
+                                        <div class="col-6 mb-3">
+                                            <label class="form-label" for="modalCategoryName">Category Name</label>
+                                            <input type="text" id="categoryName" name="categoryName" required class="form-control" tabindex="-1" />
                                         </div>
                                     </div>
-                                    </div>
-                                </form>
-                                <!--/ Add category form -->
+                                </div>
+                                <div class="modal-footer justify-content-center">
+                                    <button type="submit" class="btn btn-dark">Create Category</button>
+                                    <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal"> Reset </button>
+                                </div>
+                            </form>
+
+                            <div class="modal-body">
+                                <table id="" class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Category ID</th>
+                                            <th>Category Name</th>
+                                            {{-- <th>Action</th> --}}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    @foreach ($youtubeCategories as $category)
+                                    <tr>
+                                        <form action="{{ route('youtubeCategories.update',$category->id) }}" method="post">
+                                            @csrf
+                                            @method('put')
+                                            <td><input class="border-0 ps-3" type="number" name="categoryID" required value="{{ $category->category_id }}" disabled></td>
+                                            <td><input class="border-0 ps-3" type="text" name="categoryName" required value="{{ $category->category_name }}" disabled></td>
+                                            {{-- <td><button type="submit" class="btn border-0 text-dark" style="background-color: transparent"><i class="bx bx-edit"></i></button></td> --}}
+                                        </form>
+                                    </tr>  
+                                    @endforeach
+                                    </tbody>
+                                </table>
                             </div>
+
                         </div>
                     </div>
                 </div>
-                <!--/ Add permission Modal -->
 
             </section>
         </div>

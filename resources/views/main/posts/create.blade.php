@@ -43,9 +43,9 @@
                                 <div class="container">
                                     <div class="photoSec previewSec pb-4"></div>
 
-                                    {{-- <div class="progress my-3">
+                                    <div class="progress my-3">
                                         <div class="progress-bar" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">0 %</div>
-                                    </div> --}}
+                                    </div>
 
                                     <div class="card py-2 px-4 d-flex flex-row justify-content-between align-items-center">
                                         <p class="m-0">Add to your post</p>
@@ -55,7 +55,8 @@
                                                 <i class="bx bx-image text-success px-2 fs-5"></i>
                                             </div>
                                             <div class="file position-absolute" id="videoFile">
-                                                <input type="file" class="form-control position-absolute" name="video" onchange="getVideoPreview(event)" accept="video/*">
+                                                <input type="file" class="form-control position-absolute" name="video" id="browseFile" accept="video/*">
+                                                {{-- <input type="file" class="form-control position-absolute" name="video" id="browseFile" onchange="getVideoPreview(event)" accept="video/*"> --}}
 
                                                 <i class="bx bx-video text-primary px-2 fs-5"></i>
                                             </div>
@@ -121,7 +122,7 @@
                             </section>
 
                             <div class="rounded d-flex justify-content-end">
-                                @if (($userApps->isNotEmpty()) && $timeThink)
+                                @if ($userApps->isNotEmpty())
                                     <button type="submit" class="btn publishBtn float-right border border-info px-4">Publish</button>
                                 @endif
                             </div>
@@ -281,7 +282,52 @@
     }
 </script>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // File input change event
+        document.querySelector('.progress').style.display = 'none';
 
+        document.getElementById('browseFile').addEventListener('change', function (event) {
+            var fileInput = event.target;
+            var file = fileInput.files[0];
+            // var videoPreview = document.getElementById('videoPreview');
+            var progressContainer = document.querySelector('.progress');
+
+            // Display progress bar
+            progressContainer.style.display = 'block';
+
+            simulateFileUpload(file, function () {
+                var container = document.querySelector('.previewSec');
+                var html = `<video src="${URL.createObjectURL(file)}"></video>
+                <span aria-hidden="true" style="cursor:pointer;margin-right: 6px;" onclick="closeFile(this)">&times;</span>`;
+                // var html = `<video src="${URL.createObjectURL(file)}" class="py-3" controls></video>
+                // <span aria-hidden="true" style="cursor:pointer;position-absolute" onclick="closeFile(this)">&times;</span>`;
+                container.innerHTML += html;
+                progressContainer.style.display = 'none';
+            });
+        });
+
+        function simulateFileUpload(file, callback) {
+            var progressBar = document.querySelector('.progress-bar');
+            var progress = 0;
+
+            var interval = setInterval(function () {
+                progress += 10;
+                progressBar.style.width = progress + '%';
+                progressBar.textContent = progress + '%';
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+
+                    // Execute the callback function when progress is complete
+                    if (typeof callback === 'function') {
+                        callback();
+                    }
+                }
+            }, 500);
+        }
+    });
+</script>
 
 
 @endsection

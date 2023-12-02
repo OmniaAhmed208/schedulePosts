@@ -92,7 +92,7 @@
                     </div>
 
                     {{-- permissions --}}
-                    {{-- <div class="row">
+                    <div class="row" hidden>
                         <div class="col-lg">
 
                             <div class="card">
@@ -153,7 +153,7 @@
                             </div>
 
                         </div>
-                    </div> --}}
+                    </div>
 
                     {{-- add role --}}
                     <div class="modal fade" id="addRoleModal" tabindex="-1" aria-hidden="true">

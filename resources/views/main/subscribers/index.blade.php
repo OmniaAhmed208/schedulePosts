@@ -10,7 +10,7 @@
             <section class="content py-4">
 
                 <div class="d-flex justify-content-between align-items-center px-4">
-                    <h4 class="my-4 text-dark" style="font-weight: bold">Newsletter</h4>
+                    <h4 class="my-4 text-dark" style="font-weight: bold">Subscribers</h4>
                     <div>
                         <button class="btn btn text-white" style="background: #06283d"
                         type="button" data-bs-toggle="modal" data-bs-target="#addSubscribe">
@@ -22,8 +22,6 @@
                         </button>
                     </div>
                 </div>
-
-
 
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-2 g-4"  data-masonry='{"percentPosition": true,  "itemSelector": ".col" }'>
                     @foreach ($subscribers as $subscriber)

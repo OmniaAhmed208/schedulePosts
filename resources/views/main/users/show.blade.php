@@ -20,7 +20,7 @@
 
                 {{-- Profile Details --}}
                 <div class="row mb-5">
-                    <div class="col-sm-8 col-lg-9 mb-2">
+                    <div class="col-sm-6 mb-2">
                         <form action="{{ route('users.update', $user->id) }}" method="post" enctype="multipart/form-data">
                             @csrf
                             @method('put')
@@ -29,40 +29,36 @@
                                     <h5 class="card-header text-dark">Profile Details</h5>
                                     <div class="card-body">
                                         <div class="row">
-                                            <div class="mb-3 col-md-4">
-                                            <div class="previewSec">
-                                            @if ($user->image != null)
-                                                {{-- @dd(Storage::url($user->image), url($user->image), asset('storage/app/public/'.$user->image)) --}}
-                                                <img class="card-img-top rounded-circle w-50" src="{{ asset($user->image) }}" alt="profile image" />
-                                            @else
-                                                <img class="card-img-top rounded-circle w-25" src="{{ asset('tools/dist/img/user.png') }}" alt="profile image" />
-                                            @endif
-                                            </div>
+                                            <div class="mb-3 col-md-6">
+                                                <div class="previewSec">
+                                                    @if ($user->image != null)
+                                                        {{-- @dd(Storage::url($user->image), url($user->image), asset('storage/app/public/'.$user->image)) --}}
+                                                        <img class="card-img-top rounded-circle w-50" src="{{ asset($user->image) }}" alt="profile image" />
+                                                    @else
+                                                        <img class="card-img-top rounded-circle w-25" src="{{ asset('tools/dist/img/user.png') }}" alt="profile image" />
+                                                    @endif
+                                                </div>
                                             </div>
 
-                                            <div class="col-md-8 d-flex align-items-center">
-                                            <div class="button-wrapper">
-                                                <label for="profile_image" class="btn btn-dark me-2 mb-4" tabindex="0">
-                                                <span class="d-none d-sm-block">Upload photo</span>
-                                                <i class="bx bx-upload d-block d-sm-none"></i>
-                                                <input type="file" id="profile_image" class="account-file-input" hidden name="image" onchange="getImagePreview(event)" accept="image/png, image/jpeg, image/jpg" />
-                                                </label>
-                                                <button type="button" class="btn btn-outline-secondary account-image-reset mb-4" onclick="closeFile()">
-                                                <i class="bx bx-reset d-block d-sm-none"></i>
-                                                <span class="d-none d-sm-block">Reset</span>
-                                                </button>
-                                                <input type="hidden" name="reset_image" id="reset_image" value="0">
-                                                <p class="text-muted mb-0">Allowed JPG, JPEG or PNG.</p>
-                                            </div>
+                                            <div class="col-md-6 d-flex align-items-center">
+                                                <div class="button-wrapper">
+                                                    <label for="profile_image" class="btn btn-dark me-2 mb-4" tabindex="0">
+                                                        <span class="d-none d-sm-block">Upload photo</span>
+                                                        <i class="bx bx-upload d-block d-sm-none"></i>
+                                                        <input type="file" id="profile_image" class="account-file-input" hidden name="image" onchange="getImagePreview(event)" accept="image/png, image/jpeg, image/jpg" />
+                                                    </label>
+                                                    <button type="button" class="btn btn-outline-secondary account-image-reset mb-4" onclick="closeFile()">
+                                                    <i class="bx bx-reset d-block d-sm-none"></i>
+                                                    <span class="d-none d-sm-block">Reset</span>
+                                                    </button>
+                                                    <input type="hidden" name="reset_image" id="reset_image" value="0">
+                                                    <p class="text-muted mb-0">Allowed JPG, JPEG or PNG.</p>
+                                                </div>
                                             </div>
 
-                                            <div class="mb-3 col-md-6">
-                                            <label for="name" class="form-label">Name</label>
-                                            <input class="form-control" type="text" id="name" name="name" value="{{ $user->name }}" autofocus required/>
-                                            </div>
-                                            <div class="mb-3 col-md-6">
-                                            <label for="email" class="form-label">E-mail</label>
-                                            <input class="form-control" type="text" id="email" name="email" value="{{ $user->email }}"  required/>
+                                            <div class="mb-3">
+                                                <label for="name" class="form-label">Name</label>
+                                                <input class="form-control" type="text" id="name" name="name" value="{{ $user->name }}" autofocus required/>
                                             </div>
 
 
@@ -76,9 +72,8 @@
                         </form>
                     </div>
 
-
                     {{-- Change Password --}}
-                    <div class="col-sm-4 col-lg-3 mb-2">
+                    <div class="col-sm-6 mb-2">
                         <div class="card h-100 d-flex justify-content-center">
                         <h5 class="card-header text-dark">Change Password</h5>
 
@@ -98,16 +93,13 @@
                                 </div>
                                 <div class="mt-2">
                                     <button type="submit" class="btn btn-dark me-2 mb-1">Save changes</button>
+
                                 </div>
                             </div>
                         </form>
                         </div>
                     </div>
                 </div>
-
-                {{-- <button class="btn" type="button" data-bs-toggle="modal" data-bs-target="#forgetPassword">
-                    Forget Password
-                </button> --}}
 
                 {{-- Accounts you have --}}
                 <div class="row my-5">
@@ -144,6 +136,11 @@
                             </svg>
                             <div class="dropdown-menu dropdown-menu-right px-2">
                                 <ul class="list-unstyled m-0">
+                                <li class="my-2 py-1 rounded" style="background-color: #E6F8FE">
+                                    <button type="btn" style="border: none;background: transparent;" class="text-dark px-2">
+                                    <a href="{{ $account['account_link'] }}">View Channel</a>
+                                    </button>
+                                </li>
                                 <li class="my-2 py-1 rounded" style="background-color: #E6F8FE">
                                     <form action="{{ route('accounts.destroy',$account['account_id']) }}" method="post">
                                     @csrf
@@ -207,6 +204,7 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <form action="{{ route('facebook.store') }}" method="post">
+                                @csrf
                                 <div class="modal-body pb-0">
                                     <div class="row">
                                         <div id="getFbPage"></div>
@@ -224,16 +222,13 @@
         </div>
   </div>
 
-
+    {{-- @php
+        $api = App\Models\Api::where('account_type','youtube')->where('creator_id', Auth::user()->id)->get();
+        echo '<pre>';
+        echo $api;
+    @endphp --}}
+  
   <script>
-    // document.getElementById('connectAccount').addEventListener('click',()=>{
-    //     document.getElementById('appAccount').style.display = 'flex';
-    // });
-
-    // document.querySelector('#appAccount .cancel').addEventListener('click',()=>{
-    //     document.getElementById('appAccount').style.display = 'none';
-    // });
-
     // upload photo
     function getImagePreview(event){
       for(let i = 0; i<event.target.files.length; i++)
@@ -258,29 +253,36 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <script>
+    @if ($userApps)
+        @foreach ($userApps as $app)
+            @if ($app->appType == 'facebook')
+                <input type="hidden" value="{{ $app->appID }}" id="facebookID">
+            @endif
+        @endforeach
+    @endif
 
+    <script>
         function fbLogin()
         {
             FB.login(function(response) {
                 // console.log(response);
                 if (response.authResponse)
                 {
-                getFbUserData(response);
-                saveUserData(response);
+                    getFbUserData(response);
+                    saveUserData(response);
                 }
-                else {
-                document.getElementById('status').innerHTML = 'User cancelled login'
-                }
+                // else {
+                //     document.getElementById('status').innerHTML = 'User cancelled login'
+                // }
             }, {scope: 'email,public_profile,pages_manage_posts'});
         }
-        // ,pages_show_list,manage_pages,pages_manage_ads,pages_manage_metadata,pages_read_engagement,pages_read_user_content
-
+        // ,pages_show_list,manage_pages,pages_manage_ads,pages_manage_metadata,pages_read_engagement,pages_read_user_content,instagram_basic
 
         window.fbAsyncInit = function()
         {
+            var facebookID = document.getElementById('facebookID').value;
             FB.init({
-                appId            : '690179252628964',
+                appId            : facebookID,
                 cookie           : true,
                 autoLogAppEvents : true,
                 xfbml            : true,
@@ -292,7 +294,7 @@
                 console.log('getLoginStatus',response);
                 if(response.status === 'connected')
                 {
-                getFbUserData();
+                    getFbUserData();
                 }
                 saveUserData(response);
             });
@@ -329,16 +331,58 @@
             })
         }
 
+        // function saveUserData(responseData) {
+        //     console.log('getPages', responseData);
+            
+        //     // Assuming responseData is the JSON structure from the server
+        //     var userData = responseData.userData;
+        //     var pagesData = responseData.pagesData;
+        
+        //     // Handle user data
+        //     console.log('User ID:', userData.id);
+        //     console.log('User Name:', userData.name);
+        //     console.log('User Email:', userData.email);
+        
+        //     // Assuming you have an image element for the user profile picture
+        //     var userImageElement = document.getElementById('userProfilePicture');
+        //     userImageElement.src = userData.picture.data.url;
+        //     for (var i = 0; i < pagesData.length; i++) {
+        //         var page = pagesData[i];
+        //         console.log('Page ID:', page.id);
+        //         console.log('Page Access Token:', page.access_token);
+        //         console.log('Page Image:', page.image);
+        //         console.log('Page Type:', page.type);
+        
+        //         // Assuming you have a container element for displaying pages
+        //         var pagesContainer = document.getElementById('pagesContainer');
+        
+        //         // Create a new element for each page and append it to the container
+        //         var pageElement = document.createElement('div');
+        //         pageElement.innerHTML = `
+        //             <div class="d-flex justify-content-between align-items-center mb-2">
+        //                 <div class="position-relative">
+        //                     <img src="${page.image}" class="rounded-circle border-primary p-1" alt="Page Image">
+        //                     <i class="fab fa-facebook position-absolute rounded-circle text-primary icon"></i>
+        //                     ${page.name} <!-- Assuming there is a name property in your pagesData -->
+        //                 </div>
+        //                 <div><input type="checkbox"></div>
+        //             </div>
+        //         `;
+        //         pagesContainer.appendChild(pageElement);
+        //     }
+        // }
+
         function saveUserData(responseData) {
             
-            console.log('getPages', responseData);
-
+            console.log('getLoginInfo', responseData);
+            
             var requestData = {
                 userID: responseData.authResponse.userID,
                 access_token: responseData.authResponse.accessToken,
                 appType: responseData.authResponse.graphDomain,
                 status: responseData.status
             };
+            console.log(requestData);
 
             var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
@@ -355,7 +399,7 @@
                 if (xhr.status === 200)
                 {
                     var response = xhr.responseText;
-                    // console.log(response);
+                    console.log('response 200: '.response);
 
                     var responseObject = JSON.parse(response);
 
@@ -364,65 +408,49 @@
                     var userData = responseObject.userData;
                     var pagesData = responseObject.pagesData;
 
-                    for (var i = 0; i < pagesData.data.length; i++)
-                    {
-                        var id = pagesData.data[i].id;
-                        var access_token = pagesData.data[i].access_token;
-                        var namePage = pagesData.data[i].name;
-
-                        console.log('namePage:', namePage);
-                        console.log('id:', id);
-                        console.log('Access Token:', access_token);
+                    var user_email= '';
+                    for (var i = 0; i < userData.length; i++) {
+                        user_email = userData.email;
                     }
 
-                    // var userDataHTML = `
-                    // <div style="width:450px">
-                    //     <div class="bg-white p-2 pt-3">
-                    //         <h5>Which channels would you like to add?</h5>
-                    //     </div>
-                    //     <div class="p-4" style="background-color:#ededed;">
-                    // `;
-
+                    var userDataHTML = '';
                     for (var i = 0; i < pagesData.data.length; i++) {
-                        var id = pagesData.data[i].id;
-                        var access_token = pagesData.data[i].access_token;
-                        var namePage = pagesData.data[i].name;
+                        var page = pagesData.data[i];
+
+                        console.log('namePage:', page.name);
+                        console.log('id:', page.id);
+                        console.log('Access Token:', page.access_token);
+
                         userDataHTML += `
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <div class="position-relative">
-                                <img src="{{ asset('tools/dist/img/avatar.png') }}" class="rounded-circle border-primary p-1" alt="User Image">
+                                <img src="${page.picture.data.url}" class="rounded-circle border-primary p-1" alt="User Image">
                                 <i class="fab fa-facebook position-absolute rounded-circle text-primary icon"></i>
-                                ${namePage}
+                                ${page.name}
                             </div>
-                            <div><input type="checkbox"></div>
+                            <div> 
+                                <input type="checkbox" name="pageId" value="${page.id}">
+                                <input type="hidden" name="pageName" value="${page.name}">
+                                <input type="hidden" name="pageImage" value="${page.picture.data.url}">
+                                <input type="hidden" name="page_access_token" value="${page.access_token}">
+                                <input type="hidden" name="account_token" value="${requestData.access_token}">
+                                <input type="hidden" name="email" value="${user_email}">
+                            </div>
                         </div>
                         `;
-                    }
+                    } 
 
-                    var fbPagesModal = document.getElementById('fbPagesModal');
                     var addAccountModal = document.getElementById('addAccountModal');
-                    addAccountModal.style.cssText = 'display:none;opacity:0';
-                    fbPagesModal.style.cssText = 'display:block;opacity:1';
-
-                    // userDataHTML += `
-                    //     </div>
-                    //     <div class="bg-white p-2 d-flex justify-content-end">
-                    //         <a href="#" class="btn cancel">Cancel</a>
-                    //         <a href="#" class="btn btn-info" style="color:#fff !important;">Add to E-Vovle</a>
-                    //     </div>
-                    // </div>`;
-
-                    // document.getElementById('userData').innerHTML = userDataHTML;
+                    addAccountModal.style.display = 'none';
+                    addAccountModal.style.opacity = '0';
+                    var fbPagesModal = document.getElementById('fbPagesModal');
+                    fbPagesModal.style.display = 'block';
+                    fbPagesModal.style.opacity = '1';
 
                     document.getElementById('getFbPage').innerHTML = userDataHTML;
                 } else {
                     console.log('Error: ' + xhr.status);
                 }
-
-                // document.querySelector('#userData .cancel').addEventListener('click',()=>{
-                // document.getElementById('userData').style.display = 'none';
-                // fbLogout();
-                // });
             };
 
             xhr.send(JSON.stringify(requestData));
