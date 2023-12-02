@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('youtube_privacy')->nullable(); // public or private
             $table->text('youtube_tags')->nullable();
             $table->foreignId("youtube_category")->nullable()->constrained("youtube_categories")->onDelete("cascade")->onUpdate("cascade");
-            $table->timestamp('scheduledTime');
+            $table->string('scheduledTime');
             $table->String('tokenApp',1000);
             $table->String('token_secret',1000);
             $table->timestamps();

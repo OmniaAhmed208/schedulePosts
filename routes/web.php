@@ -50,7 +50,8 @@ Auth::routes();
 
 Route::group(['middleware' => ['auth']], function ()
 {
-    Route::get('/test', [DashboardController::class, 'test'])->name('test');
+    Route::post('/test', [DashboardController::class, 'test'])->name('test');
+    Route::delete('/testDel', [DashboardController::class, 'testDel'])->name('testDel');
     Route::get('/home', [DashboardController::class, 'index'])->name('admin.index');
     Route::put('updatePassword/{id}', [UserController::class,'updatePassword']);
     Route::post('chartJS/{id}', [DashboardController::class,'chartJS']);

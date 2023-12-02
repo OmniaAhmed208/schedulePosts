@@ -14,9 +14,39 @@ use Spatie\Permission\Models\Permission;
 
 class DashboardController extends Controller
 {
-    public function test()
+    public function test(Request $request)
     {
-        return view('main.test');
+        $filenames = []; // Array to store filenames
+
+        if ($request->hasFile('images')) {
+            $images = $request->file('images');
+
+            foreach ($images as $image) {
+                $filename = time() . '_' . $image->getClientOriginalName();
+                $image->storeAs('public/filepond', $filename);
+                $filenames[] = $filename; // Add filename to the array
+            }
+        }
+
+        // $storageImage = url('storage/profile_images/'. $filename);
+            // store in db
+            // TemporaryFile::create([
+            // ]);
+        // return view('main.test');
+
+        return $filenames;
+    }
+
+    public function testDel(Request $request)
+    {
+
+    }
+
+    public function store(Request $request)
+    {
+        // serach in name in db
+        // $tmp_file = TemporaryFile::where('folder',$request->image)
+        // Storage::copy('public/filepond'.$tmp_file);
     }
 
     public function index()

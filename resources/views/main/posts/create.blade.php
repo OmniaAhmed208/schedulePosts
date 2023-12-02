@@ -43,9 +43,35 @@
                                 <div class="container">
                                     <div class="photoSec previewSec pb-4"></div>
 
-                                    <div class="progress my-3">
+                                    {{-- <div class="progress my-3">
                                         <div class="progress-bar" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">0 %</div>
-                                    </div>
+                                    </div> --}}
+
+                                    {{-- <div class="row">
+                                        <h5 class="card-header">Add to your post</h5>
+                                        <div class="col-md-6">
+                                          <div class="mb-4">
+                                            <div class="card-body">
+                                              <div>
+                                                <label for="postImage" class="form-label">Upload Image</label>
+                                                <input type="file" name="images[]" class="form-control" id="postImage" aria-describedby="imageExt" onchange="getImagePreview(event)" accept=".jpg, .jpeg, .png, .gif" multiple/>
+                                                <div id="imageExt" class="form-text"> Accept image .jpg, .jpeg, .png or .gif </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                          <div class="mb-4">
+                                            <div class="card-body">
+                                              <div>
+                                                <label for="postVideo" class="form-label">Upload Video</label>
+                                                <input type="file" name="video" class="form-control" id="postVideo" onchange="getVideoPreview(event)" accept="video/*"/>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                    </div>     --}}
+
 
                                     <div class="card py-2 px-4 d-flex flex-row justify-content-between align-items-center">
                                         <p class="m-0">Add to your post</p>
@@ -55,14 +81,15 @@
                                                 <i class="bx bx-image text-success px-2 fs-5"></i>
                                             </div>
                                             <div class="file position-absolute" id="videoFile">
-                                                <input type="file" class="form-control position-absolute" name="video" id="browseFile" accept="video/*">
-                                                {{-- <input type="file" class="form-control position-absolute" name="video" id="browseFile" onchange="getVideoPreview(event)" accept="video/*"> --}}
+                                                <input type="file" class="form-control position-absolute" name="video" onchange="getVideoPreview(event)" accept="video/*">
 
                                                 <i class="bx bx-video text-primary px-2 fs-5"></i>
                                             </div>
                                             <i class="bx bx-link text-info mx-1 mt-1 postLink fs-5" data-toggle="modal" data-target="#postData_link"></i>
                                         </div>
                                     </div>
+                                    {{-- <input type="file" class="form-control position-absolute" name="video" id="browseFile" accept="video/*"> --}}
+
                                 </div>
 
                                 <div class="form-group container mt-4" id="youtubeSelectBlock" style="display: none;">
@@ -106,7 +133,6 @@
                                         </div>
                                     </div>
                                 </div>
-
 
                                 <div class="d-flex align-items-center form-check form-switch my-3">
                                     <i class="bx bx-calendar text-info mx-2"></i>
@@ -160,9 +186,21 @@
     </div>
 </div>
 
+{{-- filepond to upload images and videos --}}
+{{-- <script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>
+<script>
+    const inputElement = document.querySelector('input[name="images[]"]');
+    const pond = FilePond.create(inputElement);
+    FilePond.setOptions({
+    server: {
+        process: '/test',
+        revert: '/testDele',
+        headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'}
+    },
+});
+</script> --}}
 
-
-{{-- // create post --}}
+{{-- // create post progress-bar--}}
 {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.3.0/jquery.form.min.js"></script>
 <script>
     $(document).ready(function () {
@@ -190,6 +228,54 @@
     });
 
 </script> --}}
+
+{{-- <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // File input change event
+        document.querySelector('.progress').style.display = 'none';
+
+        document.getElementById('browseFile').addEventListener('change', function (event) {
+            var fileInput = event.target;
+            var file = fileInput.files[0];
+            // var videoPreview = document.getElementById('videoPreview');
+            var progressContainer = document.querySelector('.progress');
+
+            // Display progress bar
+            progressContainer.style.display = 'block';
+
+            simulateFileUpload(file, function () {
+                var container = document.querySelector('.previewSec');
+                var html = `<video src="${URL.createObjectURL(file)}"></video>
+                <span aria-hidden="true" style="cursor:pointer;margin-right: 6px;" onclick="closeFile(this)">&times;</span>`;
+                // var html = `<video src="${URL.createObjectURL(file)}" class="py-3" controls></video>
+                // <span aria-hidden="true" style="cursor:pointer;position-absolute" onclick="closeFile(this)">&times;</span>`;
+                container.innerHTML += html;
+                progressContainer.style.display = 'none';
+            });
+        });
+
+        function simulateFileUpload(file, callback) {
+            var progressBar = document.querySelector('.progress-bar');
+            var progress = 0;
+
+            var interval = setInterval(function () {
+                progress += 10;
+                progressBar.style.width = progress + '%';
+                progressBar.textContent = progress + '%';
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+
+                    // Execute the callback function when progress is complete
+                    if (typeof callback === 'function') {
+                        callback();
+                    }
+                }
+            }, 500);
+        }
+    });
+</script> --}}
+
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -281,54 +367,6 @@
         }
     }
 </script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // File input change event
-        document.querySelector('.progress').style.display = 'none';
-
-        document.getElementById('browseFile').addEventListener('change', function (event) {
-            var fileInput = event.target;
-            var file = fileInput.files[0];
-            // var videoPreview = document.getElementById('videoPreview');
-            var progressContainer = document.querySelector('.progress');
-
-            // Display progress bar
-            progressContainer.style.display = 'block';
-
-            simulateFileUpload(file, function () {
-                var container = document.querySelector('.previewSec');
-                var html = `<video src="${URL.createObjectURL(file)}"></video>
-                <span aria-hidden="true" style="cursor:pointer;margin-right: 6px;" onclick="closeFile(this)">&times;</span>`;
-                // var html = `<video src="${URL.createObjectURL(file)}" class="py-3" controls></video>
-                // <span aria-hidden="true" style="cursor:pointer;position-absolute" onclick="closeFile(this)">&times;</span>`;
-                container.innerHTML += html;
-                progressContainer.style.display = 'none';
-            });
-        });
-
-        function simulateFileUpload(file, callback) {
-            var progressBar = document.querySelector('.progress-bar');
-            var progress = 0;
-
-            var interval = setInterval(function () {
-                progress += 10;
-                progressBar.style.width = progress + '%';
-                progressBar.textContent = progress + '%';
-
-                if (progress >= 100) {
-                    clearInterval(interval);
-
-                    // Execute the callback function when progress is complete
-                    if (typeof callback === 'function') {
-                        callback();
-                    }
-                }
-            }, 500);
-        }
-    });
-</script>
-
 
 @endsection
 

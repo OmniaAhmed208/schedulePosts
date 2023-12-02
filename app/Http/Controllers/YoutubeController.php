@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use Google_Client;
 use App\Models\Api;
 use App\Models\settingsApi;
 use App\Models\social_posts;
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Storage;
 
 class YoutubeController extends Controller
 {
@@ -194,13 +195,19 @@ class YoutubeController extends Controller
                         $channelImageUrl = $data['items'][0]['snippet']['thumbnails']['default']['url'];
                         $channelLink = "https://www.youtube.com/channel/{$channelId}";
 
+                        $profileImage = $channelImageUrl;
+                        $ext = pathinfo($profileImage, PATHINFO_EXTENSION);
+                        $filename = time() . '.' . $ext;
+                        Storage::put('public/profile_images/'. $filename, file_get_contents($profileImage));
+                        $storageImage = url('storage/profile_images/'. $filename);
+
                         $userData = [
                             'creator_id'=> Auth::user()->id,
                             'account_type' => 'youtube',
                             'account_id' => $channelId,
                             'account_name' => $channelName,
                             'email' => $channelName,
-                            'account_pic' => $channelImageUrl,
+                            'account_pic' => $storageImage,
                             'account_link' => $channelLink,
                             'token' => $access_token,
                             'token_secret' => $refresh_token
@@ -231,7 +238,7 @@ class YoutubeController extends Controller
             }
         } catch (\Exception $e) {
             dd($e->getMessage());
-            // return redirect()->route('main.users.show')->with('error', $e->getMessage());
+            // return redirect()->route('users.show', ['user' => Auth::user()->id])->with('error', $e->getMessage());
         }  
     }   
 

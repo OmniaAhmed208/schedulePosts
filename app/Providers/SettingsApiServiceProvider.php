@@ -20,70 +20,65 @@ class SettingsApiServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {        
-        $FacebookConfig = [
-            'client_id' => null,
-            'client_secret' => null,
-            'redirect' => 'https://social.evolvetechsys.com/auth/callback',
-        ];
-
-        $InstagramConfig = [
-            'client_id' => null,
-            'client_secret' => null,
-            'redirect' => 'https://www.google.com.eg/instagram/public/login/instagram/callback',
-        ];
-
-        // INSTAGRAM_CLIENT_ID= 961436048312260
-        // INSTAGRAM_CLIENT_SECRET= a43ca3ea9793b904157e2092a8b34677
-
-        $TwitterConfig = [
-            'client_id' => null, // TWITTER_CONSUMER_KEY
-            'client_secret' => null, // TWITTER_CONSUMER_SECRET
-            'redirect' => 'https://social.evolvetechsys.com/auth/twitter/callback',
-        ];
-
-        $YoutubeConfig = [
-            'client_id' => null, // GOOGLE_CLIENT_ID
-            'client_secret' => null, // GOOGLE_CLIENT_SECRET
-            'api_key' => null, // YOUTUBE_API_KEY
-            'redirect' => 'http://localhost/e-commerce/Social/schedual-posts/auth/youtube/callback',
-        ];
-
         $services = settingsApi::all();
 
-        if (!empty($services)) {
-            // Loop through each service
+        if (!empty($services)) 
+        {
+            $FacebookConfig = [
+                'client_id' => null,
+                'client_secret' => null,
+                'redirect' => 'https://social.evolvetechsys.com/auth/callback',
+            ];
+    
+            $InstagramConfig = [
+                'client_id' => null,
+                'client_secret' => null,
+                'redirect' => 'https://www.google.com.eg/instagram/public/login/instagram/callback',
+            ];
+    
+            // INSTAGRAM_CLIENT_ID= 961436048312260
+            // INSTAGRAM_CLIENT_SECRET= a43ca3ea9793b904157e2092a8b34677
+    
+            $TwitterConfig = [
+                'client_id' => null, // TWITTER_CONSUMER_KEY
+                'client_secret' => null, // TWITTER_CONSUMER_SECRET
+                'redirect' => 'https://social.evolvetechsys.com/auth/twitter/callback',
+            ];
+    
+            $YoutubeConfig = [
+                'client_id' => null, // GOOGLE_CLIENT_ID
+                'client_secret' => null, // GOOGLE_CLIENT_SECRET
+                'api_key' => null, // YOUTUBE_API_KEY
+                // 'redirect' => 'http://localhost/e-commerce/Social/schedual-posts/auth/youtube/callback',
+                'redirect' => 'https://social.evolvetechsys.com/auth/youtube/callback',
+            ];
+
             foreach ($services as $service) {
-                if (isset($service['appType']) && $service['appType'] === 'twitter') 
-                {
-                    $TwitterConfig['client_id'] = settingsApi::where('appType', 'twitter')->value('appID');
-                    $TwitterConfig['client_secret'] = settingsApi::where('appType', 'twitter')->value('appSecret');
-            
-                    config(['services.twitter' => $TwitterConfig]);
-                }
+                switch ($service['appType']) {
+                    case 'facebook':
+                        $FacebookConfig['client_id'] = $service->appID;
+                        $FacebookConfig['client_secret'] = $service->appSecret;
+                        config(['services.facebook' => $FacebookConfig]);
+                        break;
 
-                if (isset($service['appType']) && $service['appType'] === 'facebook') 
-                {
-                    $FacebookConfig['client_id'] = settingsApi::where('appType', 'facebook')->value('appID');
-                    $FacebookConfig['client_secret'] = settingsApi::where('appType', 'facebook')->value('appSecret');
-            
-                    config(['services.facebook' => $FacebookConfig]);
-                }
+                    case 'twitter':
+                        $TwitterConfig['client_id'] = $service->appID;
+                        $TwitterConfig['client_secret'] = $service->appSecret;
+                        config(['services.twitter' => $TwitterConfig]);
+                        break;
 
-                if (isset($service['appType']) && $service['appType'] === 'instagram') 
-                {
-                    $InstagramConfig['client_id'] = settingsApi::where('appType', 'instagram')->value('appID');
-                    $InstagramConfig['client_secret'] = settingsApi::where('appType', 'instagram')->value('appSecret');
-            
-                    config(['services.instagram' => $InstagramConfig]);
-                }
+                    case 'instagram':
+                        $InstagramConfig['client_id'] = $service->appID;
+                        $InstagramConfig['client_secret'] = $service->appSecret;
+                        config(['services.instagram' => $InstagramConfig]);
+                        break;
 
-                if (isset($service['appType']) && $service['appType'] === 'youtube') 
-                {
-                    $YoutubeConfig['client_id'] = settingsApi::where('appType', 'youtube')->value('appID');
-                    $YoutubeConfig['client_secret'] = settingsApi::where('appType', 'youtube')->value('appSecret');
-                    $YoutubeConfig['api_key'] = settingsApi::where('appType', 'youtube')->value('apiKey');
-            
-                    config(['services.youtube' => $YoutubeConfig]);
+                    case 'youtube':
+                        $YoutubeConfig['client_id'] = $service->appID;
+                        $YoutubeConfig['client_secret'] = $service->appSecret;
+                        $YoutubeConfig['api_key'] = $service->apiKey;
+                        config(['services.youtube' => $YoutubeConfig]);
+                        break;
                 }
             }
         }

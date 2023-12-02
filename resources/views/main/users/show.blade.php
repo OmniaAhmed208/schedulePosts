@@ -408,9 +408,9 @@
                     var userData = responseObject.userData;
                     var pagesData = responseObject.pagesData;
 
-                    var user_email= '';
-                    for (var i = 0; i < userData.length; i++) {
-                        user_email = userData.email;
+                    var user_email = 'example@gmail.com'; 
+                    if (userData.length > 0) { 
+                        user_email = userData[0].email; 
                     }
 
                     var userDataHTML = '';

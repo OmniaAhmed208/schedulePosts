@@ -111,7 +111,7 @@ class PostController extends Controller
             $twitterVideoPath = $videoUpload['twitterVideoPath'];
             $storageVideo = $videoUpload['storageVideo'];
         }
-
+        
         $time = $this->postStore->userTime();
         $userTimeNow = $time['userTimeNow'];
 

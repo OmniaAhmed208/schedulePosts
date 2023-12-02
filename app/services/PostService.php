@@ -393,16 +393,13 @@ class PostService
                         $rm_urlPath = parse_url($imgPath, PHP_URL_PATH);
                         $storagePath = Str::replace('public\/storage/','storage\app/public/',public_path($rm_urlPath));
 
-                        // Check if the file exists
                         if (file_exists($storagePath)) {
-                            // dd('exist');
                             $connection->setApiVersion(1.1);
                             $connection->setTimeouts(60, 10);
                             $media = $connection->upload('media/upload', ['media' => $storagePath]);
                             $mediaIds[] = $media->media_id_string;
                         } else {
-                            return 'postFailed';
-                            // dd('File does not exist: ' . $storagePath);
+                            return 'postFailed'; // dd('File does not exist: ' . $storagePath);
                         }
                     }
 
@@ -415,8 +412,11 @@ class PostService
                     // dd($result);
                     $mediaIds = [];      
                 }
-                elseif (!empty($videoPath)) {
+                elseif (!empty($videoPath)) { //http://192.168.1.15:8000/storage/uploadVideos/sec.mp4
                     try{
+                        $rm_urlPath = parse_url($videoPath, PHP_URL_PATH);
+                        $storagePath = Str::replace('public\/storage/','storage\app/public/',public_path($rm_urlPath));
+
                         $connection = new tmhOAuth([
                             'consumer_key' => $consumer_key,
                             'consumer_secret' => $consumer_secret,

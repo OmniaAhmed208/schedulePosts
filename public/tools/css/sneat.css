@@ -129,3 +129,16 @@
 @media (max-width:767px) {
     .servicesPage .verificationMsg{width: 100% !important;}
 }
+
+.popover{width: 300px !important;}
+.popover-body{background: aliceblue;padding: 0;}
+.popover-calender .accountInfo{font-size: 14px;}
+.popover-calender .accountInfo .time{font-size: 12px;}
+.popover-calender .socialLogo{bottom: -5px;left: 22px;}
+.popover-calender .socialLogo i{padding: 2px;font-size: 14px;}
+.popover-calender .popoverFooter{background-color: aliceblue !important;}
+
+
+.filepond--root .filepond--credits {
+    display: none !important;
+}

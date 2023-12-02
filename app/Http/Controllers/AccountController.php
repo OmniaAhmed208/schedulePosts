@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Api;
 use App\Models\settingsApi;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,6 +22,12 @@ class AccountController extends Controller
     {
         $account = Api::where('account_id',$userId)->where('creator_id', Auth::user()->id)->first();
         $account->deleteAccountWithSocialPosts();
+
+        if($account->account_pic != null){
+            $rm_urlPath = parse_url($account->account_pic, PHP_URL_PATH);
+            $path = Str::replace('/storage/', '', $rm_urlPath);
+            unlink(storage_path('app/public/'. $path));
+        }
         
         Api::where('account_id',$userId)->where('creator_id', Auth::user()->id)->delete(); // account_id => unique
 

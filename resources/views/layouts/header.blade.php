@@ -42,6 +42,8 @@
     <!-- Toastr -->
     <link rel="stylesheet" href="{{ asset('tools/plugins/toastr/toastr.min.css') }}">
 
+    {{-- filepond --}}
+    <link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet" />
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="{{asset('tools/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css')}}" />
     <link rel="stylesheet" href="{{asset('tools/assets/vendor/libs/apex-charts/apex-charts.css')}}" />
