@@ -21,10 +21,12 @@ class YoutubeCategoryController extends Controller
             ]);
         }    
 
-        return redirect()->route('services')->with('success', 'Youtube category created successfully');
+        return redirect()->route('services.index')->with('success', 'Youtube category created successfully');
     }
 
-    public function update($id) {}
+    public function update(Request $request,$id) {
+        dd($request);
+    }
 
     public function show($id) {}
 

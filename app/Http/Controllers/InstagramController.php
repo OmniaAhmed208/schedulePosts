@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Facebook\Facebook;
 use App\Models\Instagram;
+use App\Models\settingsApi;
 use Illuminate\Http\Request;
 
 class InstagramController extends Controller
@@ -127,11 +128,16 @@ class InstagramController extends Controller
         return $this->instagram();
     }
 
-
-
     public function redirectToInstagramProvider(Request $request)
     {
-        $appId = config('services.instagram.client_id');
+        $instaSettings = settingsApi::where('appType', 'instagram')->first();
+
+        $client_id = $instaSettings['appID'];
+        $client_secret = $instaSettings['appSecret'];
+
+        // $appId = config('services.instagram.client_id');
+
+        $appId = $client_id;
         $redirectUri = urlencode(config('services.instagram.redirect'));
         $state = bin2hex(random_bytes(16));
         session(['instagram_state' => $state]);
@@ -148,10 +154,13 @@ class InstagramController extends Controller
         $code = $request->input('code');
         // dd($code);
 
-        if (empty($code)) return redirect()->route('home')->with('error', 'Failed to login with Instagram.');
+        if (empty($code)) return redirect()->route('users.show')->with('error', 'Failed to login with Instagram.');
 
-        $appId = config('services.instagram.client_id');
-        $secret = config('services.instagram.client_secret');
+        $instaSettings = settingsApi::where('appType', 'instagram')->first();
+        $appId = $instaSettings['appID'];
+        $secret = $instaSettings['appSecret'];
+        // $appId = config('services.instagram.client_id');
+        // $secret = config('services.instagram.client_secret');
         $redirectUri = config('services.instagram.redirect');
 
         $client = new \GuzzleHttp\Client();
@@ -168,11 +177,12 @@ class InstagramController extends Controller
         ]);
 
         if ($response->getStatusCode() != 200) {
-            return redirect()->route('home')->with('error', 'Unauthorized login to Instagram.');
+            return redirect()->route('users.show')->with('error', 'Unauthorized login to Instagram.');
         }
 
         $content = $response->getBody()->getContents();
         $content = json_decode($content);
+        // dd($content);
 
         $accessToken = $content->access_token;
         $userId = $content->user_id;
@@ -180,6 +190,6 @@ class InstagramController extends Controller
         // Store the access token in a session
         session(['instagram_access_token' => $accessToken]);
 
-        return redirect()->route('instagram')->with('success', 'Logged in with Instagram!');
+        return redirect()->route('users.show')->with('success', 'Logged in with Instagram!');
     }
 }

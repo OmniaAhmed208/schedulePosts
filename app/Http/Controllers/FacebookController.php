@@ -9,10 +9,13 @@ use App\Models\settingsApi;
 use Illuminate\Support\Str;
 use App\Models\social_posts;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Socialite\Facades\Socialite;
+use Facebook\Exceptions\FacebookSDKException;
+use Facebook\Exceptions\FacebookResponseException;
 
 class FacebookController extends Controller
 {
@@ -360,7 +363,7 @@ class FacebookController extends Controller
     }
 
 
-    public function getPages(Request $request)
+    public function getPages1(Request $request)
     {
         try {
             // Access data sent in the request
@@ -440,7 +443,7 @@ class FacebookController extends Controller
 
     public function getPages2(Request $request)
     {
-        try {
+        // try {
             $responseData = [];
             $requestData = json_decode($request->getContent(), true);
 
@@ -455,36 +458,133 @@ class FacebookController extends Controller
             $urlPages = "https://graph.facebook.com/{$userID}/accounts?fields=name,access_token,picture,perms&access_token={$access_token}";
             $response = Http::get($urlPages);
 
-            if ($response->failed()) {
-                return response()->json(['error' => 'Failed to fetch Facebook pages data'], 500);
-            }
+            // if ($response->failed()) {
+            //     return response()->json(['error' => 'Failed to fetch Facebook pages data'], 500);
+            // }
 
+            // $pagesData = $response->json();
+
+            // if (isset($pagesData['error'])) {
+            //     return response()->json(['error' => $pagesData['error']], 500);
+            // }
+
+            // $pages = [];
+            // foreach ($pagesData['data'] as $page) {
+            //     $pageInfo = [
+            //         'id' => $page['id'],
+            //         'access_token' => $page['access_token'],
+            //         'image' => $page['picture']['data']['url'],
+            //         'type' => $page['perms'][0],
+            //     ];
+            //     $pages[] = $pageInfo;
+            // }
+
+            // $responseData['userData'] = $userData;
+            // $responseData['pagesData'] = $pagesData;
+
+            // return response()->json($responseData);
+
+        // } catch (\Exception $e) {
+        //     return response()->json(['error' => 'Internal Server Error'], 500);
+        // }
+        try {
+            $response = Http::get($urlPages);
             $pagesData = $response->json();
 
-            if (isset($pagesData['error'])) {
-                return response()->json(['error' => $pagesData['error']], 500);
-            }
-
-            $pages = [];
-            foreach ($pagesData['data'] as $page) {
-                $pageInfo = [
-                    'id' => $page['id'],
-                    'access_token' => $page['access_token'],
-                    'image' => $page['picture']['data']['url'],
-                    'type' => $page['perms'][0],
-                ];
-                $pages[] = $pageInfo;
-            }
-
             $responseData['userData'] = $userData;
-            $responseData['pagesData'] = $pages;
+            $responseData['pagesData'] = $pagesData;
+            Log::info('Facebook API Response: ' . $response->body());
 
             return response()->json($responseData);
 
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Internal Server Error'], 500);
+            Log::error('Facebook API Error: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to fetch Facebook pages data'], 500);
         }
     }
+
+    public function getPages(Request $request)
+    {
+        try {
+            $responseData = [];
+            $requestData = json_decode($request->getContent(), true);
+
+            $userID = $requestData['userID'];
+            $access_token = $requestData['access_token'];
+
+            // Fetch user data
+            $urlUser = "https://graph.facebook.com/v12.0/me?fields=id,name,email,picture&access_token={$access_token}";
+            $userData = $this->curlFun($urlUser);
+
+            // Fetch pages data
+            $urlPages = "https://graph.facebook.com/{$userID}/accounts?fields=name,access_token,picture&access_token={$access_token}";
+            $response = Http::get($urlPages);
+
+            $pagesData = $response->json();
+
+            $responseData['userData'] = $userData;
+            $responseData['pagesData'] = $pagesData;
+
+            Log::info('Facebook API Response: ' . $response->body());
+
+            return response()->json($responseData);
+
+        } catch (\Exception $e) {
+            Log::error('Facebook API Error: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to fetch Facebook pages data'], 500);
+        }
+    }
+
+    public function pagesFacebook()
+    {
+        $permissions = [ // instagram
+            'instagram_basic',
+            'instagram_content_publish',
+            'instagram_manage_comments',
+            'instagram_manage_insights',
+            'manage_pages', 
+            'pages_show_list',
+            'Instagram Public Content Access'
+        ];
+        
+        try {
+            $responseData = [];
+            // $requestData = json_decode($request->getContent(), true);
+
+            $userID = '2049786572026608';
+            $access_token = 'EAAJztuEvLeQBOxd9bNLx9ULYGxtlljtSIEEwZBLimmSMKVbqwlnj3KZCEAkQADKJLwyxAIgyQOT6uIE6E41CaCYEhnZCsOB42LSw4rgN54quCs9Nw8k2fSiQjqyckpgexwHU6ZCpfXHpSkUaFL962DVVWAvYJaioSgAu9ZCIe4uqu7ggHpKl8jJ4sWPRqZAouRqgnZBOhpi0L6iZC0mKMX3wNmugzXwZD';
+
+            $url = "https://graph.facebook.com/v12.0/113695178285974?fields=instagram_business_account,username&access_token={$access_token}"; // page id
+            $response1 = Http::get($url);
+            $insta1 = $response1->json();
+            $url2 = "https://graph.facebook.com/v12.0/2049786572026608?fields=instagram_business_account,username&access_token={$access_token}"; // page id
+            $response2 = Http::get($url2);
+            $insta2 = $response2->json();
+
+            // Fetch user data
+            $urlUser = "https://graph.facebook.com/v12.0/me?fields=id,name,email,picture&access_token={$access_token}";
+            $userData = $this->curlFun($urlUser);
+
+            // Fetch pages data
+            $urlPages = "https://graph.facebook.com/{$userID}/accounts?fields=name,access_token,picture&access_token={$access_token}";
+            $response = Http::get($urlPages);
+            $pagesData = $response->json();
+
+            dd($insta1, $insta2, $userData, $pagesData);
+
+            $responseData['userData'] = $userData;
+            $responseData['pagesData'] = $pagesData;
+
+            Log::info('Facebook API Response: ' . $response->body());
+
+            return response()->json($responseData);
+
+        } catch (\Exception $e) {
+            Log::error('Facebook API Error: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to fetch Facebook pages data'], 500);
+        }
+    }
+
 
     // function saveUserData(responseData) {
     //     console.log('getPages', responseData);
@@ -533,7 +633,46 @@ class FacebookController extends Controller
     
     public function store(Request $request) 
     {
-        dd($request);
+        try{
+            $profileImage = $request->pageImage;
+            $ext = pathinfo($profileImage, PATHINFO_EXTENSION);
+            $filename = time() . '.' . $ext;
+            Storage::put('public/profile_images/'. $filename, file_get_contents($profileImage));
+            $storageImage = url('storage/profile_images/'. $filename);
+
+            $userData = [
+                'creator_id'=> Auth::user()->id,
+                'account_type' => 'facebook',
+                'account_id' => $request->pageId,
+                'account_name' => $request->pageName,
+                'email' => $request->email,
+                'account_pic' => $storageImage,
+                'account_link' => 'https://www.facebook.com/' . $request->pageId,
+                'token' => $request->account_token,
+                'token_secret' => $request->page_access_token 
+            ];
+
+            $existingApp = Api::where('account_id', $request->pageId)->where('creator_id', Auth::user()->id)->first();
+
+            if ($existingApp) 
+            {
+                if($existingApp->account_pic != null){
+                    $rm_urlPath = parse_url($existingApp->account_pic, PHP_URL_PATH);
+                    $path = Str::replace('/storage/', '', $rm_urlPath);
+                    unlink(storage_path('app/public/'. $path));
+                }
+                
+                $existingApp->update($userData);
+
+            } else {
+                Api::create($userData);
+            }
+
+            return redirect()->back();
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error' , 'Failed to save Facebook page');
+        }
     }
 
     public function curlFun($url)

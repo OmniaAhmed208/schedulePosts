@@ -4,68 +4,66 @@ namespace App\Http\Controllers;
 
 use Exception;
 use Carbon\Carbon;
+use Google_Client;
 use App\Models\Api;
 use Facebook\Facebook;
-use Google_Client;
-use App\Models\time_think;
 use App\Models\PublishPost;
 use App\Models\settingsApi;
+use Google_Service_YouTube;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Services\PostService;
 use Thujohn\Twitter\tmhOAuth;
-use Illuminate\Support\Facades\Auth;
+use Google_Service_YouTube_Video;
 use Illuminate\Support\Facades\Http;
 use Abraham\TwitterOAuth\TwitterOAuth;
-use Facebook\Exceptions\FacebookSDKException;
-use Facebook\Exceptions\FacebookResponseException;
-use Google_Service_YouTube;
-use Google_Service_YouTube_Video;
 use Google_Service_YouTube_VideoStatus;
 use Google_Service_YouTube_VideoSnippet;
+use Facebook\Exceptions\FacebookSDKException;
+use Facebook\Exceptions\FacebookResponseException;
 
 
 class PostStatusController extends Controller
 {
-    public function timeThink(Request $request){
-        return view('AdminSocialMedia.timeThink');
-    }
+    protected $postStore;
 
-    public function timeThinkStore(Request $request)
+    public function __construct(PostService $post)
     {
-        $time_table = time_think::where('creator_id', Auth::user()->id)->first();
-        if(!$time_table){
-            time_think::create([
-                'creator_id' => Auth::user()->id,
-                'time' => $request->time
-            ]);
-        }
-        else{
-            $time_table->update([
-                'time' => $request->time
-            ]);
-        }
-    
-        return redirect()->back()->with('success', 'Time saved successfully'); //AdminSocialMedia.timeThink
+        $this->postStore = $post;
     }
+
+    // public function timeThinkStore(Request $request)
+    // {
+    //     $time_table = time_think::where('creator_id', Auth::user()->id)->first();
+    //     if(!$time_table){
+    //         time_think::create([
+    //             'creator_id' => Auth::user()->id,
+    //             'time' => $request->time
+    //         ]);
+    //     }
+    //     else{
+    //         $time_table->update([
+    //             'time' => $request->time
+    //         ]);
+    //     }
+    
+    //     return redirect()->back()->with('success', 'Time saved successfully'); //AdminSocialMedia.timeThink
+    // }
     
     
-    public function checkPostStatus(){
+    public function checkPostStatus()
+    {        
+        $time = $this->postStore->userTime();
+        $userTimeNow = $time['userTimeNow'];
+
         $postStatus = PublishPost::get()->where('status','pending');
-        $time_table = time_think::where('creator_id', Auth::user()->id)->first();
-
-        $now = Carbon::now(); 
-        $diff_time = $time_table->time;
-        $newDateTime = $now->copy()->addHours($diff_time);
-
-        $dateNow = $newDateTime->format('Y-m-d H:i');
-
-        echo $dateNow . '<br> <br>';
-
+        
         $funRes = '';
         $results = [];
 
-        foreach($postStatus as $post){
-            $dateNow = Carbon::parse($dateNow);
+        foreach($postStatus as $post)
+        {
+            $dateNow = Carbon::parse($userTimeNow);
             $datePost = Carbon::parse($post->scheduledTime);
 
             if($datePost->lte($dateNow)){
@@ -102,7 +100,6 @@ class PostStatusController extends Controller
 
         $returnData = $this->returnedRes($results);
         return redirect()->back()->with('postStatusForPublishing', $returnData);
-
     }
 
     

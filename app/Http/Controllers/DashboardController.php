@@ -2,63 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use DateTime;
-use DateTimeZone;
-use Carbon\Carbon;
 use App\Models\Api;
 use App\Models\User;
-use GuzzleHttp\Client;
 use App\Models\publishPost;
 use App\Models\settingsApi;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Stevebauman\Location\Facades\Location;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Models\Permission;
 
 class DashboardController extends Controller
 {
-    public function test(Request $request)
+    public function test()
     {
-        $ip = request()->ip();
-        // $ip = $request->ip();
-        $publicIp = $request->server('REMOTE_ADDR');
-        // dd($publicIp);
-
-        $client = new Client();
-        $apiKey = '9a2a9fbda77723'; // Replace with your IPinfo API key
-
-        // Make a request to the IPinfo API
-        $response = $client->get("http://ipinfo.io/{$ip}?token={$apiKey}");
-        $data = json_decode($response->getBody(), true);
-
-        // dd($data);
-
-        // ________________________________________________________
-
-        $ip = '156.194.63.61'; //For static IP address get
-        $ip = request()->ip(); //Dynamic IP address get
-        $data = Location::get($ip);
-        // dd($data);
-
-        // ________________________________________________________
-
-        $time = Carbon::now('Africa/Cairo');
-
-        $userTimezoneString = 'Africa/Cairo';
-        $userTz = new DateTimeZone($userTimezoneString);
-        $userNow = new DateTime('now', $userTz);
-        echo $userNow->format('Y-m-d H:i:s'); // 2023-05-09 12:22:46
-        
-        // dd($time, $userTz, $userNow);
-
-        dd('$ip = request()->ip() => '. $ip, 
-        '$publicIp = $request->server("REMOTE_ADDR") => '. $publicIp,
-        '$data = Location::get($ip) => '. $data,
-        '$time = Carbon::now("Africa/Cairo") => '.$time, 
-        '$userTz = new DateTimeZone("Africa/Cairo") => ', $userTz, 
-        '$userNow = new DateTime("now", $userTz) => ', $userNow,
-        '$userNow->format("Y-m-d H:i:s") => '. $userNow->format('Y-m-d H:i:s'));
-
         return view('main.test');
     }
 

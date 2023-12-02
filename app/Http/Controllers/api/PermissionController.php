@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers\api;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Validator;
 
@@ -11,10 +14,33 @@ class PermissionController extends Controller
 {
     public function index()
     {
-        $permissions = Permission::all();
+        // $permissions = Permission::all();
+
+        $user_has_roles = DB::table('user_has_roles')->where('user_id', Auth::user()->id)->get();
+        $permissions = [];
+        $roles = [];
+
+        foreach ($user_has_roles as $role) {
+            $role_has_permissions = DB::table('role_has_permissions')
+                ->where('role_id', $role->role_id)
+                ->get();
+
+            $roleModel = Role::find($role->role_id);
+            if ($roleModel) {
+                $roles[] = $roleModel->name;
+            }
+
+            foreach ($role_has_permissions as $permission) {
+                $permissionModel = Permission::find($permission->permission_id);
+                if ($permissionModel) {
+                    $permissions[] = $permissionModel->name;
+                }
+            }
+        }
+        $uniquePermissions = array_unique($permissions); // if user has multi roles get this permissions without redundancy
 
         return response()->json([
-            'data' => $permissions,
+            'data' => $uniquePermissions,
             'status' => true
         ],200);
     }

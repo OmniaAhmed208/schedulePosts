@@ -65,6 +65,12 @@ class NewsLetterController extends Controller
     public function update(Request $request,$id)
     {
         $newsLetter = NewsLetter::find($id);
+        if (!$newsLetter) {
+            return response()->json([
+                'message' => 'Newsletter not found',
+                'status' => false
+            ], 404);
+        }
 
         $validationRules = [
             'title' => 'required',
@@ -103,7 +109,7 @@ class NewsLetterController extends Controller
             'status' => true
         ],200);
     }
-
+    
     public function destroy($id)
     {
         $newsLetter = NewsLetter::find($id);

@@ -60,10 +60,25 @@ class UserController extends Controller
             ],200);
         }
         catch(\Throwable $th){
+            // ValidationException $e
             return response()->json([
                 'message' => $th->getMessage(),
                 'status' => false,
             ],500);
+
+            // $errors = $e->validator->errors()->toArray();
+
+            // if (isset($errors['password'])) {
+            //     return response()->json([
+            //     'message' => 'Password must be minimum 8 and contains at least (capital letter, number, special character) ', 
+            //     'status' => false]);
+            // }
+
+            // return response()->json([
+            //     'message' => $e->getMessage(),
+            //     'status' => false,
+            // ],500);
+
         }
     }
 
@@ -165,7 +180,6 @@ class UserController extends Controller
 
     public function update(Request $request, $id)
     {
-        // dd($request);
         $user = User::find($id);
         if($user == null){
             return back()->with('error','User not found');
@@ -173,7 +187,6 @@ class UserController extends Controller
 
         $validator = $request->validate([
             'name' => 'required',
-            'email' => 'required|email|unique:users,email,' . $user->id,
             'image' => 'mimes:jpg,jpeg,png',
         ]);
 
@@ -197,7 +210,6 @@ class UserController extends Controller
 
         $user->update([
             'name' => $request->name,
-            'email' => $request->email,
             'image' => $storageImage
         ]);
 

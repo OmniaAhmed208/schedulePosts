@@ -11,7 +11,6 @@ class postImages extends Model
     use HasFactory;
     protected $fillable = ['post_id','creator_id','image'];
 
-
     public function publishPost(): BelongsTo
     {
         return $this->belongsTo(publishPost::class, 'post_id');

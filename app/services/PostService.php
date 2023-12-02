@@ -27,10 +27,44 @@ use Google_Service_YouTube_VideoSnippet;
 use Facebook\Exceptions\FacebookSDKException;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 use Facebook\Exceptions\FacebookResponseException;
-
+use DateTime;
+use DateTimeZone;
+use Stevebauman\Location\Facades\Location;
 
 class PostService 
 {
+    public function userTime()
+    {
+        // $currentUrl = request()->url(); //if (parse_url($currentUrl, PHP_URL_SCHEME) === 'https') {}
+        $ip = '';
+        if (request()->isSecure()) {
+            $ip = request()->ip(); // Dynamic IP address get
+        } else {
+            $ip = '41.43.246.5'; // For static IP address get
+        }
+
+        $data = Location::get($ip);
+
+        if ($data && isset($data->timezone)) {
+            $userTimezoneString = $data->timezone;
+            $userTz = new DateTimeZone($userTimezoneString);
+            $userNow = new DateTime('now', $userTz);
+            $userTimeNow = $userNow->format('Y-m-d H:i:s'); // "2023-11-26 17:01:38"
+            $currentTime = Carbon::now($userTimezoneString)->format('Y-m-d H:i:s');
+
+            return [
+                'userTimeNow' => $userTimeNow,
+                'currentTime' => $currentTime,
+            ];
+        } else {
+            return [
+                'userTimeNow' => null,
+                'currentTime' => null,
+            ];
+        }
+    }
+
+
     public function saveImages($images)
     {
         $imgUpload = [];
@@ -134,176 +168,194 @@ class PostService
         return $appResults;
     }
  
-    public function facePublish($requestData,$img)
+    // public function facePublish($requestData,$img)
+    // {
+    //     // dd($requestData);
+    //     $faceToken = '';
+    //     $pageName = $requestData->page;
+    //     $pageToken = null; 
+    //     $pageId = null;
+    //     $urlImage = '';
+
+    //     $response = Http::get("https://graph.facebook.com/v12.0/me/accounts?access_token={$faceToken}");
+    //     $pages = $response->json()['data'];
+
+    //     $desiredPage = null;
+
+    //     foreach ($pages as $page) {
+    //         if ($page['name'] === $pageName) {
+    //             $desiredPage = $page;
+    //             $pageToken = $desiredPage['access_token'];
+    //             $pageId = $desiredPage['id'];
+    //             break;
+    //         }
+    //     }
+
+    //     $fb = new Facebook([
+    //         'app_id' => config('services.facebook.client_id'),
+    //         'app_secret' => config('services.facebook.client_secret'),
+    //         'default_graph_version' => 'v12.0', // Use the appropriate version
+    //     ]);
+        
+    //     $fb->setDefaultAccessToken($pageToken);
+        
+    //     $permissions = 
+    //     [
+    //         'pages_show_list',
+    //         'pages_read_engagement',
+    //         'pages_manage_posts',
+    //         'pages_manage_ads',
+    //         'pages_manage_cta',
+    //         'pages_manage_metadata'
+    //     ];
+        
+    //     try {
+
+    //         $url = "https://graph.facebook.com/v12.0/{$pageId}/feed";
+
+    //         // if (!empty($images)) {
+    //         //     foreach ($images as $img) {
+    //         //         $filename = Str::replace('postImages\\', '', $img);
+    //         //         $response = Http::attach(
+    //         //             'source',
+    //         //             file_get_contents($img),
+    //         //             $filename
+    //         //         )->post("https://graph.facebook.com/v12.0/{$pageId}/photos", [
+    //         //             'message' => $requestData->postData,
+    //         //             'privacy' => '{"value": "EVERYONE"}',
+    //         //             'access_token' => $pageToken,
+    //         //         ]);
+    //         //     }
+    //         // }
+
+    //         // if (!empty($images)) {
+    //         //     $attachedMedia = [];
+    //         //     foreach ($images as $img) {
+    //         //         $filename = Str::replace('postImages\\', '', $img);
+    //         //         $attachedMedia[] = [
+    //         //             'media_type' => 'IMAGE',
+    //         //             'media' => [
+    //         //                 'file' => file_get_contents($img),
+    //         //                 'filename' => $filename,
+    //         //             ],
+    //         //         ];
+    //         //     }
+    //         // }
+
+    //         if ($img != null) {
+    //             $filename = Str::replace('postImages\\', '', $img);
+    //             $response = Http::attach(
+    //                 'source',
+    //                 file_get_contents($img),
+    //                 $filename
+    //             )->post("https://graph.facebook.com/v12.0/{$pageId}/photos", [
+    //                 'message' => $requestData->postData,
+    //                 'privacy' => '{"value": "EVERYONE"}',
+    //                 'access_token' => $pageToken,
+    //             ]);
+    //         }
+    //         else {
+    //             $response = Http::post($url, [
+    //                 'message' => $requestData->postData,
+    //                 'link' => $requestData->link,
+    //                 // 'privacy' => '{"value": "EVERYONE"}',
+    //                 'access_token' => $pageToken,
+    //             ]);
+    //         }
+            
+    //         $response = $response->json();
+
+    //         return 'postCreated';
+
+    //     } catch(FacebookResponseException $e) {
+    //         return 'Graph returned an error: ' . $e->getMessage();
+    //     } catch(FacebookSDKException $e) {
+    //         return 'Facebook SDK returned an error: ' . $e->getMessage();
+    //     }
+    // }
+
+    public function facePublish($requestData,$imgPaths)
     {
         // dd($requestData);
-        $faceToken = '';
-        $pageName = $requestData->page;
-        $pageToken = null; 
-        $pageId = null;
-        $urlImage = '';
+        $accountsID = $requestData->accounts_id;
+        $facebookSettings = settingsApi::where('appType', 'facebook')->first(); 
+        $client_id = $facebookSettings['appID'];
+        $client_secret = $facebookSettings['appSecret'];
 
-        $response = Http::get("https://graph.facebook.com/v12.0/me/accounts?access_token={$faceToken}");
-        $pages = $response->json()['data'];
-
-        $desiredPage = null;
-
-        foreach ($pages as $page) {
-            if ($page['name'] === $pageName) {
-                $desiredPage = $page;
-                $pageToken = $desiredPage['access_token'];
-                $pageId = $desiredPage['id'];
-                break;
-            }
-        }
-
-        $fb = new Facebook([
-            'app_id' => config('services.facebook.client_id'),
-            'app_secret' => config('services.facebook.client_secret'),
-            'default_graph_version' => 'v12.0', // Use the appropriate version
-        ]);
-        
-        $fb->setDefaultAccessToken($pageToken);
-        
-        $permissions = 
-        [
-            'pages_show_list',
-            'pages_read_engagement',
-            'pages_manage_posts',
-            'pages_manage_ads',
-            'pages_manage_cta',
-            'pages_manage_metadata'
-        ];
-        
-        try {
-
-            $url = "https://graph.facebook.com/v12.0/{$pageId}/feed";
-
-            // if (!empty($images)) {
-            //     foreach ($images as $img) {
-            //         $filename = Str::replace('postImages\\', '', $img);
-            //         $response = Http::attach(
-            //             'source',
-            //             file_get_contents($img),
-            //             $filename
-            //         )->post("https://graph.facebook.com/v12.0/{$pageId}/photos", [
-            //             'message' => $requestData->postData,
-            //             'privacy' => '{"value": "EVERYONE"}',
-            //             'access_token' => $pageToken,
-            //         ]);
-            //     }
-            // }
-
-            // if (!empty($images)) {
-            //     $attachedMedia = [];
-            //     foreach ($images as $img) {
-            //         $filename = Str::replace('postImages\\', '', $img);
-            //         $attachedMedia[] = [
-            //             'media_type' => 'IMAGE',
-            //             'media' => [
-            //                 'file' => file_get_contents($img),
-            //                 'filename' => $filename,
-            //             ],
-            //         ];
-            //     }
-            // }
-
-            if ($img != null) {
-                $filename = Str::replace('postImages\\', '', $img);
-                $response = Http::attach(
-                    'source',
-                    file_get_contents($img),
-                    $filename
-                )->post("https://graph.facebook.com/v12.0/{$pageId}/photos", [
-                    'message' => $requestData->postData,
-                    'privacy' => '{"value": "EVERYONE"}',
-                    'access_token' => $pageToken,
-                ]);
-            }
-            else {
-                $response = Http::post($url, [
-                    'message' => $requestData->postData,
-                    'link' => $requestData->link,
-                    // 'privacy' => '{"value": "EVERYONE"}',
-                    'access_token' => $pageToken,
-                ]);
-            }
-            
-            $response = $response->json();
-
-            return 'postCreated';
-
-        } catch(FacebookResponseException $e) {
-            return 'Graph returned an error: ' . $e->getMessage();
-        } catch(FacebookSDKException $e) {
-            return 'Facebook SDK returned an error: ' . $e->getMessage();
-        }
-    }
-
-    public function instaPublish($requestData)
-    {
-        $instaToken = '';
-        // 17841458134934475 -> id evolve
-        // 17841453423356345/media?image_url=https://i.ibb.co/j5jStSm/photo2.png
-        // 17841453423356345/media_publish?creation_id=17989019528213233
-        $accessToken = 'EAAS9OZAZBDis4BO9EwYkPxfZAr7ZCq0qiI0XMibHk4eMYN6jHDTZC0B43lned3EL9ZCEPROCWgdLKe81lELqjIiZBgZAHBjCb5Ys6bZClGzcsZAxGsApn1DA2rcjFrCCC8xltvo3ioZCkqb2tai3jXuyJbuFbru4s3Nojjf8a4QXxfusOekfwjatgUeYgrgB0EYtSUXBpzl8vBeuZCnUbMmTkAZDZD'; // Replace with your actual access token
-        $pageId = '17841453423356345';
-        $imageUrl = 'https://i.ibb.co/j5jStSm/photo2.png';
-        $caption = $requestData->postData;
-
-        try {
-
-            if ($requestData->hasfile('image')) {
-                $file = $requestData->file('image');
-                $ext = $file->getClientOriginalExtension();
-                $filename = time().'.'.$ext;
-                // $img = $file->move('postImages/',$filename); 
-
-                $mediaResponse = Http::post("https://graph.facebook.com/v17.0/{$pageId}/media", [
-                    'image_url' => $imageUrl,
-                    'caption' => $caption,
-                    'access_token' => $accessToken,
-                ]);
-
-                
-                if ($mediaResponse->successful()) {
-
-                    $mediaData = $mediaResponse->json();
-                    $mediaId = $mediaData['id'];
-                    
-                    if ($requestData->scheduledTime) {
-                        // If you want to schedule the post
-                        $scheduledTime = Carbon::parse($requestData->scheduledTime)->timestamp;
-                        // Step 2: Publish media
-                        $publishResponse = Http::post("https://graph.facebook.com/v17.0/{$pageId}/media_publish", [
-                            'published' => false,
-                            'scheduled_publish_time' => $scheduledTime,
-                            'creation_id' => $mediaId,
-                            'access_token' => $accessToken,
-                        ]);
-                    }
-                    else{
-                        $publishResponse = Http::post("https://graph.facebook.com/v17.0/{$pageId}/media_publish", [
-                            'creation_id' => $mediaId,
-                            'access_token' => $accessToken,
-                        ]);
-                    }    
+        foreach ($accountsID as $id) {
+            $accounts = Api::where('account_type', 'facebook')
+                ->where('account_id', $id)
+                ->where('creator_id', Auth::user()->id)
+                ->get();
     
-                    if ($publishResponse->successful()) {
-                        return 'postCreated';
-                    } else {
-                        return $publishResponse->status();
+            foreach ($accounts as $account) {
+                $facebookPageToken = $account->token_secret;
+
+                $text = $requestData['postData'] ?? '';
+
+                $fb = new Facebook([
+                    'app_id' => $client_id,
+                    'app_secret' => $client_secret,
+                    'default_graph_version' => 'v12.0', // Use the appropriate version
+                ]);
+                
+                $fb->setDefaultAccessToken($facebookPageToken);
+                $permissions = 
+                [
+                    'pages_show_list',
+                    'pages_read_engagement',
+                    'pages_manage_posts',
+                    'pages_manage_ads',
+                    'pages_manage_cta',
+                    'pages_manage_metadata'
+                ];
+
+                try 
+                {
+                    $url = "https://graph.facebook.com/v12.0/{$account->account_id}/feed";
+                    if (!empty($imgPaths)) 
+                    {
+                        foreach ($imgPaths as $imgPath) {
+                            // http://192.168.1.15:8000/storage/uploadImages/img.png
+                            $rm_urlPath = parse_url($imgPath, PHP_URL_PATH);
+                            $filename = Str::replace('/storage/uploadImages/','',$rm_urlPath);
+                            $response = Http::attach(
+                                'source',
+                                file_get_contents($imgPath),
+                                // $imgPath,
+                                $filename
+                            )->post("https://graph.facebook.com/v12.0/{$account->account_id}/photos", [
+                                'message' => $text,
+                                'privacy' => '{"value": "EVERYONE"}',
+                                'access_token' => $facebookPageToken,
+                            ]);
+
+                            $rm_urlPath = parse_url($imgPath, PHP_URL_PATH);
+                            $storagePath = Str::replace('public\/storage/','storage\app/public/',public_path($rm_urlPath));
+                            // if (file_exists($storagePath)) {
+                            //     // dd('exist');
+                            // } else {
+                            //     dd('File does not exist: ' . $storagePath);
+                            // }
+                        }
                     }
-                } else {
-                    return $mediaResponse->status();
+                    else {
+                        $response = Http::post($url, [
+                            'message' => $text,
+                            'link' => $requestData->link,
+                            // 'privacy' => '{"value": "EVERYONE"}',
+                            'access_token' => $facebookPageToken,
+                        ]);
+                        // return 'postCreated'; //: Only images or videos can be posted, not both.
+                    }
+                    $response = $response->json();    
+        
+                } catch(FacebookResponseException $e) {
+                    return 'Graph returned an error: ' . $e->getMessage();
+                } catch(FacebookSDKException $e) {
+                    return 'Facebook SDK returned an error: ' . $e->getMessage();
                 }
             }
-            else {
-                return'should choose image for instagram';
-            }
-
-        } catch (\Exception $e) {
-            return $e->getMessage();
         }
     }
 
@@ -336,18 +388,8 @@ class PostService
                 }
                 elseif (!empty($imgPaths))
                 {
-                    foreach ($imgPaths as $imgPath) {
-                        // $imgPath = Str::replace('storage\\','storage\app/public/',$imgPath);
-                        // if (file_exists($imgPath)) {
-                        //     // dd('exist');
-                        //     $connection->setApiVersion(1.1);
-                        //     $connection->setTimeouts(60, 10);
-                        //     $media = $connection->upload('media/upload', ['media' => $imgPath]);
-                        //     $mediaIds[] = $media->media_id_string;
-                        // } else {
-                        //     dd('File does not exist: ' . $imgPath);
-                        // }
-
+                    foreach ($imgPaths as $imgPath) 
+                    {
                         $rm_urlPath = parse_url($imgPath, PHP_URL_PATH);
                         $storagePath = Str::replace('public\/storage/','storage\app/public/',public_path($rm_urlPath));
 
@@ -359,7 +401,8 @@ class PostService
                             $media = $connection->upload('media/upload', ['media' => $storagePath]);
                             $mediaIds[] = $media->media_id_string;
                         } else {
-                            dd('File does not exist: ' . $storagePath);
+                            return 'postFailed';
+                            // dd('File does not exist: ' . $storagePath);
                         }
                     }
 
@@ -531,6 +574,72 @@ class PostService
         }
     } 
 
+    public function instaPublish($requestData)
+    {
+        $instaToken = '';
+        // 17841458134934475 -> id evolve
+        // 17841453423356345/media?image_url=https://i.ibb.co/j5jStSm/photo2.png
+        // 17841453423356345/media_publish?creation_id=17989019528213233
+        $accessToken = 'EAAS9OZAZBDis4BO9EwYkPxfZAr7ZCq0qiI0XMibHk4eMYN6jHDTZC0B43lned3EL9ZCEPROCWgdLKe81lELqjIiZBgZAHBjCb5Ys6bZClGzcsZAxGsApn1DA2rcjFrCCC8xltvo3ioZCkqb2tai3jXuyJbuFbru4s3Nojjf8a4QXxfusOekfwjatgUeYgrgB0EYtSUXBpzl8vBeuZCnUbMmTkAZDZD'; // Replace with your actual access token
+        $pageId = '17841453423356345';
+        $imageUrl = 'https://i.ibb.co/j5jStSm/photo2.png';
+        $caption = $requestData->postData;
+
+        try {
+
+            if ($requestData->hasfile('image')) {
+                $file = $requestData->file('image');
+                $ext = $file->getClientOriginalExtension();
+                $filename = time().'.'.$ext;
+                // $img = $file->move('postImages/',$filename); 
+
+                $mediaResponse = Http::post("https://graph.facebook.com/v17.0/{$pageId}/media", [
+                    'image_url' => $imageUrl,
+                    'caption' => $caption,
+                    'access_token' => $accessToken,
+                ]);
+
+                
+                if ($mediaResponse->successful()) {
+
+                    $mediaData = $mediaResponse->json();
+                    $mediaId = $mediaData['id'];
+                    
+                    if ($requestData->scheduledTime) {
+                        // If you want to schedule the post
+                        $scheduledTime = Carbon::parse($requestData->scheduledTime)->timestamp;
+                        // Step 2: Publish media
+                        $publishResponse = Http::post("https://graph.facebook.com/v17.0/{$pageId}/media_publish", [
+                            'published' => false,
+                            'scheduled_publish_time' => $scheduledTime,
+                            'creation_id' => $mediaId,
+                            'access_token' => $accessToken,
+                        ]);
+                    }
+                    else{
+                        $publishResponse = Http::post("https://graph.facebook.com/v17.0/{$pageId}/media_publish", [
+                            'creation_id' => $mediaId,
+                            'access_token' => $accessToken,
+                        ]);
+                    }    
+    
+                    if ($publishResponse->successful()) {
+                        return 'postCreated';
+                    } else {
+                        return $publishResponse->status();
+                    }
+                } else {
+                    return $mediaResponse->status();
+                }
+            }
+            else {
+                return'should choose image for instagram';
+            }
+
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+    }
 
     // publish on multiple channel in same time   
     public function checkVideoStatus($videoId)

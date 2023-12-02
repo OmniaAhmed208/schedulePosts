@@ -12,6 +12,7 @@ use App\Mail\ForgetPassword;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Auth;
@@ -27,30 +28,31 @@ class UserController extends Controller
         $users = User::all();
 
         return response()->json([
-            'message' => count($users). ' users found',
+            'message' => count($users) . ' users found',
             'data' => $users,
             'status' => true
-        ],200);
+        ], 200);
     }
 
     public function register(Request $request)
     {
-        try{
+        try {
             $validator = Validator::make($request->all(), [
                 'name' => 'required',
                 'email' => 'required|email|unique:users,email',
-                'password' => ['required','nullable','confirmed','min:8', // confirmed ===> password_confirmation
+                'password' => [
+                    'required', 'nullable', 'confirmed', 'min:8', // confirmed ===> password_confirmation
                     'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
                 ],
             ]);
             //  At least one lowercase letter, At least one uppercase letter, At least one digit, At least one special character
 
-            if($validator->fails()){
+            if ($validator->fails()) {
                 return response()->json([
                     'message' => 'Validation error',
                     'errors' => $validator->errors(),
                     'status' => false
-                ],422);
+                ], 422);
             }
 
             $token = random_int(100000, 999999);
@@ -65,38 +67,37 @@ class UserController extends Controller
             $cc = User::where('email', $request->email)->first();
             $bcc = User::where('email', $request->email)->first();
             Mail::to($request->user())
-            ->cc($cc)
-            ->bcc($bcc)
-            ->send(new VerifyEmail($token));            
+                ->cc($cc)
+                ->bcc($bcc)
+                ->send(new VerifyEmail($token));
 
             return response()->json([
                 'message' => 'User created successfully',
                 'status' => true,
                 'user' => $user,
                 'token' => $user->createToken("API TOKEN")->plainTextToken
-            ],200);
-        }
-        catch(\Throwable $th){
+            ], 200);
+        } catch (\Throwable $th) {
             return response()->json([
                 'message' => $th->getMessage(),
                 'status' => false,
-            ],500);
+            ], 500);
         }
     }
 
     public function email_verification(Request $request)
     {
-        try{
+        try {
             $validator = Validator::make($request->all(), [
                 'token' => 'required|max:6',
             ]);
 
-            if($validator->fails()){
+            if ($validator->fails()) {
                 return response()->json([
                     'message' => 'Validation error',
                     'errors' => $validator->errors(),
                     'status' => false
-                ],422);
+                ], 422);
             }
 
             // $user = User::where('email', $request->user()->email)->first();
@@ -131,19 +132,17 @@ class UserController extends Controller
                 'user' => $user,
                 'status' => true,
             ], 200);
-            
-        }
-        catch(\Throwable $th){
+        } catch (\Throwable $th) {
             return response()->json([
                 'message' => $th->getMessage(),
                 'status' => false,
-            ],500);
+            ], 500);
         }
     }
 
     public function code_verification_from_profile(Request $request)
     {
-        try{
+        try {
             $user = $request->user();
 
             if ($user->email_verified_at) {
@@ -153,16 +152,16 @@ class UserController extends Controller
                 ], 400);
             }
 
-            $token = rand(100000,999999);
+            $token = rand(100000, 999999);
 
             $user->update(['verification_token' => $token]);
 
             $cc = User::where('email', $request->email)->first();
             $bcc = User::where('email', $request->email)->first();
             Mail::to($request->email)
-            ->cc($cc)
-            ->bcc($bcc)
-            ->send(new VerifyEmail($token));
+                ->cc($cc)
+                ->bcc($bcc)
+                ->send(new VerifyEmail($token));
 
             return response()->json([
                 'message' => 'code sent',
@@ -170,8 +169,7 @@ class UserController extends Controller
             ], 200);
 
             //after code send it to email_verification method
-        }
-        catch (\Throwable $th) {
+        } catch (\Throwable $th) {
             return response()->json([
                 'message' => $th->getMessage(),
                 'status' => false,
@@ -181,27 +179,27 @@ class UserController extends Controller
 
     public function login(Request $request)
     {
-        try{
+        try {
             $validator = Validator::make($request->all(), [
                 'email' => 'required',
                 'password' => 'required|string',
             ]);
 
-            if($validator->fails()){
+            if ($validator->fails()) {
                 return response()->json([
                     'message' => 'Validation error',
                     'errors' => $validator->errors(),
                     'status' => false
-                ],422);
+                ], 422);
             }
 
-            $credentials = $request->only(['email','password']);
+            $credentials = $request->only(['email', 'password']);
 
-            if(!Auth::attempt($credentials)){
+            if (!Auth::attempt($credentials)) {
                 return response()->json([
-                    'message' => "Email $ Password don't match with our record",
+                    'message' => "Email or Password don't match with our record",
                     'status' => false
-                ],401);
+                ], 401);
             }
 
             $user = User::where('email', $request->email)->first();
@@ -210,37 +208,32 @@ class UserController extends Controller
                 'message' => 'User logged in successfully',
                 'token' => $user->createToken("API TOKEN")->plainTextToken,
                 'status' => true
-            ],200);
-        }
-        catch(\Throwable $th){
+            ], 200);
+        } catch (\Throwable $th) {
             return response()->json([
                 'message' => $th->getMessage(),
                 'status' => false,
-            ],500);
+            ], 500);
         }
-
     }
 
     public function logout(Request $request)
     {
         try {
-            if (auth()->check())
-            {
+            if (auth()->check()) {
                 auth()->user()->tokens->each(function ($token, $key) {
                     $token->delete();
                 });
 
                 return response()->json([
                     'message' => 'Logged out'
-                ],200);
-
+                ], 200);
             } else {
                 return response()->json([
                     'message' => 'Unauthorized',
                     'status' => false,
                 ], 401);
             }
-
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => $th->getMessage(),
@@ -256,87 +249,82 @@ class UserController extends Controller
         $userAccounts = Api::all()->where('creator_id', Auth::user()->id);
         $services = settingsApi::all(); // all App on website
 
-        if($user == null){
+        if ($user == null) {
             return response()->json([
                 'message' => 'User not found',
                 'status' => false
-            ],401);
+            ], 401);
         }
 
         return response()->json([
             'message' => 'User found',
             'data' => [
-                'user'=> $user,
+                'user' => $user,
                 'userAccounts' => $userAccounts,
                 'services' =>  $services
             ],
             'status' => true
-        ],200);
+        ], 200);
     }
-    
+
     public function update(Request $request)
     {
-        try {
-            $user = $request->user();
+        $user = $request->user();
 
-            if ($user == null) {
-                return response()->json([
-                    'message' => 'User not found',
-                    'status' => false
-                ], 404);
-            }
-
-            $validator = Validator::make($request->all(), [
-                'name' => 'required',
-                'email' => 'required|email|unique:users,email,' . $user->id,
-                'image' => 'mimes:jpg,jpeg,png',
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'message' => 'Validation error',
-                    'errors' => $validator->errors(),
-                    'status' => false
-                ], 422);
-            }
-
-            $storageImage = $user->image;
-
-
-            if ($request->hasFile('image'))
-            {
-                if($user->image != null){
-                    $rm_urlPath = parse_url($user->image, PHP_URL_PATH);
-                    $path = Str::replace('/storage/', '', $rm_urlPath);
-                    unlink(storage_path('app/public/'. $path));
-                }
-
-                $image = $request->file('image');
-                $filename = time() . '_' . $image->getClientOriginalName();
-                $image->storeAs('public/profile_images', $filename);
-                $storageImage = url('storage/profile_images/'. $filename);
-            }
-            if ($request->reset_image == 1) {
-                $storageImage = null;
-            }
-            
-            $user->update([
-                'name' => $request->name,
-                'email' => $request->email,
-                'image' => $storageImage
-            ]);
-
+        if ($user == null) {
             return response()->json([
-                'message' => 'User updated successfully',
-                'status' => true
-            ], 200);
-
-        } catch (\Throwable $th) {
-            return response()->json([
-                'message' => $th->getMessage(),
-                'status' => false,
-            ], 500);
+                'message' => 'User not found',
+                'status' => false
+            ], 404);
         }
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'image' => 'mimes:jpg,jpeg,png'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation error',
+                'errors' => $validator->errors(),
+                'status' => false
+            ], 422);
+        }
+
+        $storageImage = $user->image;
+
+        if ($request->hasFile('image')) {
+            if ($user->image != null) {
+                $rm_urlPath = parse_url($user->image, PHP_URL_PATH);
+                $path = Str::replace('/storage/', '', $rm_urlPath);
+                unlink(storage_path('app/public/' . $path));
+            }
+
+            $image = $request->file('image');
+            $filename = time() . '_' . $image->getClientOriginalName();
+            $image->storeAs('public/profile_images', $filename);
+            $storageImage = url('storage/profile_images/' . $filename);
+        }
+        if ($request->reset_image == 1) {
+            $storageImage = null;
+        }
+
+        // $imageName = null;
+        // if ($request->hasFile('image')) {
+        //     $image = $request->file('image');
+        //     $imageName = time() . '.' . $image->getClientOriginalExtension();
+        //     $image->move(public_path('images/courses'), $imageName);
+        // }
+
+        $user->update([
+            'name' => $request->name,
+            'image' => $storageImage
+        ]);
+
+        return response()->json([
+            'message' => 'User updated successfully',
+            'status' => true
+        ], 200);
     }
 
     public function updatePassword(Request $request)
@@ -357,29 +345,24 @@ class UserController extends Controller
 
             $user = $request->user();
             $password = $user->password;
-    
-            if (Hash::check($request->old_password, $user->password))
-            {
+
+            if (Hash::check($request->old_password, $user->password)) {
                 $password = Hash::make($request->new_password);
 
                 $user->update([
                     'password' => $password,
                 ]);
-    
+
                 return response()->json([
                     'message' => 'Password updated successfully',
                     'status' => true
-                ], 200); 
-            }
-            else{
+                ], 200);
+            } else {
                 return response()->json([
                     'message' => 'Old password does not match.',
                     'status' => false
-                ],404);
+                ], 404);
             }
-    
-                  
-
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => $th->getMessage(),
@@ -390,66 +373,64 @@ class UserController extends Controller
 
     public function forgetPassword(Request $request)
     {
-        try{
-            $validator = Validator::make($request->all(),[
+        try {
+            $validator = Validator::make($request->all(), [
                 'email' => 'required'
             ]);
 
-            if($validator->fails()){
+            if ($validator->fails()) {
                 return response()->json([
                     'message' => 'Validation error',
                     'errors' => $validator->errors(),
                     'status' => false
-                ],422);
+                ], 422);
             }
 
-            $user = User::where('email',$request->email)->first();
+            $user = User::where('email', $request->email)->first();
 
-            if($user == null){
+            if ($user == null) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Email not valid!',
-                ],422);
+                ], 422);
             }
 
-            $token = rand(100000,999999);
+            $token = rand(100000, 999999);
 
             $user->update(['verification_token' => $token]);
 
             $cc = User::where('email', $request->email)->first();
             $bcc = User::where('email', $request->email)->first();
             Mail::to($request->email)
-            ->cc($cc)
-            ->bcc($bcc)
-            ->send(new ForgetPassword($token));
+                ->cc($cc)
+                ->bcc($bcc)
+                ->send(new ForgetPassword($token));
 
             return response()->json([
                 'status' => true,
                 'message' => 'Code sent',
                 'token' => $user->createToken("API TOKEN")->plainTextToken
-            ],200);
-
-        }
-        catch(\Throwable $th){
+            ], 200);
+        } catch (\Throwable $th) {
             return response()->json([
                 'message' => $th->getMessage(),
                 'status' => false,
-            ],500);
+            ], 500);
         }
     }
 
     public function passwordCode(Request $request)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'token' => 'required|max:6',
         ]);
 
-        if($validator->fails()){
+        if ($validator->fails()) {
             return response()->json([
                 'message' => 'Validation error',
                 'errors' => $validator->errors(),
                 'status' => false
-            ],422);
+            ], 422);
         }
 
         $user = User::where('verification_token', $request->token)->first();
@@ -469,21 +450,22 @@ class UserController extends Controller
 
     public function resetPassword(Request $request)
     {
-        $validator = Validator::make($request->all(),[
-            'password' => ['required','nullable','confirmed','min:8', // confirmed ===> password_confirmation
-                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
-                ],
+        $validator = Validator::make($request->all(), [
+            'password' => [
+                'required', 'nullable', 'confirmed', 'min:8', // confirmed ===> password_confirmation
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
+            ],
         ]);
 
-        if($validator->fails()){
+        if ($validator->fails()) {
             return response()->json([
                 'message' => 'Validation error',
                 'errors' => $validator->errors(),
                 'status' => false
-            ],422);
+            ], 422);
         }
 
-        $user = User::where('email',$request->user()->email)->first();
+        $user = User::where('email', $request->user()->email)->first();
         // $user = $request->user();
 
         if (!$user) {
@@ -503,18 +485,18 @@ class UserController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Password updated successfully',
-        ],200);
+        ], 200);
     }
 
     public function destroy(string $id)
     {
         $user = User::find($id);
 
-        if($user == null){
+        if ($user == null) {
             return response()->json([
                 'message' => 'User not found',
                 'status' => false
-            ],401);
+            ], 401);
         }
 
         $user->delete();
@@ -522,33 +504,31 @@ class UserController extends Controller
         return response()->json([
             'message' => 'User deleted successfully',
             'status' => true
-        ],200);
+        ], 200);
     }
 
     public function search(Request $request, $name)
     {
-        try{
-            $user = User::where('name','like', '%'.$name.'%')->get();
+        try {
+            $user = User::where('name', 'like', '%' . $name . '%')->get();
 
-            if($user->isEmpty()){
+            if ($user->isEmpty()) {
                 return response()->json([
                     'message' => 'User not found',
                     'status' => false
-                ],404);
+                ], 404);
             }
 
             return response()->json([
                 'message' => 'User found',
                 'data' => $user,
                 'status' => true
-            ],200);
-        }
-        catch(\Throwable $th)
-        {
+            ], 200);
+        } catch (\Throwable $th) {
             return response()->json([
                 'message' => 'User Unauthenticated',
                 'status' => false
-            ],401);
+            ], 401);
         }
     }
 }

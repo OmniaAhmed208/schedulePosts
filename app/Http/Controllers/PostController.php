@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use App\Models\Api;
 use App\Models\PostImages;
 use App\Models\PostVideos;
-use App\Models\time_think;
 use App\Models\publishPost;
 use App\Models\settingsApi;
 use Illuminate\Http\Request;
@@ -14,7 +13,6 @@ use App\Services\PostService;
 use App\Models\youtube_category;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Schema;
 
 class PostController extends Controller
 {
@@ -24,36 +22,14 @@ class PostController extends Controller
     {
         $this->postStore = $post;
     }
-    
-    public function index()
-    {
-        $allPosts = PublishPost::where('creator_id', Auth::user()->id)->with(['postImages', 'postVideos'])->get();
-        $allApps = settingsApi::all();
-        // $groupedPosts = $allPosts->groupBy('scheduledTime');
-
-        return view('AdminSocialMedia.posts',compact('allPosts','allApps'));
-    }
-
-    public function show($id)
-    {
-        $post = PublishPost::where('id', $id)->where('creator_id', Auth::user()->id)->with(['postImages', 'postVideos'])->first();
-        $youtubeCategories = youtube_category::all();
-
-        if($post == null){
-            return view('AdminSocialMedia.posts')->with('error','post not found');
-        }
-
-        return view('AdminSocialMedia.posts',compact('post','youtubeCategories'))->with('success','post found');
-    }
 
     public function create()
     {
         $userApps = Api::where('creator_id', Auth::user()->id)->distinct()->pluck('account_type'); // App of user regesterd in
         $userAccounts = Api::all()->where('creator_id', Auth::user()->id);
         $channels = Api::all()->where('account_type', 'youtube')->where('creator_id', Auth::user()->id);
-        $timeThink = time_think::where('creator_id', Auth::user()->id)->first();
         $youtubeCategories = youtube_category::all();
-        return view('main.posts.create',compact('userApps','userAccounts','channels','timeThink','youtubeCategories'));
+        return view('main.posts.create',compact('userApps','userAccounts','channels','youtubeCategories'));
     }
 
     public function store(Request $request)
@@ -136,14 +112,15 @@ class PostController extends Controller
             $storageVideo = $videoUpload['storageVideo'];
         }
 
+        $time = $this->postStore->userTime();
+        $userTimeNow = $time['userTimeNow'];
+
         if($request->scheduledTime){
             $postTime =  Carbon::parse($request->scheduledTime)->format('Y-m-d H:i');
             $status = 'pending';
         }
         else{
-            $now = Carbon::now();
-            $diff_time = time_think::where('creator_id', Auth::user()->id)->first()->time;
-            $postTime = $now->copy()->addHours($diff_time)->format('Y-m-d H:i');
+            $postTime = $userTimeNow;
             $status = 'published';
             $publishPosts[] = $this->postStore->publishPost($request, $imgUpload, $youtubeVideoPath, $twitterVideoPath);
         }
@@ -269,21 +246,27 @@ class PostController extends Controller
                 unset($validationRules['postData']);
             }
         }
+
+        if($post->account_type == 'youtube'){
+            $validationRules['videoTitle'] = 'required|string';
+            $validationRules['video'] = 'required|file|mimetypes:video/*';
+            $validationRules['postData'] = 'max:5000|string';
+        }
+
         $request->validate($validationRules);
 
-
-        $diff_time = time_think::where('creator_id', Auth::user()->id)->first()->time;
-        $now = Carbon::now()->addHours($diff_time)->format('Y-m-d H:i');
+        $time = $this->postStore->userTime();
+        $userTimeNow = $time['userTimeNow'];
         $oldTime = $post->scheduledTime;
 
         if($request->scheduledTime != null){
             $scheduledTime = Carbon::parse($request->scheduledTime)->format('Y-m-d H:i');
-            if ($scheduledTime > $now){
+            if ($scheduledTime > $userTimeNow){
                 $post->status = 'pending';
                 $post->scheduledTime =  Carbon::parse($request->scheduledTime)->format('Y-m-d H:i');
             }
             else{
-                return redirect()->back()->with('error','The time must be after to now '. $now );
+                return redirect()->back()->with('error','The time must be after to now '. $userTimeNow );
             }
         }
 
@@ -389,66 +372,6 @@ class PostController extends Controller
         else{
             return back()->with('error', "Post can't remove, it's already published");
         }
-    }
-
-    // public function removeAccount($userId)
-    // {
-    //     Api::where('account_id',$userId)->where('creator_id', Auth::user()->id)->delete(); // account_id => unique
-
-    //     return redirect()->route('socialAccounts')->with('success','Account deleted successfully');
-    // }
-
-    public function updateInterval(Request $request)
-    {
-        $data = Api::where('creator_id', Auth::user()->id)->get();
-
-        if ($data->isNotEmpty()) {
-            foreach ($data as $record) {
-                $record->update([
-                    'update_interval' => $request->update_interval,
-                ]);
-            }
-
-            return redirect()->back()->with('timeUpdated', 'Time saved successfully');
-        } else {
-            return redirect()->back()->with('timeUpdated', 'No records found for the authenticated user.');
-        }
-    }
-
-    public function updatePostsTime()
-    {
-        return view('AdminSocialMedia.updatePostsTime');
-    }
-
-    public function schedulePosts()
-    {
-        return view('AdminSocialMedia.schedulePosts');
-    }
-
-    public function updatePostsNow()
-    {
-        return view('AdminSocialMedia.updatePostsNow');
-    }
-
-    public function historyPosts()
-    {
-        $columns =  Schema::getColumnListing('publish_posts');
-        $posts = PublishPost::all()->where('creator_id', Auth::user()->id);
-        $postsCount = PublishPost::where('creator_id', Auth::user()->id)->count();
-
-        return view('AdminSocialMedia.historyPosts',compact('columns','posts','postsCount'));
-    }
-
-    public function removeSocialPost($id)
-    {
-        $post = publishPost::findOrFail($id);
-        $post->delete();
-        return Redirect()->back()->with('postDeleted','post deleted successfully');
-    }
-
-    public function repostEdit($id) {
-        $post = publishPost::findOrFail($id);
-        return view('AdminSocialMedia.repost',compact('post'));
     }
 
     public function accountPages()

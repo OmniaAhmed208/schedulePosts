@@ -7,14 +7,12 @@ use Carbon\Carbon;
 use App\Models\api;
 use App\Models\postImages;
 use App\Models\postVideos;
-use App\Models\time_think;
 use App\Models\PublishPost;
 use App\Models\settingsApi;
 use Illuminate\Http\Request;
 use App\Services\PostService;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
@@ -28,7 +26,7 @@ class PostController extends Controller
         $this->postStore = $post;
     }
 
-    public function index()
+    public function index() // to shaw all posts published or pending
     {
         $allPosts = PublishPost::where('creator_id', Auth::user()->id)->with(['postImages', 'postVideos'])->get();
         $allApps = settingsApi::all();
@@ -109,58 +107,35 @@ class PostController extends Controller
 
         Validator::make($request->all(), $validationRules);
 
-        $imgUpload = []; $imgLocation = []; $filename = '';
+        $imgUpload = []; 
         $publishPosts = [];
 
         if ($request->hasFile('images'))
         {
             $images = $request->file('images');
-            foreach ($images as $image) {
-                $filename = time() . '_' . $image->getClientOriginalName(); // Generate a unique filename
-                $image->storeAs('public/uploadImages', $filename); // Store the file with the unique filename
-                $localFilePath = storage_path('uploadImages/' . $filename); // Get the local file path (fullPath)
-                $storageImage = Storage::url('uploadImages/'. $filename); //storage/uploadImages/img_name
-                $imgUpload[] = $localFilePath;
-                $imgLocation[] = $storageImage;
-            }
+            $imgUpload = $this->postStore->saveImages($images);
         }
 
         $youtubeVideoPath='';$twitterVideoPath='';$storageVideo='';
         if ($request->hasfile('video'))
         {
             $video = $request->file('video');
-            $filename = $video->getClientOriginalName();
-            $storagePath = 'uploadVideos';
-            if (!Storage::exists($storagePath)) {
-                Storage::makeDirectory($storagePath);
-            }
+            $videoUpload = $this->postStore->saveVideo($video);
 
-            $video->storeAs($storagePath, $filename);
-            $OriginalVideo = $storagePath . '/' . $filename;
-
-            $newVideo = FFMpeg::fromDisk('local')->open($OriginalVideo)->addFilter(function ($filters) {
-                $filters->resize(new \FFMpeg\Coordinate\Dimension(2000, 2000));
-            });
-
-            $commpressedVideo = $storagePath . '/' . 'compressed_' . $filename;
-            $youtubeVideoPath = $commpressedVideo; // for youtube
-            $twitterVideoPath = storage_path('app/'. $commpressedVideo); // Get the local file path // twitter
-            $storageVideo = Storage::url('app/'. $commpressedVideo);
-
-            $newVideo->export()
-            ->toDisk('local')
-            ->inFormat(new \FFMpeg\Format\Video\X264())
-            ->save($storagePath . '/' . 'compressed_' . $filename);
+            $youtubeVideoPath = $videoUpload['youtubeVideoPath'];
+            $twitterVideoPath = $videoUpload['twitterVideoPath'];
+            $storageVideo = $videoUpload['storageVideo'];
         }
+
+        $time = $this->postStore->userTime();
+        $userTimeNow = $time['userTimeNow'];
 
         if($request->scheduledTime){
             $postTime =  Carbon::parse($request->scheduledTime)->format('Y-m-d H:i');
             $status = 'pending';
         }
         else{
-            $now = Carbon::now();
-            $diff_time = time_think::where('creator_id', Auth::user()->id)->first()->time;
-            $postTime = $now->copy()->addHours($diff_time)->format('Y-m-d H:i');
+            $postTime = $userTimeNow;
             $status = 'published';
             $publishPosts[] = $this->postStore->publishPost($request, $imgUpload, $youtubeVideoPath, $twitterVideoPath);
         }
@@ -226,8 +201,8 @@ class PostController extends Controller
                 $post->fill($attributes); // Set the attributes for the model
                 $post->save(); // Save the model to the database
 
-                if (is_array($imgLocation) && !empty($imgLocation)) {
-                    foreach ($imgLocation as $img) {
+                if (is_array($imgUpload) && !empty($imgUpload)) {
+                    foreach ($imgUpload as $img) {
                         PostImages::create([
                             'post_id' => $post->id,
                             'creator_id' => Auth::user()->id,
@@ -276,7 +251,7 @@ class PostController extends Controller
         ],200);
     }
 
-    public function update(Request $request, string $id,PostService $postService)
+    public function update(Request $request,$id)
     {
         try{
             // $post = PublishPost::where('id', $id)->where('creator_id', Auth::user()->id)->first();
@@ -324,146 +299,117 @@ class PostController extends Controller
                 ],200);
             }
 
-            $post->content = $request->content;
-            $post->link = $request->link;
 
-            $imagesID = []; $videosID = [];
+            $time = $this->postStore->userTime();
+            $userTimeNow = $time['userTimeNow'];
+            $oldTime = $post->scheduledTime;
 
-            if($post['status'] == 'pending'){
+            if($request->scheduledTime != null){
+                $scheduledTime = Carbon::parse($request->scheduledTime)->format('Y-m-d H:i');
+                if ($scheduledTime > $userTimeNow){
+                    $post->status = 'pending';
+                    $post->scheduledTime =  Carbon::parse($request->scheduledTime)->format('Y-m-d H:i');
+                }
+                else{
+                    return redirect()->back()->with('error','The time must be after to now '. $userTimeNow );
+                }
+            }
 
-                if ($request->oldImages) {
-                    $allPostImages = PostImages::where('post_id', $post->id)->get();
+            $post->update([
+                'content' => $request->postData,
+                'link' => $request->link,
+            ]);
 
-                    if (!empty($allPostImages)) {
-                        foreach ($allPostImages as $postImage) {
-                            $imagesID[] = $postImage->id;
-                        }
+            $post['scheduledTime'] = $post->scheduledTime;
+
+            if($request->accoutType == 'youtube'){
+                $post['post_title'] = $request->videoTitle;
+                $post['youtube_privacy'] = $request->youtubePrivacy;
+                $post['youtube_tags'] = $request->youtubeTags;
+                $post['youtube_category'] = $request->youtubeCategory;
+            }
+
+            $imagesID = [];$videosID = [];
+
+            if ($request->oldImages) {
+                $allPostImages = PostImages::where('post_id', $post->id)->get();
+
+                if (!empty($allPostImages)) {
+                    foreach ($allPostImages as $postImage) {
+                        $imagesID[] = $postImage->id;
                     }
-
-                    $rowsId = array_intersect($request->oldImages, $imagesID);
-
-                    $imagesToDelete = PostImages::where('post_id', $post->id)
-                        ->whereNotIn('id', $rowsId)
-                        ->get();
-                    $imagesToDelete->each->delete();
                 }
 
-                if ($request->oldVideos) {
-                    $allPostVideos = PostVideos::where('post_id', $post->id)->get();
+                $rowsId = array_intersect($request->oldImages, $imagesID);
 
-                    if (!empty($allPostVideos)) {
-                        foreach ($allPostVideos as $postVideo) {
-                            $videosID[] = $postVideo->id;
-                        }
+                $imagesToDelete = PostImages::where('post_id', $post->id)
+                    ->whereNotIn('id', $rowsId)
+                    ->get();
+                $imagesToDelete->each->delete();
+            }
+
+            if ($request->oldVideos) {
+                $allPostVideos = PostVideos::where('post_id', $post->id)->get();
+
+                if (!empty($allPostVideos)) {
+                    foreach ($allPostVideos as $postVideo) {
+                        $videosID[] = $postVideo->id;
                     }
-
-                    $rowsId = array_intersect($request->oldVideos, $videosID);
-
-                    $videosToDelete = PostVideos::where('post_id', $post->id)
-                        ->whereNotIn('id', $rowsId)
-                        ->get();
-                    $videosToDelete->each->delete();
                 }
 
-                if($request->file('images') || $request->file('video')){
+                $rowsId = array_intersect($request->oldVideos, $videosID);
 
-                    $imgUpload = []; $imgLocation = []; $filename = '';
-                    if($request->file('images')){
-                        $images = $request->file('images');
-                        foreach ($images as $image) {
-                            $filename = time() . '_' . $image->getClientOriginalName();
-                            $image->storeAs('public/uploadImages', $filename); // Store the file with the unique filename
-                            $localFilePath = storage_path('uploadImages/' . $filename); // Get the local file path (fullPath)
-                            $storageImage = Storage::url('uploadImages/'. $filename); //storage/uploadImages/img_name
-                            $imgUpload[] = $localFilePath;
-                            $imgLocation[] = $storageImage;
-                        }
+                $videosToDelete = PostVideos::where('post_id', $post->id)
+                    ->whereNotIn('id', $rowsId)
+                    ->get();
+                $videosToDelete->each->delete();
+            }
 
-                        if (is_array($imgLocation) && !empty($imgLocation)) {
-                            foreach ($imgLocation as $img) {
-                                $postImages = PostImages::where('post_id',$post->id)->get();
-                                PostImages::create([
-                                    'post_id' => $post->id,
-                                    'creator_id' => Auth::user()->id,
-                                    'image' => $img
-                                ]);
-                            }
-                        }
-                    }
+            if($request->file('images') || $request->file('video')){
 
-                    if ($request->hasfile('video'))
-                    {
-                        $video = $request->file('video');
-                        $filename = $video->getClientOriginalName();
-                        $storagePath = 'uploadVideos';
-                        if (!Storage::exists($storagePath)) {
-                            Storage::makeDirectory($storagePath);
-                        }
+                $imgUpload = []; 
+                if($request->file('images')){
+                    $images = $request->file('images');
+                    $imgUpload = $this->postStore->saveImages($images);
 
-                        $video->storeAs($storagePath, $filename);
-                        $OriginalVideo = $storagePath . '/' . $filename;
-
-                        $newVideo = FFMpeg::fromDisk('local')->open($OriginalVideo)->addFilter(function ($filters) {
-                            $filters->resize(new \FFMpeg\Coordinate\Dimension(2000, 2000));
-                        });
-
-                        $commpressedVideo = $storagePath . '/' . 'compressed_' . $filename;
-                        $storageVideo = Storage::url('app/'. $commpressedVideo);
-
-                        $newVideo->export()
-                        ->toDisk('local')
-                        ->inFormat(new \FFMpeg\Format\Video\X264())
-                        ->save($storagePath . '/' . 'compressed_' . $filename);
-
-                        if ($storageVideo) {
-                            PostVideos::create([
+                    if (is_array($imgUpload) && !empty($imgUpload)) {
+                        foreach ($imgUpload as $img) {
+                            $postImages = PostImages::where('post_id',$post->id)->get();
+                            PostImages::create([
                                 'post_id' => $post->id,
                                 'creator_id' => Auth::user()->id,
-                                'video' => $storageVideo
+                                'image' => $img
                             ]);
                         }
                     }
                 }
 
-                $diff_time = time_think::where('creator_id', Auth::user()->id)->first()->time;
-                $now = Carbon::now()->addHours($diff_time)->format('Y-m-d H:i');
-                $oldTime = $post->scheduledTime;
+                if ($request->hasfile('video'))
+                {
+                    $video = $request->file('video');
+                    $videoUpload = $this->postStore->saveVideo($video);
+                    $storageVideo = $videoUpload['storageVideo'];
 
-                if($request->scheduledTime){
-                    $scheduledTime = Carbon::parse($request->scheduledTime)->format('Y-m-d H:i');
-                    if ($scheduledTime > $now){
-                        $post->status = 'pending';
-                        $post->scheduledTime =  Carbon::parse($request->scheduledTime)->format('Y-m-d H:i');
-                    }
-                    else{
-                        return response()->json([
-                            'message' => 'The time must be after to now '. $now
-                        ], 200);
+                    if ($storageVideo) {
+                        PostVideos::create([
+                            'post_id' => $post->id,
+                            'creator_id' => Auth::user()->id,
+                            'video' => $storageVideo
+                        ]);
                     }
                 }
-
-                switch ($post['account_type']) {
-                    case 'youtube':
-                        $post->post_title = $request->videoTitle;
-                        $post->youtube_privacy = $request->youtubePrivacy;
-                        $post->youtube_tags = $request->youtubeTags;
-                        $post->youtube_category = $request->youtubeCategory;
-                        break;
-                }
-
-                $post->save();
-
-                return response()->json([
-                    'message' => 'Post updated successfully',
-                    'data' => $post,
-                    'status' => true
-                ], 200);
             }
 
             return response()->json([
-                'message' => "Can't edit or remove because it already published",
+                'message' => 'Post updated successfully',
+                'data' => $post,
                 'status' => true
-            ],200);
+            ], 200);
+
+            // return response()->json([
+            //     'message' => "Can't edit or remove because it already published",
+            //     'status' => true
+            // ],200);
         }
         catch(\Throwable $th){
             return response()->json([

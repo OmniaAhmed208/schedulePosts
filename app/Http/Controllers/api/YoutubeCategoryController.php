@@ -9,9 +9,6 @@ use Illuminate\Support\Facades\Validator;
 
 class YoutubeCategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $categories = youtube_category::all();
@@ -22,9 +19,6 @@ class YoutubeCategoryController extends Controller
         ],200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         try{
@@ -61,9 +55,6 @@ class YoutubeCategoryController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         $category = youtube_category::find($id);
@@ -72,7 +63,7 @@ class YoutubeCategoryController extends Controller
             return response()->json([
                 'message' => 'Category not found',
                 'status' => false
-            ],401);
+            ],404);
         }
 
         return response()->json([
@@ -82,9 +73,6 @@ class YoutubeCategoryController extends Controller
         ],200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $category = youtube_category::find($id);
@@ -121,9 +109,6 @@ class YoutubeCategoryController extends Controller
         ],200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $category = youtube_category::find($id);

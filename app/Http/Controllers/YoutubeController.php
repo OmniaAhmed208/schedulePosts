@@ -158,10 +158,9 @@ class YoutubeController extends Controller
             $client->setClientSecret($client_secret);
             $client->setAccessType('offline');
 
-            // Request authorization from the user.
-            $client->setRedirectUri(route('youtube.callback'));
+            $client->setRedirectUri(route('youtube.callback')); // Request authorization from the user.
             $authUrl = $client->createAuthUrl();
-            // printf("Open this link in your browser:\n%s\n", $authUrl);
+            
             if ($request->has('code')) {
                 // Exchange verification code for an access token.
                 $authCode = $request->input('code');
@@ -188,7 +187,8 @@ class YoutubeController extends Controller
                     curl_close($ch);
 
                     $data = json_decode($response, true);
-                    if (isset($data['items'][0])) {
+                    if (isset($data['items']) && !empty($data['items'])) {
+                    // if (isset($data['items'][0])) {
                         $channelId = $data['items'][0]['id'];
                         $channelName = $data['items'][0]['snippet']['title'];
                         $channelImageUrl = $data['items'][0]['snippet']['thumbnails']['default']['url'];
@@ -213,11 +213,12 @@ class YoutubeController extends Controller
                         } else {
                             Api::create($userData);
                         }
-                        $this->youtubeData($channelId);
+                        // $this->youtubeData($channelId);
 
-                        return redirect()->route('socialAccounts');
+                        return redirect()->route('users.show', ['user' => Auth::user()->id]);
                     } else {
-                        return redirect()->route('socialAccounts')->with('error', 'No YouTube channel found for this account.');
+                        return redirect()->route('users.show', ['user' => Auth::user()->id])
+                        ->with('error', 'No YouTube channel found for this account.');
                     }
                     
                 } else {
@@ -230,10 +231,9 @@ class YoutubeController extends Controller
             }
         } catch (\Exception $e) {
             dd($e->getMessage());
-            // return redirect()->route('socialAccounts')->with('error', $e->getMessage());
+            // return redirect()->route('main.users.show')->with('error', $e->getMessage());
         }  
-    }
-    
+    }   
 
     public function videosList() {
         $to_show_videoLink = 'https://www.youtube.com/watch?v=videoId';
@@ -256,6 +256,7 @@ class YoutubeController extends Controller
         // dd($result);
         // File::put(storage_path() . '/results.json', $response->body());
     }
+
     public function singleVideo($id) 
     {
         $apiKey = 'AIzaSyCZhW13YQV1En4FEtVET312rRwIbAj3Rp4';   

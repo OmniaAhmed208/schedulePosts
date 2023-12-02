@@ -34,4 +34,12 @@ class Api extends Model
     {
         return $this->hasMany(social_posts::class, 'api_account_id');
     }
+
+    public function deleteAccountWithSocialPosts()
+    {
+        if ($this->social_posts()->count() > 0) {
+            $this->social_posts()->delete();
+        }
+        // $this->delete();
+    }
 }
