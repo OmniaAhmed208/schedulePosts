@@ -36,7 +36,7 @@ class NewsLetterController extends Controller
             $image = $request->file('image');
             $filename = time() . '_' . $image->getClientOriginalName();
             $image->storeAs('public/newsLetter', $filename);
-            $storageImage = Storage::url('newsLetter/'. $filename);
+            $storageImage = url('storage/newsLetter/'. $filename);
         }
 
         $validator = Validator::make($request->all(), $validationRules);
@@ -46,7 +46,7 @@ class NewsLetterController extends Controller
                 'message' => 'Validation error',
                 'errors' => $validator->errors(),
                 'status' => false
-            ],401);
+            ],422);
         }
 
         NewsLetter::create([
@@ -92,7 +92,7 @@ class NewsLetterController extends Controller
             $image = $request->file('image');
             $filename = time() . '_' . $image->getClientOriginalName();
             $image->storeAs('public/newsLetter', $filename);
-            $storageImage = Storage::url('newsLetter/'. $filename);
+            $storageImage = url('storage/newsLetter/'. $filename);
         }
 
         $validator = Validator::make($request->all(), $validationRules);

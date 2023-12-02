@@ -39,7 +39,7 @@ class NewsLetterController extends Controller
             $image = $request->file('image');
             $filename = time() . '_' . $image->getClientOriginalName();
             $image->storeAs('public/newsLetter', $filename);
-            $storageImage = 'newsLetter/'. $filename;
+            $storageImage = url('storage/newsLetter/'. $filename);
         }
 
         $validator =  $request->validate($validationRules);
@@ -81,12 +81,10 @@ class NewsLetterController extends Controller
                 $rm_urlPath = parse_url($newsLetter->image, PHP_URL_PATH);
                 $path = Str::replace('/storage/', '', $rm_urlPath);
                 unlink(storage_path('app/public/'. $path));
-                // unlink(storage_path('app/public/'. $newsLetter->image));
             }
             $image = $request->file('image');
             $filename = time() . '_' . $image->getClientOriginalName();
             $image->storeAs('public/newsLetter', $filename);
-            // $storageImage = 'newsLetter/'. $filename;
             $storageImage = url('storage/newsLetter/'. $filename);
         }
 
