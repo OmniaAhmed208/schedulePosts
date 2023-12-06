@@ -2,14 +2,15 @@
 
 namespace App\Services;
 
+use DateTime;
 use Exception;
+use DateTimeZone;
 use Carbon\Carbon;
 use Google_Client;
 use App\Models\Api;
 use Facebook\Facebook;
-use App\Models\time_think;
-use App\Models\publishPost;
 use App\Models\settingsApi;
+use App\Models\UploadFiles;
 use Google_Service_YouTube;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -19,17 +20,14 @@ use Google_Service_YouTube_Video;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Abraham\TwitterOAuth\TwitterOAuth;
-use App\Models\PostImages;
-use App\Models\PostVideos;
 use Google_Service_YouTube_VideoStatus;
 use Illuminate\Support\Facades\Storage;
 use Google_Service_YouTube_VideoSnippet;
+use Stevebauman\Location\Facades\Location;
 use Facebook\Exceptions\FacebookSDKException;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 use Facebook\Exceptions\FacebookResponseException;
-use DateTime;
-use DateTimeZone;
-use Stevebauman\Location\Facades\Location;
+use Google\Http\MediaFileUpload;
 
 class PostService 
 {
@@ -69,47 +67,78 @@ class PostService
     {
         $imgUpload = [];
         foreach ($images as $image) {
-            $filename = time() . '_' . $image->getClientOriginalName(); // Generate a unique filename
-            $image->storeAs('public/uploadImages', $filename); // Store the file with the unique filename
-            // $localFilePath = storage_path('uploadImages/' . $filename); // Get the local file path (fullPath)
-            $storageImage = url('storage/uploadImages/'. $filename);
+            $user = 'user'.Auth::user()->id;
+
+            $tmp_file = UploadFiles::where('file',$image)->first();
+            $dir = $user.'/'.'postImages';
+            $storageImage = url('storage/' . $dir . '/'. $tmp_file->file);
             $imgUpload[] = $storageImage;
+            if($tmp_file){
+                $tmp_file->delete();
+            }
+            
+            // $filename = time() . '_' . $image->getClientOriginalName(); // Generate a unique filename
+            // $image->storeAs('public/uploadImages', $filename); // Store the file with the unique filename
+            // // $localFilePath = storage_path('uploadImages/' . $filename); // Get the local file path (fullPath)
+            // $storageImage = url('storage/uploadImages/'. $filename);
+            // $imgUpload[] = $storageImage;
         }
         return $imgUpload;
     }
 
+    public function removeImagesUploaded($images) 
+    {
+        foreach ($images as $image) {
+            $user = 'user'.Auth::user()->id;
+            $tmp_file = UploadFiles::where('file',$image)->first();
+            $dir = $user.'/'.'postImages';
+            Storage::delete('public/'. $dir .'/'.$tmp_file->file);
+            $tmp_file->delete();
+        }  
+        return true;
+    }
+
     public function saveVideo($video)
     {
-        $filename = $video->getClientOriginalName();
-        $storagePath = 'public/uploadVideos';
-        if (!Storage::exists($storagePath)) {
-            Storage::makeDirectory($storagePath);
-        }
 
-        $video->storeAs($storagePath, $filename);
-        $OriginalVideo = $storagePath . '/' . $filename;
+        $user = 'user'.Auth::user()->id;
 
-        // $newVideo = FFMpeg::fromDisk('local')->open($OriginalVideo)->addFilter(function ($filters) {
-        //     $filters->resize(new \FFMpeg\Coordinate\Dimension(2000, 2000));
-        // });
+        $tmp_file = UploadFiles::where('file',$video)->first();
 
-        // $commpressedVideo = $storagePath . '/' . 'compressed_' . $filename;
+        $dir = $user.'/'.'postVideo';
+        $OriginalVideo = 'public/'.$dir. '/' . $tmp_file->file;
         $youtubeVideoPath = $OriginalVideo; // for youtube
-        $twitterVideoPath = storage_path('app/'. $OriginalVideo); // Get the local file path // twitter
+        $twitterVideoPath = storage_path('app/'. $OriginalVideo); 
+        $storageVideo = url('storage/' . $dir . '/'. $tmp_file->file);
         
-        // $storageVideo = Storage::url('app/'. $commpressedVideo);
-        $storageVideo = url('storage/uploadVideos/'. $filename);
-
-        // $newVideo->export()
-        // ->toDisk('local')
-        // ->inFormat(new \FFMpeg\Format\Video\X264())
-        // ->save($storagePath . '/' . 'compressed_' . $filename);
-
+        if($tmp_file){
+            $tmp_file->delete();
+        }
+        // $filename = $video->getClientOriginalName();
+        // $storagePath = 'public/uploadVideos';
+        // if (!Storage::exists($storagePath)) {
+        //     Storage::makeDirectory($storagePath);
+        // }
+        // $video->storeAs($storagePath, $filename);
+        // $OriginalVideo = $storagePath . '/' . $filename;
+        // $youtubeVideoPath = $OriginalVideo; // for youtube
+        // $twitterVideoPath = storage_path('app/'. $OriginalVideo); 
+        // $storageVideo = url('storage/uploadVideos/'. $filename);
         return [
             'youtubeVideoPath' => $youtubeVideoPath,
             'twitterVideoPath' => $twitterVideoPath,
             'storageVideo' => $storageVideo,
         ];
+    }
+
+    public function removeVideoUploaded($vidoe) 
+    {
+        $user = 'user'.Auth::user()->id;
+        $tmp_file = UploadFiles::where('file',$vidoe)->first();
+        $dir = $user.'/'.'postVideo';
+        Storage::delete('public/'. $dir .'/'.$tmp_file->file);
+        $tmp_file->delete();
+        return true;
     }
 
     public function publishPost($requestData, $images, $youtubeVideoPath, $twitterVideoPath)
@@ -555,12 +584,20 @@ class PostService
                     $video->setStatus($status);
         
                     try {
-                        $obj = $youTubeService->videos->insert("status,snippet", $video,
-                                                        array("data"=>file_get_contents($fullPathToVideo), 
-                                                        "mimeType" => "video/*"));
+                        $obj = $youTubeService->videos->insert(
+                            "status,snippet", 
+                            $video,
+                            array(
+                                "data"=>file_get_contents($fullPathToVideo), 
+                                "mimeType" => "video/*"
+                            )
+                        );
+                        $videoId = $obj->id;
+                        $videoLink = "https://www.youtube.com/watch?v=" . $videoId;
+                        dd($videoLink);
                     } catch(Google_Service_Exception $e) {
                         $allUploadsSuccessful = false;
-                        // dd ("Caught Google service Exception ".$e->getCode(). " message is ".$e->getMessage(). " <br>");
+                        dd ("Caught Google service Exception ".$e->getCode(). " message is ".$e->getMessage(). " <br>");
                         // dd ("Stack trace is ".$e->getTraceAsString());
                     }
                 }

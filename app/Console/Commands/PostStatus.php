@@ -2,21 +2,22 @@
 
 namespace App\Console\Commands;
 
-use Carbon\Carbon;
-use App\Models\PublishPost;
-use App\Services\PostService;
-use Illuminate\Console\Command;
 use Exception;
+use Carbon\Carbon;
 use Google_Client;
 use App\Models\Api;
 use Facebook\Facebook;
 use App\Models\time_think;
+use App\Models\PublishPost;
 use App\Models\settingsApi;
 use Google_Service_YouTube;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Services\PostService;
 use Thujohn\Twitter\tmhOAuth;
+use Illuminate\Console\Command;
 use Google_Service_YouTube_Video;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Abraham\TwitterOAuth\TwitterOAuth;
@@ -58,7 +59,7 @@ class PostStatus extends Command
         $time = $this->postStore->userTime();
         $userTimeNow = $time['userTimeNow'];
 
-        $postStatus = PublishPost::get()->where('status','pending');
+        $postStatus = DB::table("publish_posts")->where('status','pending')->get();
         
         $funRes = '';
         $results = [];
@@ -268,7 +269,7 @@ class PostStatus extends Command
             ->where('creator_id', $post->creator_id)
             ->get();
 
-        $postData = PublishPost::where('id', $post->id)->where('account_id', $account_id)->with(['postImages', 'postVideos'])->get();
+        $postData = DB::table("publish_posts")->where('id', $post->id)->where('account_id', $account_id)->with(['postImages', 'postVideos'])->get();
         foreach($postData as $post){
             $imgPaths = $post->postImages;
             $videoPath = $post->postVideos;

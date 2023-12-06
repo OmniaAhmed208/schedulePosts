@@ -44,8 +44,9 @@ class FacebookController extends Controller
             $profileImage = $user->avatar;
             $ext = pathinfo($profileImage, PATHINFO_EXTENSION);
             $filename = time() . '.' . $ext;
-            Storage::put('public/profile_images/' . $filename, file_get_contents($profileImage));
-            $storageImage = url('storage/profile_images/' . $filename);
+            $userFolder = 'user'.Auth::user()->id;
+            Storage::put('public/'.$userFolder.'/'.'profile_images/'. $filename, file_get_contents($profileImage));
+            $storageImage = url('storage/'.$userFolder.'/'.'profile_images/'. $filename);
 
             // Get Facebook user profile
             $facebookApiUrl = 'https://graph.facebook.com/v12.0/' . $user->id;
@@ -637,8 +638,9 @@ class FacebookController extends Controller
             $profileImage = $request->pageImage;
             $ext = pathinfo($profileImage, PATHINFO_EXTENSION);
             $filename = time() . '.' . $ext;
-            Storage::put('public/profile_images/'. $filename, file_get_contents($profileImage));
-            $storageImage = url('storage/profile_images/'. $filename);
+            $userFolder = 'user'.Auth::user()->id;
+            Storage::put('public/'.$userFolder.'/'.'profile_images/'. $filename, file_get_contents($profileImage));
+            $storageImage = url('storage/'.$userFolder.'/'.'profile_images/'. $filename);
 
             $userData = [
                 'creator_id'=> Auth::user()->id,

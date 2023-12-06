@@ -41,8 +41,9 @@ class UserController extends Controller
                 'name' => 'required',
                 'email' => 'required|email|unique:users,email',
                 'password' => [
-                    'required', 'nullable', 'confirmed', 'min:8', // confirmed ===> password_confirmation
-                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
+                    'required', 'nullable', 'confirmed',
+                    //  'min:8', // confirmed ===> password_confirmation,
+                    //'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
                 ],
             ]);
             //  At least one lowercase letter, At least one uppercase letter, At least one digit, At least one special character
@@ -140,7 +141,7 @@ class UserController extends Controller
         }
     }
 
-    public function code_verification_from_profile(Request $request)
+    public function send_code_verification(Request $request)
     {
         try {
             $user = $request->user();
@@ -153,7 +154,6 @@ class UserController extends Controller
             }
 
             $token = rand(100000, 999999);
-
             $user->update(['verification_token' => $token]);
 
             $cc = User::where('email', $request->email)->first();
@@ -176,6 +176,45 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    // public function send_code_verification(Request $request){
+    //     $validator = Validator::make($request->all(), [
+    //         'email' => 'required',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'message' => 'Validation error',
+    //             'errors' => $validator->errors(),
+    //             'status' => false
+    //         ], 422);
+    //     }
+    //     $user = User::where('email', $request->email)->first();
+        
+    //     if ($user->email_verified_at) {
+    //         return response()->json([
+    //             'message' => 'User is already verified',
+    //             'status' => false,
+    //         ], 400);
+    //     }
+        
+    //     $token = rand(100000, 999999);
+    //     $user = User::create([
+    //         'verification_token' => $token,
+    //     ]);
+
+    //     $cc = User::where('email', $request->email)->first();
+    //     $bcc = User::where('email', $request->email)->first();
+    //     Mail::to($request->user())
+    //         ->cc($cc)
+    //         ->bcc($bcc)
+    //         ->send(new VerifyEmail($token));
+
+    //     return response()->json([
+    //         'message' => 'code sent in email',
+    //         'status' => true
+    //     ], 200);
+    // }
 
     public function login(Request $request)
     {
@@ -204,11 +243,20 @@ class UserController extends Controller
 
             $user = User::where('email', $request->email)->first();
 
+            // Check if the user's email is verified
+            // if (!$user || !$user->email_verified_at) {
+            //     return response()->json([
+            //         'message' => 'Email not verified',
+            //         'status' => false
+            //     ], 401);
+            // }
+
             return response()->json([
                 'message' => 'User logged in successfully',
                 'token' => $user->createToken("API TOKEN")->plainTextToken,
                 'status' => true
             ], 200);
+
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => $th->getMessage(),
@@ -299,22 +347,15 @@ class UserController extends Controller
                 $path = Str::replace('/storage/', '', $rm_urlPath);
                 unlink(storage_path('app/public/' . $path));
             }
-
+            $userFolder = 'user'.Auth::user()->id;
             $image = $request->file('image');
             $filename = time() . '_' . $image->getClientOriginalName();
-            $image->storeAs('public/profile_images', $filename);
-            $storageImage = url('storage/profile_images/' . $filename);
+            $image->storeAs('public/'.$userFolder.'/'.'profile_images', $filename);
+            $storageImage = url('storage/'.$userFolder.'/'.'profile_images/' . $filename);
         }
         if ($request->reset_image == 1) {
             $storageImage = null;
         }
-
-        // $imageName = null;
-        // if ($request->hasFile('image')) {
-        //     $image = $request->file('image');
-        //     $imageName = time() . '.' . $image->getClientOriginalExtension();
-        //     $image->move(public_path('images/courses'), $imageName);
-        // }
 
         $user->update([
             'name' => $request->name,

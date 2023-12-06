@@ -19,6 +19,7 @@ use App\Http\Controllers\api\NewsLetterController;
 use App\Http\Controllers\api\PermissionController;
 use App\Http\Controllers\api\SubscriberController;
 use App\Http\Controllers\api\PublishPostController;
+use App\Http\Controllers\api\UploadFilesController;
 use App\Http\Controllers\api\YoutubeCategoryController;
 
 /*
@@ -37,7 +38,8 @@ Route::post('/auth/login', [UserController::class,'login']);
 
 Route::post('/auth/register',[UserController::class,'register']);
 Route::post('email_verification', [UserController::class,'email_verification']);
-Route::post('code_verification_from_profile', [UserController::class,'code_verification_from_profile']);
+// Route::post('code_verification_from_profile', [UserController::class,'code_verification_from_profile']);
+Route::post('send_code_verification', [UserController::class,'send_code_verification']);
 
 Route::post('/forgetPassword', [UserController::class,'forgetPassword']);
 Route::post('/passwordCode', [UserController::class,'passwordCode']);
@@ -46,12 +48,13 @@ Route::post('/resetPassword', [UserController::class,'resetPassword']);
 Route::get('newsletter', [NewsLetterController::class,'index']);
 Route::resource('subscribers', SubscriberController::class);
 
-//protected routes
 Route::middleware('auth:sanctum')->group(function ()
 {
     Route::post('/logout', [UserController::class, 'logout']);
     Route::post('updatePassword', [UserController::class,'updatePassword']);
 
+    Route::post('/uploadFiles', [UploadFilesController::class, 'store'])->middleware('cors');
+    Route::delete('/removeFiles', [UploadFilesController::class, 'destroy'])->middleware('cors');
     Route::resource('users', UserController::class);
     Route::resource('dashboard', DashboardController::class);
     Route::resource('analytics', AnalyticsController::class);

@@ -26,26 +26,12 @@ class PostController extends Controller
         $this->postStore = $post;
     }
 
-    public function index() // to shaw all posts published or pending
+    public function index() // to show youtubeCategories in create post
     {
-        $allPosts = PublishPost::where('creator_id', Auth::user()->id)->with(['postImages', 'postVideos'])->get();
-        $allApps = settingsApi::all();
-
-        $posts = [];
-
-        foreach ($allPosts as $post) {
-            $postImages = $post->postImages;
-            $postVideos = $post->postVideos;
-
-            $posts[] = [
-                'post' => $post,
-            ];
-        }
-
+        $youtubeCategories = youtube_category::all();
         return response()->json([
             'data' => [
-                'allPosts' => $posts,
-                'allApps' => $allApps,
+                'youtubeCategories'=>$youtubeCategories
             ],
             'status' => true
         ],200);

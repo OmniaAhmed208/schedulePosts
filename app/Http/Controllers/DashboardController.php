@@ -6,40 +6,19 @@ use App\Models\Api;
 use App\Models\User;
 use App\Models\publishPost;
 use App\Models\settingsApi;
+use App\Models\UploadFiles;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Permission;
 
 class DashboardController extends Controller
 {
     public function test(Request $request)
     {
-        $filenames = []; // Array to store filenames
-
-        if ($request->hasFile('images')) {
-            $images = $request->file('images');
-
-            foreach ($images as $image) {
-                $filename = time() . '_' . $image->getClientOriginalName();
-                $image->storeAs('public/filepond', $filename);
-                $filenames[] = $filename; // Add filename to the array
-            }
-        }
-
-        // $storageImage = url('storage/profile_images/'. $filename);
-            // store in db
-            // TemporaryFile::create([
-            // ]);
-        // return view('main.test');
-
-        return $filenames;
-    }
-
-    public function testDel(Request $request)
-    {
-
+        return view('main.test');
     }
 
     public function store(Request $request)

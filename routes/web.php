@@ -1,5 +1,6 @@
 <?php
 
+use Facebook\Facebook;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
@@ -18,9 +19,9 @@ use App\Http\Controllers\NewsLetterController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PostStatusController;
 use App\Http\Controllers\SubscriberController;
+use App\Http\Controllers\UploadFilesController;
 use App\Http\Controllers\YoutubeCategoryController;
 use App\Http\Controllers\RolesPermissionsController;
-use Facebook\Facebook;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,10 +52,12 @@ Auth::routes();
 Route::group(['middleware' => ['auth']], function ()
 {
     Route::post('/test', [DashboardController::class, 'test'])->name('test');
-    Route::delete('/testDel', [DashboardController::class, 'testDel'])->name('testDel');
     Route::get('/home', [DashboardController::class, 'index'])->name('admin.index');
     Route::put('updatePassword/{id}', [UserController::class,'updatePassword']);
     Route::post('chartJS/{id}', [DashboardController::class,'chartJS']);
+    
+    Route::post('/uploadFiles', [UploadFilesController::class, 'store']);
+    Route::delete('/removeFiles', [UploadFilesController::class, 'destroy']);
 
     Route::resource('services', ServiceController::class)->middleware('permission:services');
     Route::resource('users', UserController::class);

@@ -193,16 +193,16 @@ class UserController extends Controller
         $storageImage = $user->image;
         if ($request->hasFile('image'))
         {
+            $userFolder = 'user'.Auth::user()->id;
             if($user->image != null){
                 $rm_urlPath = parse_url($user->image, PHP_URL_PATH);
                 $path = Str::replace('/storage/', '', $rm_urlPath);
-                unlink(storage_path('app/public/'. $path));
+                unlink(storage_path('app/public/'.$path));
             }
-
             $image = $request->file('image');
             $filename = time() . '_' . $image->getClientOriginalName();
-            $image->storeAs('public/profile_images', $filename);
-            $storageImage = url('storage/profile_images/'. $filename);
+            $image->storeAs('public/'.$userFolder.'/'.'profile_images', $filename);
+            $storageImage = url('storage/'.$userFolder.'/'.'profile_images/'. $filename);
         }
         if ($request->reset_image == 1) {
             $storageImage = null;
@@ -224,7 +224,7 @@ class UserController extends Controller
 
         $validator = $request->validate([
             'old_password' => 'required',
-            // 'new_password' => ['required','min:8','regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'],
+            'new_password' => ['required','min:8','regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'],
         ]);
 
         $password = $user->password;

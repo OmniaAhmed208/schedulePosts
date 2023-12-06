@@ -38,8 +38,9 @@ class NewsLetterController extends Controller
 
             $image = $request->file('image');
             $filename = time() . '_' . $image->getClientOriginalName();
-            $image->storeAs('public/newsLetter', $filename);
-            $storageImage = url('storage/newsLetter/'. $filename);
+            $user = 'user'.Auth::user()->id;
+            $image->storeAs('public/'.$user.'/'.'newsLetter', $filename);
+            $storageImage = url('storage/'.$user.'/'.'newsLetter/'. $filename);
         }
 
         $validator =  $request->validate($validationRules);
@@ -76,16 +77,17 @@ class NewsLetterController extends Controller
         if ($request->hasFile('image'))
         {
             unset($validationRules['content']);
+            $userFolder = 'user'.Auth::user()->id;
 
             if($newsLetter->image != null){
                 $rm_urlPath = parse_url($newsLetter->image, PHP_URL_PATH);
                 $path = Str::replace('/storage/', '', $rm_urlPath);
-                unlink(storage_path('app/public/'. $path));
+                unlink(storage_path('app/public/'.$path));
             }
             $image = $request->file('image');
             $filename = time() . '_' . $image->getClientOriginalName();
-            $image->storeAs('public/newsLetter', $filename);
-            $storageImage = url('storage/newsLetter/'. $filename);
+            $image->storeAs('public/'.$userFolder.'/'.'newsLetter', $filename);
+            $storageImage = url('storage/'.$userFolder.'/'.'newsLetter/'. $filename);
         }
 
         $validator =  $request->validate($validationRules);

@@ -6,6 +6,7 @@ use Exception;
 use Google_Client;
 use App\Models\Api;
 use App\Models\settingsApi;
+use Illuminate\Support\Str;
 use App\Models\social_posts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -195,11 +196,12 @@ class YoutubeController extends Controller
                         $channelImageUrl = $data['items'][0]['snippet']['thumbnails']['default']['url'];
                         $channelLink = "https://www.youtube.com/channel/{$channelId}";
 
+                        $userFolder = 'user'.Auth::user()->id;
                         $profileImage = $channelImageUrl;
                         $ext = pathinfo($profileImage, PATHINFO_EXTENSION);
                         $filename = time() . '.' . $ext;
-                        Storage::put('public/profile_images/'. $filename, file_get_contents($profileImage));
-                        $storageImage = url('storage/profile_images/'. $filename);
+                        Storage::put('public/'.$userFolder.'/'.'profile_images/'. $filename, file_get_contents($profileImage));
+                        $storageImage = url('storage/'.$userFolder.'/'.'profile_images/'. $filename);
 
                         $userData = [
                             'creator_id'=> Auth::user()->id,
@@ -216,6 +218,12 @@ class YoutubeController extends Controller
                         $existingApp = Api::where('account_id',$channelId)->where('creator_id', Auth::user()->id)->first();
             
                         if ($existingApp) {
+                            if($existingApp->account_pic != null){
+                                $rm_urlPath = parse_url($existingApp->account_pic, PHP_URL_PATH);
+                                $path = Str::replace('/storage/', '', $rm_urlPath);
+                                unlink(storage_path('app/public/'.$path));
+                            }
+                            
                             $existingApp->update($userData);
                         } else {
                             Api::create($userData);

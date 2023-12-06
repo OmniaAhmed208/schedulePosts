@@ -33,10 +33,11 @@ class NewsLetterController extends Controller
         {
             unset($validationRules['content']);
 
+            $userFolder = 'user'.Auth::user()->id;
             $image = $request->file('image');
             $filename = time() . '_' . $image->getClientOriginalName();
-            $image->storeAs('public/newsLetter', $filename);
-            $storageImage = url('storage/newsLetter/'. $filename);
+            $image->storeAs('public/'.$userFolder.'/'.'newsLetter', $filename);
+            $storageImage = url('storage/'.$userFolder.'/'.'newsLetter/'. $filename);
         }
 
         $validator = Validator::make($request->all(), $validationRules);
@@ -59,6 +60,22 @@ class NewsLetterController extends Controller
         return response()->json([
             'message' => 'The post created successfully',
             'status' => true,
+        ],200);
+    }
+    
+    public function show($id)
+    {
+        $newsletter = NewsLetter::find($id);
+        if (!$newsletter) {
+            return response()->json([
+                'message' => 'Newsletter not found',
+                'status' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'newsletter' => $newsletter,
+            'status' => true
         ],200);
     }
 
@@ -88,11 +105,11 @@ class NewsLetterController extends Controller
         if ($request->hasFile('image'))
         {
             unset($validationRules['content']);
-
+            $userFolder = 'user'.Auth::user()->id;
             $image = $request->file('image');
             $filename = time() . '_' . $image->getClientOriginalName();
-            $image->storeAs('public/newsLetter', $filename);
-            $storageImage = url('storage/newsLetter/'. $filename);
+            $image->storeAs('public/'.$userFolder.'/'.'newsLetter', $filename);
+            $storageImage = url('storage/'.$userFolder.'/'.'newsLetter/'. $filename);
         }
 
         $validator = Validator::make($request->all(), $validationRules);

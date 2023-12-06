@@ -28,8 +28,9 @@ class TwitterController extends Controller
             $profileImage = $user->avatar;
             $ext = pathinfo($profileImage, PATHINFO_EXTENSION);
             $filename = time() . '.' . $ext;
-            Storage::put('public/profile_images/'. $filename, file_get_contents($profileImage));
-            $storageImage = url('storage/profile_images/'. $filename);
+            $userFolder = 'user'.Auth::user()->id;
+            Storage::put('public/'.$userFolder.'/'.'profile_images/'. $filename, file_get_contents($profileImage));
+            $storageImage = url('storage/'.$userFolder.'/'.'profile_images/'. $filename);
 
             $userData = [
                 'creator_id'=> Auth::user()->id,

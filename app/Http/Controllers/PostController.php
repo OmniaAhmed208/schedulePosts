@@ -8,11 +8,15 @@ use App\Models\PostImages;
 use App\Models\PostVideos;
 use App\Models\publishPost;
 use App\Models\settingsApi;
+use App\Models\UploadFiles;
 use Illuminate\Http\Request;
 use App\Services\PostService;
 use App\Models\youtube_category;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class PostController extends Controller
 {
@@ -35,25 +39,23 @@ class PostController extends Controller
     public function store(Request $request)
     {
         $validator = $request->validate([
-            'postData' => 'max:5000',
-            'video' => 'mimetypes:video/quicktime,video/mp4,video/mpeg,video/mpg,video/mov,video/avi,video/webm',
-            'images' => 'array',
-            'images.*' => 'file|image|mimes:jpeg,jpg,png',
+            'postData' => $request->has('images') || $request->has('video') ? 'max:5000' : 'required|max:5000',
+            // 'video' => 'mimetypes:video/quicktime,video/mp4,video/mpeg,video/mpg,video/mov,video/avi,video/webm',
+            'images.*' => function ($attribute, $value, $fail) {
+                $allowedExtensions = ['jpeg', 'jpg', 'png'];
+                $extension = pathinfo($value, PATHINFO_EXTENSION);
+
+                if (!in_array($extension, $allowedExtensions)) {
+                    $fail("The $attribute field must have a valid image extension (jpeg, jpg, png).");
+                }
+            },
             'accounts_id' => 'required'
         ]);
-
-        $validationRules = [
-            'postData' => 'required',
-        ];
-
-        if ($request->has('images') || $request->has('video')) {
-            unset($validationRules['postData']); // If there's an image or video, text is not required
-        }
 
         $accountsID = $request->accounts_id;
         $accountsType = [];
         $accounts = '';
-
+        $validationRules = [];
         $accountsData = [];
 
         foreach($accountsID as $id){
@@ -69,10 +71,10 @@ class PostController extends Controller
                     // $validationRules['file'] = 'required|mimetypes:video/mp4, image/png';
                     $validationRules['images'] = 'required';
                     $validationRules['video'] = 'required';
-                    if($request->has('images')){
+                    if($request->images){
                         unset($validationRules['video']);
                     }
-                    if($request->has('video')){
+                    if($request->video){
                         unset($validationRules['images']);
                     }
                 }
@@ -90,21 +92,30 @@ class PostController extends Controller
             $accountsData[] = $accountData;
         }
 
-        $request->validate($validationRules);
+        // $request->validate($validationRules);
+        $validator = Validator::make($request->all(), $validationRules);
 
-        $imgUpload = []; 
-        $publishPosts = [];
+        if ($validator->fails()) {
+            if ($request->images)
+            {$removeImagesUploaded = $this->postStore->removeImagesUploaded($request->images);}
+            if ($request->video)
+            {$removeVideoUploaded = $this->postStore->removeVideoUploaded($request->video);}
+            
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
 
-        if ($request->hasFile('images'))
+        $imgUpload = []; $publishPosts = [];
+
+        if ($request->images)
         {
-            $images = $request->file('images');
-            $imgUpload = $this->postStore->saveImages($images);
+            // $images = $request->file('images');
+            $imgUpload = $this->postStore->saveImages($request->images);
         }
 
         $youtubeVideoPath='';$twitterVideoPath='';$storageVideo='';
-        if ($request->hasfile('video'))
+        if ($request->video)
         {
-            $video = $request->file('video');
+            $video = $request->video;
             $videoUpload = $this->postStore->saveVideo($video);
 
             $youtubeVideoPath = $videoUpload['youtubeVideoPath'];
@@ -191,19 +202,23 @@ class PostController extends Controller
 
                 if (is_array($imgUpload) && !empty($imgUpload)) {
                     foreach ($imgUpload as $img) {
-                        PostImages::create([
+                        DB::table("post_images")->insert([
                             'post_id' => $post->id,
                             'creator_id' => Auth::user()->id,
-                            'image' => $img
+                            'image' => $img,
+                            'created_at' => now(),
+                            'updated_at' => now()
                         ]);
                     }
                 }
 
                 if ($storageVideo) {
-                    PostVideos::create([
+                    DB::table("post_videos")->insert([
                         'post_id' => $post->id,
                         'creator_id' => Auth::user()->id,
-                        'video' => $storageVideo
+                        'video' => $storageVideo,
+                        'created_at' => now(),
+                        'updated_at' => now()
                     ]);
                 }
             }

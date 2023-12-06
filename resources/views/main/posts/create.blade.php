@@ -47,33 +47,32 @@
                                         <div class="progress-bar" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">0 %</div>
                                     </div> --}}
 
-                                    {{-- <div class="row">
+                                    <div class="row">
                                         <h5 class="card-header">Add to your post</h5>
                                         <div class="col-md-6">
                                           <div class="mb-4">
-                                            <div class="card-body">
-                                              <div>
-                                                <label for="postImage" class="form-label">Upload Image</label>
-                                                <input type="file" name="images[]" class="form-control" id="postImage" aria-describedby="imageExt" onchange="getImagePreview(event)" accept=".jpg, .jpeg, .png, .gif" multiple/>
-                                                <div id="imageExt" class="form-text"> Accept image .jpg, .jpeg, .png or .gif </div>
-                                              </div>
+                                                <div class="card-body">
+                                                    <div>
+                                                        <label for="postImage" class="form-label">Upload Image</label>
+                                                        <input type="file" name="images[]" class="form-control" id="postImage" multiple/>
+                                                    </div>
+                                                </div>
                                             </div>
-                                          </div>
                                         </div>
                                         <div class="col-md-6">
-                                          <div class="mb-4">
-                                            <div class="card-body">
-                                              <div>
-                                                <label for="postVideo" class="form-label">Upload Video</label>
-                                                <input type="file" name="video" class="form-control" id="postVideo" onchange="getVideoPreview(event)" accept="video/*"/>
+                                            <div class="mb-4">
+                                                  <div class="card-body">
+                                                      <div>
+                                                            <label for="postVideo" class="form-label">Upload Video</label>
+                                                            <input type="file" class="form-control" id="postVideo" name="video">
+                                                      </div>
+                                                  </div>
                                               </div>
-                                            </div>
                                           </div>
-                                        </div>
-                                    </div>     --}}
+                                    </div>    
 
 
-                                    <div class="card py-2 px-4 d-flex flex-row justify-content-between align-items-center">
+                                    {{-- <div class="card py-2 px-4 d-flex flex-row justify-content-between align-items-center">
                                         <p class="m-0">Add to your post</p>
                                         <div class="d-flex position-relative">
                                             <div class="file position-absolute" id="imgFile">
@@ -87,7 +86,7 @@
                                             </div>
                                             <i class="bx bx-link text-info mx-1 mt-1 postLink fs-5" data-toggle="modal" data-target="#postData_link"></i>
                                         </div>
-                                    </div>
+                                    </div> --}}
                                     {{-- <input type="file" class="form-control position-absolute" name="video" id="browseFile" accept="video/*"> --}}
 
                                 </div>
@@ -153,7 +152,6 @@
                                 @endif
                             </div>
 
-
                             <div class="modal fade" id="postData_link">
                                 <div class="modal-dialog modal-dialog-centered">
                                     <div class="modal-content">
@@ -187,18 +185,37 @@
 </div>
 
 {{-- filepond to upload images and videos --}}
-{{-- <script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>
+<script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>
+<script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
+<script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
+
 <script>
-    const inputElement = document.querySelector('input[name="images[]"]');
-    const pond = FilePond.create(inputElement);
-    FilePond.setOptions({
-    server: {
-        process: '/test',
-        revert: '/testDele',
-        headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'}
-    },
-});
-</script> --}}
+    document.addEventListener('DOMContentLoaded', function () {
+        FilePond.registerPlugin(FilePondPluginImagePreview);
+        FilePond.registerPlugin(FilePondPluginFileValidateType);
+        // Images FilePond
+        const imageInputElement = document.querySelector('input[name="images[]"]');
+        const imagePond = FilePond.create(imageInputElement, {
+            acceptedFileTypes:['image/png', 'image/jpeg', 'image/jpg', 'image/gif'],
+            server: {
+            process: '/uploadFiles',
+            revert: '/removeFiles',
+            headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'}
+            }
+        });
+  
+        // Video FilePond
+        const videoInputElement = document.querySelector('input[name="video"]');
+        const videoPond = FilePond.create(videoInputElement, {
+            acceptedFileTypes:['video/*'],
+            server: {
+            process: '/uploadFiles',
+            revert: '/removeFiles',
+            headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'}
+            }
+        });
+    });
+  </script>
 
 {{-- // create post progress-bar--}}
 {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.3.0/jquery.form.min.js"></script>
@@ -308,11 +325,11 @@
                 if (youtubeAccounts.length > 0) {
                     youtubeSelectBlock.style.display = 'block';
                     youtubeSelectBlock.querySelector('#videoTitle').setAttribute('required', 'required');
-                    document.querySelector('input[name="video"]').setAttribute('required', 'required');
+                    // document.querySelector('#postVideo').setAttribute('required', 'required');
                 } else {
                     youtubeSelectBlock.style.display = 'none';
                     youtubeSelectBlock.querySelector('#videoTitle').removeAttribute('required');
-                    document.querySelector('input[name="video"]').removeAttribute('required');
+                    // document.querySelector('#postVideo').removeAttribute('required');
                 }
             } else {
                 youtubeSelectBlock.style.display = 'none';
@@ -321,19 +338,27 @@
     });
 
 
-    // show image after choose it
-    function getImagePreview(event){
-        // console.log(event.target.files[0]);
-        for(let i = 0; i<event.target.files.length; i++)
-        {
-            var img = URL.createObjectURL(event.target.files[i]);
-            var container = document.querySelector('.previewSec');
-            // container.innerHTML = '';
-            var html = `<img src="${img}">
-            <span aria-hidden="true" style="cursor:pointer;margin-right: 6px;" onclick="closeFile(this)">&times;</span>`;
-            container.innerHTML += html;
-        }
+    function getImagePreview(file) {
+        var img = URL.createObjectURL(file.file);
+        var container = document.querySelector('.previewSec');
+        var html = `<img src="${img}">
+                    <span aria-hidden="true" style="cursor:pointer;margin-right: 6px;" onclick="closeFile(this)">&times;</span>`;
+        container.innerHTML += html;
     }
+
+    // show image after choose it
+    // function getImagePreview(event){
+    //     // console.log(event.target.files[0]);
+    //     for(let i = 0; i<event.target.files.length; i++)
+    //     {
+    //         var img = URL.createObjectURL(event.target.files[i]);
+    //         var container = document.querySelector('.previewSec');
+    //         // container.innerHTML = '';
+    //         var html = `<img src="${img}">
+    //         <span aria-hidden="true" style="cursor:pointer;margin-right: 6px;" onclick="closeFile(this)">&times;</span>`;
+    //         container.innerHTML += html;
+    //     }
+    // }
 
     function getVideoPreview(event){
         for(let i = 0; i<event.target.files.length; i++)
