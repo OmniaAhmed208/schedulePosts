@@ -15,9 +15,8 @@ class PermissionController extends Controller
     public function index()
     {
         // $permissions = Permission::all();
-
         $user_has_roles = DB::table('user_has_roles')->where('user_id', Auth::user()->id)->get();
-        $permissions = [];
+        $userPermissions = [];
         $roles = [];
 
         foreach ($user_has_roles as $role) {
@@ -33,14 +32,23 @@ class PermissionController extends Controller
             foreach ($role_has_permissions as $permission) {
                 $permissionModel = Permission::find($permission->permission_id);
                 if ($permissionModel) {
-                    $permissions[] = $permissionModel->name;
+                    $userPermissions[] = $permissionModel->name;
                 }
             }
         }
-        $uniquePermissions = array_unique($permissions); // if user has multi roles get this permissions without redundancy
+        $uniquePermissions = array_unique($userPermissions); // if user has multi roles get this permissions without redundancy
+
+        $userRole = '';
+        $hasPagesLinkPermission = in_array('pages.link', $userPermissions);
+        if ($hasPagesLinkPermission) {
+            $userRole = 'not user';
+        } else {
+            $userRole = 'user';
+        }
 
         return response()->json([
-            'data' => $uniquePermissions,
+            'userRole' => $userRole,
+            // 'userPermissions' => $uniquePermissions,
             'status' => true
         ],200);
     }

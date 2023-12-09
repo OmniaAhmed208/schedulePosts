@@ -38,57 +38,36 @@
                                     </label>
                                 @endforeach
 
-                                <textarea cols="30" rows="15" maxlength="5000" class="form-control mt-3" name="postData" placeholder="Whta's on your mind?" style="resize: none">{{ old('postData') }}</textarea>
+                                <textarea cols="30" rows="15" maxlength="5000" class="form-control mt-3" name="content" placeholder="Whta's on your mind?" style="resize: none">{{ old('content') }}</textarea>
                                 
                                 <div class="container">
-                                    <div class="photoSec previewSec pb-4"></div>
+                                    <div class="photoSec previewSec pb-5 pt-4 d-flex align-items-center"></div>
 
-                                    {{-- <div class="progress my-3">
-                                        <div class="progress-bar" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">0 %</div>
-                                    </div> --}}
-
-                                    <div class="row">
-                                        <h5 class="card-header">Add to your post</h5>
-                                        <div class="col-md-6">
-                                          <div class="mb-4">
-                                                <div class="card-body">
-                                                    <div>
-                                                        <label for="postImage" class="form-label">Upload Image</label>
-                                                        <input type="file" name="images[]" class="form-control" id="postImage" multiple/>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="mb-4">
-                                                  <div class="card-body">
-                                                      <div>
-                                                            <label for="postVideo" class="form-label">Upload Video</label>
-                                                            <input type="file" class="form-control" id="postVideo" name="video">
-                                                      </div>
-                                                  </div>
-                                              </div>
-                                          </div>
-                                    </div>    
-
-
-                                    {{-- <div class="card py-2 px-4 d-flex flex-row justify-content-between align-items-center">
+                                    <progress id="uploadProgress" value="0" max="100"></progress>
+                                    <span id="progressPercentage"></span>
+                                    <i class="bx bx-trash stopUploading text-danger" style="cursor:pointer"></i>
+                                    
+                                    <div class="card py-2 px-4 d-flex flex-row justify-content-between align-items-center">
                                         <p class="m-0">Add to your post</p>
                                         <div class="d-flex position-relative">
                                             <div class="file position-absolute" id="imgFile">
-                                                <input type="file" class="form-control position-absolute" name="images[]" onchange="getImagePreview(event)" accept=".jpg, .jpeg, .png, .gif" multiple>
+                                                {{-- <input type="file" class="form-control position-absolute" id="postImage" name="images[]" 
+                                                onchange="getImagePreview(event)" accept=".jpg, .jpeg, .png, .gif" multiple> --}}
+                                                <input type="file" class="form-control position-absolute" id="postImage" name="images[]" 
+                                                accept=".jpg, .jpeg, .png, .gif" multiple>
+                                                <div class="postImagesArray"></div>
+                                                <div class="postVideo"></div>
                                                 <i class="bx bx-image text-success px-2 fs-5"></i>
                                             </div>
                                             <div class="file position-absolute" id="videoFile">
-                                                <input type="file" class="form-control position-absolute" name="video" onchange="getVideoPreview(event)" accept="video/*">
+                                                {{-- <input type="file" class="form-control position-absolute" name="video" id="postVideo" onchange="getVideoPreview(event)" accept="video/*"> --}}
+                                                <input type="file" class="form-control position-absolute" name="video" id="postVideo" accept="video/*">
 
                                                 <i class="bx bx-video text-primary px-2 fs-5"></i>
                                             </div>
                                             <i class="bx bx-link text-info mx-1 mt-1 postLink fs-5" data-toggle="modal" data-target="#postData_link"></i>
                                         </div>
-                                    </div> --}}
-                                    {{-- <input type="file" class="form-control position-absolute" name="video" id="browseFile" accept="video/*"> --}}
-
+                                    </div>
                                 </div>
 
                                 <div class="form-group container mt-4" id="youtubeSelectBlock" style="display: none;">
@@ -184,115 +163,159 @@
     </div>
 </div>
 
-{{-- filepond to upload images and videos --}}
-<script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>
-<script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
-<script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
+{{-- upload video or image with progress bar in database --}}
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<meta name="csrf-token" content="{{ csrf_token() }}">
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        FilePond.registerPlugin(FilePondPluginImagePreview);
-        FilePond.registerPlugin(FilePondPluginFileValidateType);
-        // Images FilePond
-        const imageInputElement = document.querySelector('input[name="images[]"]');
-        const imagePond = FilePond.create(imageInputElement, {
-            acceptedFileTypes:['image/png', 'image/jpeg', 'image/jpg', 'image/gif'],
-            server: {
-            process: '/uploadFiles',
-            revert: '/removeFiles',
-            headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'}
-            }
-        });
-  
-        // Video FilePond
-        const videoInputElement = document.querySelector('input[name="video"]');
-        const videoPond = FilePond.create(videoInputElement, {
-            acceptedFileTypes:['video/*'],
-            server: {
-            process: '/uploadFiles',
-            revert: '/removeFiles',
-            headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'}
-            }
-        });
-    });
-  </script>
-
-{{-- // create post progress-bar--}}
-{{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.3.0/jquery.form.min.js"></script>
+@php
+    $userId = Auth::user()->id;
+@endphp
 <script>
     $(document).ready(function () {
+        var xhr; // Declare xhr globally
+        $('.stopUploading').hide();
+        $('#postImage, #postVideo').change(function () {
+            var formData = new FormData();
+            var isImage = $(this).attr('id') === 'postImage';
 
-        var persent = $('.progress-bar');
-
-        $('#createPostForm').ajaxForm({
-            beforeSend:function(){
-                var persentVal = '0%';
-                persent.width(persentVal);
-                persent.html(persentVal);
-            },
-            uploadProgress:function(event,position,total,percentComplete){
-                var persentVal=percentComplete+'%';
-                persent.css('width', persentVal+'%', function(){
-                    return $(this).attr('aria-valuenow',persentVal) + '%';
-                })
-                // persent.width(persentVal);
-                // persent.html(persentVal);
+            if (isImage) {
+                var images = $('#postImage')[0].files;
+                for (var i = 0; i < images.length; i++) {
+                    formData.append('images[]', images[i]);
+                }
+            } else {
+                formData.append('video', $('#postVideo')[0].files[0]);
             }
-            complete:function(xhr){
-                alert('File uploaded successfully!');
-            }
-        })
-    });
 
-</script> --}}
+            xhr = new XMLHttpRequest();
 
-{{-- <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // File input change event
-        document.querySelector('.progress').style.display = 'none';
-
-        document.getElementById('browseFile').addEventListener('change', function (event) {
-            var fileInput = event.target;
-            var file = fileInput.files[0];
-            // var videoPreview = document.getElementById('videoPreview');
-            var progressContainer = document.querySelector('.progress');
-
-            // Display progress bar
-            progressContainer.style.display = 'block';
-
-            simulateFileUpload(file, function () {
-                var container = document.querySelector('.previewSec');
-                var html = `<video src="${URL.createObjectURL(file)}"></video>
-                <span aria-hidden="true" style="cursor:pointer;margin-right: 6px;" onclick="closeFile(this)">&times;</span>`;
-                // var html = `<video src="${URL.createObjectURL(file)}" class="py-3" controls></video>
-                // <span aria-hidden="true" style="cursor:pointer;position-absolute" onclick="closeFile(this)">&times;</span>`;
-                container.innerHTML += html;
-                progressContainer.style.display = 'none';
+            xhr.upload.addEventListener('progress', function (event) {
+                if (event.lengthComputable) {
+                    var percentComplete = (event.loaded / event.total) * 100;
+                    $('#uploadProgress').val(percentComplete);
+                    document.getElementById('progressPercentage').innerHTML = Math.round(percentComplete) + '%';
+                    $('#postImage, #postVideo').attr('disabled','disabled');
+                }
             });
+
+            xhr.addEventListener('load', function () {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    var response = JSON.parse(xhr.responseText);
+                    console.log('xhr.responseText',xhr.responseText);
+                    console.log('response',response);
+                    if(response.images){
+                        displayUploadedImages(response.images);
+                        collectUploadedImages(response.images);
+                        document.querySelector('#postImage').value = '';
+                    }
+                    if(response.video){
+                        displayUploadedVideo(response.video);
+                        collectUploadedVideo(response.video);
+                        document.querySelector('#postVideo').value = '';
+                    }
+                    $('#postImage, #postVideo').removeAttr('disabled');
+                    $('.stopUploading').hide();
+                } else {
+                    console.error('Request failed with status:', xhr.status);
+                }
+            });
+
+            xhr.addEventListener('error', function () {
+                console.error('Upload failed');
+            });
+
+            xhr.open('POST', '{{ url('uploadFiles') }}', true);
+            xhr.setRequestHeader('X-CSRF-TOKEN', $('meta[name="csrf-token"]').attr('content'));
+            xhr.send(formData);
+            $('.stopUploading').show();
         });
 
-        function simulateFileUpload(file, callback) {
-            var progressBar = document.querySelector('.progress-bar');
-            var progress = 0;
+        $('.stopUploading').click(function () {
+            if (xhr) {
+                xhr.abort();
+                $('#uploadProgress').val(0);
+                document.getElementById('progressPercentage').innerHTML = '0 %';
+                $('.stopUploading').hide();
+                $('#postImage, #postVideo').val(''); // Clear the file input value
+                $('#postImage, #postVideo').removeAttr('disabled');
+                console.log('File upload aborted');
+            } else {
+                console.log('No active file upload to abort');
+            }
+        });
 
-            var interval = setInterval(function () {
-                progress += 10;
-                progressBar.style.width = progress + '%';
-                progressBar.textContent = progress + '%';
 
-                if (progress >= 100) {
-                    clearInterval(interval);
-
-                    // Execute the callback function when progress is complete
-                    if (typeof callback === 'function') {
-                        callback();
-                    }
+        // Function to handle file destroy
+        function destroyFile() {
+            var csrfToken = $('meta[name="csrf-token"]').attr('content');
+            $.ajax({
+                type: 'DELETE',
+                url: '{{ url('removeFiles') }}',
+                data: { file: 'filename_to_be_deleted' }, // Pass the filename or data needed for deletion
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                success: function(response) {
+                    console.log(response);
+                },
+                error: function(error) {
+                    console.error('Delete request failed:', error);
                 }
-            }, 500);
+            });
+        }
+
+        function displayUploadedImages(imageNames) {
+            var container = document.querySelector('.previewSec');
+            for (var i = 0; i < imageNames.length; i++) {
+                var img = "{{ asset('storage/user') }}" + "<?php echo $userId?>" +'/postImages/' + imageNames[i]; 
+                var html = `<img src="${img}" alt="Uploaded Image">
+                <span aria-hidden="true" style="cursor:pointer;margin: 0 10px;" onclick="closeFile(this)">&times;</span>`;
+                container.innerHTML += html;
+            }
+        }
+
+        var uploadedImages = [];
+        function collectUploadedImages(imageNames) {
+            var postImagesArray = document.querySelector('.postImagesArray');
+            if (imageNames && Array.isArray(imageNames)) {
+                uploadedImages = uploadedImages.concat(imageNames);
+            }
+
+            postImagesArray.innerHTML = '';
+            uploadedImages.forEach(function (imageName) {
+                var html = `<input type="hidden" class="form-control" name="images[]" value="${imageName}">`;
+                postImagesArray.innerHTML += html;
+            });
+        }
+
+        function displayUploadedVideo(videoName) {
+            var container = document.querySelector('.previewSec');
+            var video = "{{ asset('storage/user') }}" + "<?php echo $userId?>" +'/postVideo/' + videoName; 
+            var html = `<video src="${video}"></video>
+            <span aria-hidden="true" style="cursor:pointer;margin: 0 10px;" onclick="closeFile(this)">&times;</span>`;
+            container.innerHTML += html;
+        }
+
+        var uploadedVideo = '';
+        function collectUploadedVideo(videoName) {
+            var postVideo = document.querySelector('.postVideo');
+            if (videoName) {
+                postVideo.innerHTML = '';
+                var html = `<input type="hidden" class="form-control" name="video" value="${videoName}">`;
+                postVideo.innerHTML += html;
+            }
+        }
+
+        function closeFile(closeButton) {
+            var container = document.querySelector('.previewSec'); // Find the parent div
+            var file = closeButton.previousElementSibling; // Find the img element next to the clicked span (close button)
+            if (file) {
+                container.removeChild(file);
+                container.removeChild(closeButton);
+            }
         }
     });
-</script> --}}
-
+</script>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -336,50 +359,6 @@
             }
         }
     });
-
-
-    function getImagePreview(file) {
-        var img = URL.createObjectURL(file.file);
-        var container = document.querySelector('.previewSec');
-        var html = `<img src="${img}">
-                    <span aria-hidden="true" style="cursor:pointer;margin-right: 6px;" onclick="closeFile(this)">&times;</span>`;
-        container.innerHTML += html;
-    }
-
-    // show image after choose it
-    // function getImagePreview(event){
-    //     // console.log(event.target.files[0]);
-    //     for(let i = 0; i<event.target.files.length; i++)
-    //     {
-    //         var img = URL.createObjectURL(event.target.files[i]);
-    //         var container = document.querySelector('.previewSec');
-    //         // container.innerHTML = '';
-    //         var html = `<img src="${img}">
-    //         <span aria-hidden="true" style="cursor:pointer;margin-right: 6px;" onclick="closeFile(this)">&times;</span>`;
-    //         container.innerHTML += html;
-    //     }
-    // }
-
-    function getVideoPreview(event){
-        for(let i = 0; i<event.target.files.length; i++)
-        {
-            var video = URL.createObjectURL(event.target.files[i]);
-            var container = document.querySelector('.previewSec');
-            var html = `<video src="${video}"></video>
-            <span aria-hidden="true" style="cursor:pointer;margin-right: 6px;" onclick="closeFile(this)">&times;</span>`;
-            container.innerHTML += html;
-        }
-        uploadVideo();
-    }
-
-    function closeFile(closeButton) {
-        var container = document.querySelector('.previewSec'); // Find the parent div
-        var file = closeButton.previousElementSibling; // Find the img element next to the clicked span (close button)
-        if (file) {
-            container.removeChild(file);
-            container.removeChild(closeButton);
-        }
-    }
 
     function statusChange(){
         if (document.getElementById("checkDate").checked) {

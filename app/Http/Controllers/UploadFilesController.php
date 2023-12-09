@@ -27,12 +27,12 @@ class UploadFilesController extends Controller
                 $dir = $user.'/'.'postImages';
                 $image->storeAs('public/'. $dir . '/', $filename);
                 $filenames[] = $filename;
+                UploadFiles::create([
+                    'file' => $filename,
+                    'type' => 'image', 
+                ]);
             }
-            UploadFiles::create([
-                'file' => $filename,
-                'type' => 'image', 
-            ]);
-            return $filename;
+            return ['images'=> $filenames ];
         }
 
         if ($request->hasFile('video')) {
@@ -45,7 +45,7 @@ class UploadFilesController extends Controller
                 'file' => $filename,
                 'type' => 'video', 
             ]);
-            return $filename;
+            return ['video'=> $filename ];
         }
 
         return '';

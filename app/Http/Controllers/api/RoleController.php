@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
+use Google\Service\AndroidEnterprise\Permission;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Validator;
@@ -12,9 +13,8 @@ class RoleController extends Controller
     public function index()
     {
         $roles = Role::all();
-
         return response()->json([
-            'data' => $roles,
+            'roles' => $roles,
             'status' => true
         ],200);
     }

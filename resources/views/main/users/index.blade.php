@@ -60,7 +60,6 @@
                     </div>
                 </div>
     
-    
                 {{-- add userToRoles --}}
                 <div class="modal fade" id="userToRoles" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -70,7 +69,6 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <p class="ms-3">Role you may use and assign to your users.</p>
-
 
                             <form id="userToRolesForm" action="" method="post" enctype="multipart/form-data">
                                 @csrf

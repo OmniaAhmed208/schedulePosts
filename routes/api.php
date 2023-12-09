@@ -21,6 +21,7 @@ use App\Http\Controllers\api\SubscriberController;
 use App\Http\Controllers\api\PublishPostController;
 use App\Http\Controllers\api\UploadFilesController;
 use App\Http\Controllers\api\YoutubeCategoryController;
+use App\Http\Controllers\api\RolesPermissionsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,8 +39,6 @@ Route::post('/auth/login', [UserController::class,'login']);
 
 Route::post('/auth/register',[UserController::class,'register']);
 Route::post('email_verification', [UserController::class,'email_verification']);
-// Route::post('code_verification_from_profile', [UserController::class,'code_verification_from_profile']);
-Route::post('send_code_verification', [UserController::class,'send_code_verification']);
 
 Route::post('/forgetPassword', [UserController::class,'forgetPassword']);
 Route::post('/passwordCode', [UserController::class,'passwordCode']);
@@ -50,6 +49,7 @@ Route::resource('subscribers', SubscriberController::class);
 
 Route::middleware('auth:sanctum')->group(function ()
 {
+    Route::post('send_code_verification', [UserController::class,'send_code_verification']);
     Route::post('/logout', [UserController::class, 'logout']);
     Route::post('updatePassword', [UserController::class,'updatePassword']);
 
@@ -69,14 +69,18 @@ Route::middleware('auth:sanctum')->group(function ()
 
     Route::resource('twitter', TwitterController::class);
     Route::resource('youtube', YoutubeController::class);
-});
-
-Route::group(['middleware' => ['admin','auth:sanctum']], function () {
+    
     Route::resource('services', ServiceController::class);
     Route::get('/users/search/{name}', [UserController::class, 'search']);
     Route::resource('roles', RoleController::class);
     Route::resource('permissions', PermissionController::class);
+
+    Route::resource('rolePermissions', RolesPermissionsController::class);
+    Route::post('/assignUserToRoles/{userId}', [RolesPermissionsController::class, 'assignUserToRoles']);
+    Route::post('/assignRoleToPermissions/{role_id}', [RolesPermissionsController::class, 'assignRoleToPermissions']);
 });
+
+// Route::group(['middleware' => ['admin','auth:sanctum']], function () {});
 
 Route::middleware('web')->group(function () {
 

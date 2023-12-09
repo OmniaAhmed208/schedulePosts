@@ -143,7 +143,7 @@ class PostService
 
     public function publishPost($requestData, $images, $youtubeVideoPath, $twitterVideoPath)
     {
-        $services = [];
+        $services = []; $account_type='';
         $allServices = settingsApi::all();
         $services = [];
         foreach($allServices as $service){
@@ -152,12 +152,15 @@ class PostService
 
         $accountsID = $requestData->accounts_id;
         $selectedApps=[];
-        foreach($accountsID as $id){
-            $accounts = Api::where('account_id',$id)->where('creator_id', Auth::user()->id)->get();
-            foreach($accounts as $account){
-                $account_type = $account->account_type;
+
+        if($accountsID != null){
+            foreach($accountsID as $id){
+                $accounts = Api::where('account_id',$id)->where('creator_id', Auth::user()->id)->get();
+                foreach($accounts as $account){
+                    $account_type = $account->account_type;
+                }
+                $selectedApps[] = $account_type;
             }
-            $selectedApps[] = $account_type;
         }
         // Create an array of app types based on the selected apps
         // $selectedApps = array_intersect($selectedApps, $services);
@@ -250,7 +253,7 @@ class PostService
     //         //             file_get_contents($img),
     //         //             $filename
     //         //         )->post("https://graph.facebook.com/v12.0/{$pageId}/photos", [
-    //         //             'message' => $requestData->postData,
+    //         //             'message' => $requestData->content,
     //         //             'privacy' => '{"value": "EVERYONE"}',
     //         //             'access_token' => $pageToken,
     //         //         ]);
@@ -278,14 +281,14 @@ class PostService
     //                 file_get_contents($img),
     //                 $filename
     //             )->post("https://graph.facebook.com/v12.0/{$pageId}/photos", [
-    //                 'message' => $requestData->postData,
+    //                 'message' => $requestData->content,
     //                 'privacy' => '{"value": "EVERYONE"}',
     //                 'access_token' => $pageToken,
     //             ]);
     //         }
     //         else {
     //             $response = Http::post($url, [
-    //                 'message' => $requestData->postData,
+    //                 'message' => $requestData->content,
     //                 'link' => $requestData->link,
     //                 // 'privacy' => '{"value": "EVERYONE"}',
     //                 'access_token' => $pageToken,
@@ -320,7 +323,7 @@ class PostService
             foreach ($accounts as $account) {
                 $facebookPageToken = $account->token_secret;
 
-                $text = $requestData['postData'] ?? '';
+                $text = $requestData['content'] ?? '';
 
                 $fb = new Facebook([
                     'app_id' => $client_id,
@@ -407,7 +410,7 @@ class PostService
                 $twitterTokenSecret = $account->token_secret;
     
                 // Modify the text to include a unique identifier
-                $text = $requestData['postData'] ?? '';
+                $text = $requestData['content'] ?? '';
     
                 $connection = new TwitterOAuth($consumer_key, $consumer_secret, $twitterToken, $twitterTokenSecret);
                 $connected = $connection->get("account/verify_credentials");
@@ -570,7 +573,7 @@ class PostService
                 if($client->getAccessToken()) {
                     $snippet = new Google_Service_YouTube_VideoSnippet();
                     $snippet->setTitle($requestData->videoTitle);
-                    $snippet->setDescription($requestData->postData);
+                    $snippet->setDescription($requestData->content);
                     // $snippet->setTags(array("tag1","tag2"));
                     $snippet->setTags($tags);
                     $snippet->setCategoryId($category_id);
@@ -620,7 +623,7 @@ class PostService
         $accessToken = 'EAAS9OZAZBDis4BO9EwYkPxfZAr7ZCq0qiI0XMibHk4eMYN6jHDTZC0B43lned3EL9ZCEPROCWgdLKe81lELqjIiZBgZAHBjCb5Ys6bZClGzcsZAxGsApn1DA2rcjFrCCC8xltvo3ioZCkqb2tai3jXuyJbuFbru4s3Nojjf8a4QXxfusOekfwjatgUeYgrgB0EYtSUXBpzl8vBeuZCnUbMmTkAZDZD'; // Replace with your actual access token
         $pageId = '17841453423356345';
         $imageUrl = 'https://i.ibb.co/j5jStSm/photo2.png';
-        $caption = $requestData->postData;
+        $caption = $requestData->content;
 
         try {
 

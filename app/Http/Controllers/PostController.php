@@ -38,8 +38,9 @@ class PostController extends Controller
 
     public function store(Request $request)
     {
+        dd($request);
         $validator = $request->validate([
-            'postData' => $request->has('images') || $request->has('video') ? 'max:5000' : 'required|max:5000',
+            'content' => $request->images || $request->video ? 'max:5000' : 'required|max:5000',
             // 'video' => 'mimetypes:video/quicktime,video/mp4,video/mpeg,video/mpg,video/mov,video/avi,video/webm',
             'images.*' => function ($attribute, $value, $fail) {
                 $allowedExtensions = ['jpeg', 'jpg', 'png'];
@@ -158,7 +159,7 @@ class PostController extends Controller
         $allAccountsData = [];
         foreach($accountsData as $account){
             $account['status'] = $status;
-            $account['content'] = $request->postData ?? '';
+            $account['content'] = $request->content ?? '';
             $account['link'] = $request->link;
             $account['scheduledTime'] = $postTime;
 
@@ -245,27 +246,27 @@ class PostController extends Controller
         $post = publishPost::find($id);
 
         $validator = $request->validate([
-            'postData' => 'max:5000',
+            'content' => 'max:5000',
             'video' => 'mimetypes:video/mov,video/mp4,video/mpg,video/mpeg,video/avi,video/webm',
             'images' => 'mimetypes: image/png,image/jpg,image/jpeg',
         ]);
 
         $validationRules = [];
 
-        if($request->postData == '')
+        if($request->content == '')
         {
             if(!($request->has('images')) && !($request->has('video')) && !($request->oldImages)){
-                $validationRules['postData'] = 'required';
+                $validationRules['content'] = 'required';
             }
             else{
-                unset($validationRules['postData']);
+                unset($validationRules['content']);
             }
         }
 
         if($post->account_type == 'youtube'){
             $validationRules['videoTitle'] = 'required|string';
             $validationRules['video'] = 'required|file|mimetypes:video/*';
-            $validationRules['postData'] = 'max:5000|string';
+            $validationRules['content'] = 'max:5000|string';
         }
 
         $request->validate($validationRules);
@@ -286,7 +287,7 @@ class PostController extends Controller
         }
 
         $post->update([
-            'content' => $request->postData,
+            'content' => $request->content,
             'link' => $request->link,
         ]);
 

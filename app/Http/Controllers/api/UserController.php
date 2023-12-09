@@ -25,11 +25,39 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::all();
+        $users = User::with(['roles' => function ($query) {
+            $query->select('color', 'name');
+        }])->get();
+        
+        $userData = [];
+        
+        foreach ($users as $user) {
+            $id = $user->id;
+            $name = $user->name;
+            $email = $user->email;
+            $rolesData = [];
 
+            foreach ($user->roles as $role) {
+                $rolesData[] = [
+                    'role' => $role->name,
+                    'color' => $role->color,
+                ];
+            }
+        
+            $userData[] = [
+                'id' => $id,
+                'name' => $name,
+                'email' => $email,
+                'roles' => $rolesData,
+            ];
+        }
+        
+        $roles = Role::all();
+        
         return response()->json([
             'message' => count($users) . ' users found',
-            'data' => $users,
+            'users' => $userData,
+            'roles' => $roles,
             'status' => true
         ], 200);
     }
@@ -146,7 +174,7 @@ class UserController extends Controller
         try {
             $user = $request->user();
 
-            if ($user->email_verified_at) {
+            if ($user->email_verified_at != null) {
                 return response()->json([
                     'message' => 'User is already verified',
                     'status' => false,
@@ -156,8 +184,15 @@ class UserController extends Controller
             $token = rand(100000, 999999);
             $user->update(['verification_token' => $token]);
 
-            $cc = User::where('email', $request->email)->first();
-            $bcc = User::where('email', $request->email)->first();
+            // Check if the user exists before retrieving email attributes
+            $cc = $bcc = null;
+            $existingUser = User::where('email', $request->email)->first();
+
+            if ($existingUser) {
+                $cc = $existingUser;
+                $bcc = $existingUser;
+            }
+
             Mail::to($request->email)
                 ->cc($cc)
                 ->bcc($bcc)
@@ -167,8 +202,6 @@ class UserController extends Controller
                 'message' => 'code sent',
                 'status' => true,
             ], 200);
-
-            //after code send it to email_verification method
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => $th->getMessage(),
@@ -176,45 +209,6 @@ class UserController extends Controller
             ], 500);
         }
     }
-
-    // public function send_code_verification(Request $request){
-    //     $validator = Validator::make($request->all(), [
-    //         'email' => 'required',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'message' => 'Validation error',
-    //             'errors' => $validator->errors(),
-    //             'status' => false
-    //         ], 422);
-    //     }
-    //     $user = User::where('email', $request->email)->first();
-        
-    //     if ($user->email_verified_at) {
-    //         return response()->json([
-    //             'message' => 'User is already verified',
-    //             'status' => false,
-    //         ], 400);
-    //     }
-        
-    //     $token = rand(100000, 999999);
-    //     $user = User::create([
-    //         'verification_token' => $token,
-    //     ]);
-
-    //     $cc = User::where('email', $request->email)->first();
-    //     $bcc = User::where('email', $request->email)->first();
-    //     Mail::to($request->user())
-    //         ->cc($cc)
-    //         ->bcc($bcc)
-    //         ->send(new VerifyEmail($token));
-
-    //     return response()->json([
-    //         'message' => 'code sent in email',
-    //         'status' => true
-    //     ], 200);
-    // }
 
     public function login(Request $request)
     {
