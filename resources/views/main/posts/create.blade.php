@@ -43,9 +43,11 @@
                                 <div class="container">
                                     <div class="photoSec previewSec pb-5 pt-4 d-flex align-items-center"></div>
 
-                                    <progress id="uploadProgress" value="0" max="100"></progress>
-                                    <span id="progressPercentage"></span>
-                                    <i class="bx bx-trash stopUploading text-danger" style="cursor:pointer"></i>
+                                    <div class="progressbar">
+                                        <progress id="uploadProgress" value="0" max="100"></progress>
+                                        <span id="progressPercentage"></span>
+                                        <i class="bx bx-trash stopUploading text-danger" style="cursor:pointer"></i>
+                                    </div>
                                     
                                     <div class="card py-2 px-4 d-flex flex-row justify-content-between align-items-center">
                                         <p class="m-0">Add to your post</p>
@@ -170,9 +172,12 @@
 @php
     $userId = Auth::user()->id;
 @endphp
+
 <script>
-    $(document).ready(function () {
+    $(document).ready(function () 
+    {
         var xhr; // Declare xhr globally
+        $('.progressbar').hide();
         $('.stopUploading').hide();
         $('#postImage, #postVideo').change(function () {
             var formData = new FormData();
@@ -191,6 +196,7 @@
 
             xhr.upload.addEventListener('progress', function (event) {
                 if (event.lengthComputable) {
+                    $('.progressbar').show();
                     var percentComplete = (event.loaded / event.total) * 100;
                     $('#uploadProgress').val(percentComplete);
                     document.getElementById('progressPercentage').innerHTML = Math.round(percentComplete) + '%';
@@ -214,6 +220,9 @@
                         document.querySelector('#postVideo').value = '';
                     }
                     $('#postImage, #postVideo').removeAttr('disabled');
+                    document.getElementById('progressPercentage').innerHTML = '0 %';
+                    $('.progressbar').hide();
+                    $('#uploadProgress').val(0);
                     $('.stopUploading').hide();
                 } else {
                     console.error('Request failed with status:', xhr.status);
@@ -235,8 +244,9 @@
                 xhr.abort();
                 $('#uploadProgress').val(0);
                 document.getElementById('progressPercentage').innerHTML = '0 %';
+                $('.progressbar').hide();
                 $('.stopUploading').hide();
-                $('#postImage, #postVideo').val(''); // Clear the file input value
+                $('#postImage, #postVideo').val(''); 
                 $('#postImage, #postVideo').removeAttr('disabled');
                 console.log('File upload aborted');
             } else {
@@ -244,58 +254,38 @@
             }
         });
 
-
-        // Function to handle file destroy
-        function destroyFile() {
-            var csrfToken = $('meta[name="csrf-token"]').attr('content');
-            $.ajax({
-                type: 'DELETE',
-                url: '{{ url('removeFiles') }}',
-                data: { file: 'filename_to_be_deleted' }, // Pass the filename or data needed for deletion
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken
-                },
-                success: function(response) {
-                    console.log(response);
-                },
-                error: function(error) {
-                    console.error('Delete request failed:', error);
-                }
-            });
-        }
-
         function displayUploadedImages(imageNames) {
             var container = document.querySelector('.previewSec');
             for (var i = 0; i < imageNames.length; i++) {
                 var img = "{{ asset('storage/user') }}" + "<?php echo $userId?>" +'/postImages/' + imageNames[i]; 
                 var html = `<img src="${img}" alt="Uploaded Image">
-                <span aria-hidden="true" style="cursor:pointer;margin: 0 10px;" onclick="closeFile(this)">&times;</span>`;
+                <span aria-hidden="true" style="cursor:pointer;margin: 0 10px;" onclick="destroyFile(this,'${imageNames[i]}')">&times;</span>`;
                 container.innerHTML += html;
             }
         }
-
+        
         var uploadedImages = [];
         function collectUploadedImages(imageNames) {
             var postImagesArray = document.querySelector('.postImagesArray');
             if (imageNames && Array.isArray(imageNames)) {
                 uploadedImages = uploadedImages.concat(imageNames);
             }
-
+            
             postImagesArray.innerHTML = '';
             uploadedImages.forEach(function (imageName) {
                 var html = `<input type="hidden" class="form-control" name="images[]" value="${imageName}">`;
                 postImagesArray.innerHTML += html;
             });
         }
-
+        
         function displayUploadedVideo(videoName) {
             var container = document.querySelector('.previewSec');
             var video = "{{ asset('storage/user') }}" + "<?php echo $userId?>" +'/postVideo/' + videoName; 
             var html = `<video src="${video}"></video>
-            <span aria-hidden="true" style="cursor:pointer;margin: 0 10px;" onclick="closeFile(this)">&times;</span>`;
+            <span aria-hidden="true" style="cursor:pointer;margin: 0 10px;" onclick="destroyFile(this,'${videoName}')">&times;</span>`;
             container.innerHTML += html;
         }
-
+        
         var uploadedVideo = '';
         function collectUploadedVideo(videoName) {
             var postVideo = document.querySelector('.postVideo');
@@ -305,16 +295,34 @@
                 postVideo.innerHTML += html;
             }
         }
-
-        function closeFile(closeButton) {
-            var container = document.querySelector('.previewSec'); // Find the parent div
-            var file = closeButton.previousElementSibling; // Find the img element next to the clicked span (close button)
-            if (file) {
-                container.removeChild(file);
-                container.removeChild(closeButton);
-            }
-        }
+        
     });
+    
+    // Function to handle file destroy
+    function destroyFile(closeButton,fileName) {
+        var csrfToken = $('meta[name="csrf-token"]').attr('content');
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/removeFiles', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken); // Include CSRF token
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    console.log(xhr.responseText);
+                    var container = document.querySelector('.previewSec'); // Find the parent div
+                    var file = closeButton.previousElementSibling; // Find the img element next to the clicked span (close button)
+                    if (file) {
+                        container.removeChild(file);
+                        container.removeChild(closeButton);
+                    }
+                } else {
+                    console.error('Failed to delete file:', xhr.status);
+                }
+            }
+        };
+        xhr.send('filname=' + encodeURIComponent(fileName));
+    }
+        
 </script>
 
 <script>
@@ -348,11 +356,11 @@
                 if (youtubeAccounts.length > 0) {
                     youtubeSelectBlock.style.display = 'block';
                     youtubeSelectBlock.querySelector('#videoTitle').setAttribute('required', 'required');
-                    // document.querySelector('#postVideo').setAttribute('required', 'required');
+                    document.querySelector('#postVideo').setAttribute('required', 'required');
                 } else {
                     youtubeSelectBlock.style.display = 'none';
                     youtubeSelectBlock.querySelector('#videoTitle').removeAttribute('required');
-                    // document.querySelector('#postVideo').removeAttribute('required');
+                    document.querySelector('#postVideo').removeAttribute('required');
                 }
             } else {
                 youtubeSelectBlock.style.display = 'none';

@@ -51,16 +51,16 @@ class UploadFilesController extends Controller
         return '';
     }
 
-    public function destroy()
+    public function destroy(Request $request)
     {
-        $tmp_file = UploadFiles::where('file', request()->getContent())->first();
+        $tmp_file = UploadFiles::where('file', $request->filname)->first();
 
         if($tmp_file){
             $user = 'user'.Auth::user()->id;
             $dir = $user . '/' . ($tmp_file->type === 'image' ? 'postImages' : 'postVideo');
             Storage::delete('public/'. $dir . '/' .$tmp_file->file);
             $tmp_file->delete();
-            return response('');
+            return 'deleted';
         }
     }
 }

@@ -57,7 +57,7 @@ Route::group(['middleware' => ['auth']], function ()
     Route::post('chartJS/{id}', [DashboardController::class,'chartJS']);
     
     Route::post('/uploadFiles', [UploadFilesController::class, 'store']);
-    Route::delete('/removeFiles', [UploadFilesController::class, 'destroy']);
+    Route::match(['post', 'delete'], '/removeFiles', [UploadFilesController::class, 'destroy']);
 
     Route::resource('services', ServiceController::class)->middleware('permission:services');
     Route::resource('users', UserController::class);
