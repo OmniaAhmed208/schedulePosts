@@ -53,18 +53,14 @@
                                         <p class="m-0">Add to your post</p>
                                         <div class="d-flex position-relative">
                                             <div class="file position-absolute" id="imgFile">
-                                                {{-- <input type="file" class="form-control position-absolute" id="postImage" name="images[]" 
-                                                onchange="getImagePreview(event)" accept=".jpg, .jpeg, .png, .gif" multiple> --}}
-                                                <input type="file" class="form-control position-absolute" id="postImage" name="images[]" 
+                                                <input type="file" class="form-control position-absolute" id="postImage" name="imagesFile[]" 
                                                 accept=".jpg, .jpeg, .png, .gif" multiple>
                                                 <div class="postImagesArray"></div>
-                                                <div class="postVideo"></div>
                                                 <i class="bx bx-image text-success px-2 fs-5"></i>
                                             </div>
                                             <div class="file position-absolute" id="videoFile">
-                                                {{-- <input type="file" class="form-control position-absolute" name="video" id="postVideo" onchange="getVideoPreview(event)" accept="video/*"> --}}
-                                                <input type="file" class="form-control position-absolute" name="video" id="postVideo" accept="video/*">
-
+                                                <input type="file" class="form-control position-absolute" name="videoFile" id="postVideo" accept="video/*">
+                                                <div class="postVideo"></div>
                                                 <i class="bx bx-video text-primary px-2 fs-5"></i>
                                             </div>
                                             <i class="bx bx-link text-info mx-1 mt-1 postLink fs-5" data-toggle="modal" data-target="#postData_link"></i>
@@ -168,7 +164,6 @@
 {{-- upload video or image with progress bar in database --}}
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <meta name="csrf-token" content="{{ csrf_token() }}">
-
 @php
     $userId = Auth::user()->id;
 @endphp
@@ -252,68 +247,80 @@
             } else {
                 console.log('No active file upload to abort');
             }
-        });
+        });        
+    });
 
-        function displayUploadedImages(imageNames) {
-            var container = document.querySelector('.previewSec');
-            for (var i = 0; i < imageNames.length; i++) {
-                var img = "{{ asset('storage/user') }}" + "<?php echo $userId?>" +'/postImages/' + imageNames[i]; 
-                var html = `<img src="${img}" alt="Uploaded Image">
-                <span aria-hidden="true" style="cursor:pointer;margin: 0 10px;" onclick="destroyFile(this,'${imageNames[i]}')">&times;</span>`;
-                container.innerHTML += html;
-            }
-        }
-        
-        var uploadedImages = [];
-        function collectUploadedImages(imageNames) {
-            var postImagesArray = document.querySelector('.postImagesArray');
-            if (imageNames && Array.isArray(imageNames)) {
-                uploadedImages = uploadedImages.concat(imageNames);
-            }
-            
-            postImagesArray.innerHTML = '';
-            uploadedImages.forEach(function (imageName) {
-                var html = `<input type="hidden" class="form-control" name="images[]" value="${imageName}">`;
-                postImagesArray.innerHTML += html;
-            });
-        }
-        
-        function displayUploadedVideo(videoName) {
-            var container = document.querySelector('.previewSec');
-            var video = "{{ asset('storage/user') }}" + "<?php echo $userId?>" +'/postVideo/' + videoName; 
-            var html = `<video src="${video}"></video>
-            <span aria-hidden="true" style="cursor:pointer;margin: 0 10px;" onclick="destroyFile(this,'${videoName}')">&times;</span>`;
+    var uploadedImages = [];
+    var uploadedVideo = '';
+    function displayUploadedImages(imageNames) {
+        var container = document.querySelector('.previewSec');
+        for (var i = 0; i < imageNames.length; i++) {
+            var img = "{{ asset('storage/user') }}" + "<?php echo $userId?>" +'/postImages/' + imageNames[i]; 
+            var html = `<img src="${img}" alt="Uploaded Image">
+            <span aria-hidden="true" style="cursor:pointer;margin: 0 10px;" onclick="destroyFile(this,'${imageNames[i]}')">&times;</span>`;
             container.innerHTML += html;
         }
-        
-        var uploadedVideo = '';
-        function collectUploadedVideo(videoName) {
-            var postVideo = document.querySelector('.postVideo');
-            if (videoName) {
-                postVideo.innerHTML = '';
-                var html = `<input type="hidden" class="form-control" name="video" value="${videoName}">`;
-                postVideo.innerHTML += html;
-            }
+    }
+    
+    function collectUploadedImages(imageNames) {
+        var postImagesArray = document.querySelector('.postImagesArray');
+        if (imageNames && Array.isArray(imageNames)) {
+            uploadedImages = uploadedImages.concat(imageNames);
         }
         
-    });
+        postImagesArray.innerHTML = '';
+        uploadedImages.forEach(function (imageName) {
+            var html = `<input type="hidden" class="form-control" name="images[]" value="${imageName}">`;
+            postImagesArray.innerHTML += html;
+        });
+        console.log(uploadedImages)
+    }
     
-    // Function to handle file destroy
-    function destroyFile(closeButton,fileName) {
+    function displayUploadedVideo(videoName) {
+        var container = document.querySelector('.previewSec');
+        var video = "{{ asset('storage/user') }}" + "<?php echo $userId?>" +'/postVideo/' + videoName; 
+        var html = `<video src="${video}"></video>
+        <span aria-hidden="true" style="cursor:pointer;margin: 0 10px;" onclick="destroyFile(this,'${videoName}')">&times;</span>`;
+        container.innerHTML += html;
+    }
+    
+    function collectUploadedVideo(videoName) {
+        var postVideo = document.querySelector('.postVideo');
+        if (videoName) {
+            postVideo.innerHTML = '';
+            var html = `<input type="hidden" class="form-control" name="video" value="${videoName}">`;
+            postVideo.innerHTML += html;
+        }
+    }
+    
+    function destroyFile(closeButton,fileName) 
+    {
         var csrfToken = $('meta[name="csrf-token"]').attr('content');
         var xhr = new XMLHttpRequest();
         xhr.open('POST', '/removeFiles', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken); // Include CSRF token
+        xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
                 if (xhr.status === 200) {
                     console.log(xhr.responseText);
-                    var container = document.querySelector('.previewSec'); // Find the parent div
+                    var container = document.querySelector('.previewSec');
                     var file = closeButton.previousElementSibling; // Find the img element next to the clicked span (close button)
                     if (file) {
                         container.removeChild(file);
                         container.removeChild(closeButton);
+                        var index = uploadedImages.indexOf(fileName);
+                        if (fileName.endsWith('.mp4')) {
+                            // Video file
+                            uploadedVideo = '';
+                            collectUploadedVideo(uploadedVideo);
+                        } else {
+                            var index = uploadedImages.indexOf(fileName);
+                            if (index !== -1) {
+                                uploadedImages.splice(index, 1);
+                            }
+                            collectUploadedImages(uploadedImages);
+                        }
                     }
                 } else {
                     console.error('Failed to delete file:', xhr.status);
@@ -321,8 +328,7 @@
             }
         };
         xhr.send('filname=' + encodeURIComponent(fileName));
-    }
-        
+    }    
 </script>
 
 <script>
@@ -356,11 +362,11 @@
                 if (youtubeAccounts.length > 0) {
                     youtubeSelectBlock.style.display = 'block';
                     youtubeSelectBlock.querySelector('#videoTitle').setAttribute('required', 'required');
-                    document.querySelector('#postVideo').setAttribute('required', 'required');
+                    // document.querySelector('#postVideo').setAttribute('required', 'required');
                 } else {
                     youtubeSelectBlock.style.display = 'none';
                     youtubeSelectBlock.querySelector('#videoTitle').removeAttribute('required');
-                    document.querySelector('#postVideo').removeAttribute('required');
+                    // document.querySelector('#postVideo').removeAttribute('required');
                 }
             } else {
                 youtubeSelectBlock.style.display = 'none';

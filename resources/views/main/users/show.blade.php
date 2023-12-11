@@ -119,9 +119,9 @@
                             <div class="info-box-icon w-100 d-flex flex-column align-items-center position-relative">
 
                             @if ($account['account_pic'])
-                                <img src="{{ asset($account['account_pic']) }}" class="rounded-circle p-1 {{ $account['account_type'] }}App-border" alt="User Image">
+                                <img src="{{ asset($account['account_pic']) }}" class="rounded-circle imgAppProfile p-1 {{ $account['account_type'] }}App-border" alt="User Image">
                             @else
-                                <img src="{{ asset('tools/dist/img/user.png') }}" class="rounded-circle p-1 {{ $account['account_type'] }}App-border" alt="User Image">
+                                <img src="{{ asset('tools/dist/img/user.png') }}" class="rounded-circle imgAppProfile p-1 {{ $account['account_type'] }}App-border" alt="User Image">
                             @endif
                             <p class="mt-3">{{ $account['account_name'] }}</p>
                             <span class="position-absolute mt-5 {{ $account['account_type'] }}App" style="background: transparent">

@@ -8,14 +8,13 @@ use App\Models\PostImages;
 use App\Models\PostVideos;
 use App\Models\publishPost;
 use App\Models\settingsApi;
-use App\Models\UploadFiles;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Services\PostService;
 use App\Models\youtube_category;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class PostController extends Controller
@@ -38,9 +37,8 @@ class PostController extends Controller
 
     public function store(Request $request)
     {
-        dd($request);
         $validator = $request->validate([
-            'content' => $request->images || $request->video ? 'max:5000' : 'required|max:5000',
+            'content' => 'max:5000',
             // 'video' => 'mimetypes:video/quicktime,video/mp4,video/mpeg,video/mpg,video/mov,video/avi,video/webm',
             'images.*' => function ($attribute, $value, $fail) {
                 $allowedExtensions = ['jpeg', 'jpg', 'png'];
@@ -59,11 +57,14 @@ class PostController extends Controller
         $validationRules = [];
         $accountsData = [];
 
+        $validationRules['content'] = 'required';
+
         foreach($accountsID as $id){
             $accounts = Api::where('account_id',$id)->where('creator_id', Auth::user()->id)->get();
             foreach($accounts as $account){
                 $account_type = $account->account_type;
                 if($account_type == 'youtube'){
+                    unset($validationRules['content']);
                     $validationRules['videoTitle'] = 'required';
                     $validationRules['video'] = 'required';
                 }
@@ -73,9 +74,11 @@ class PostController extends Controller
                     $validationRules['images'] = 'required';
                     $validationRules['video'] = 'required';
                     if($request->images){
+                        unset($validationRules['content']);
                         unset($validationRules['video']);
                     }
                     if($request->video){
+                        unset($validationRules['content']);
                         unset($validationRules['images']);
                     }
                 }
@@ -235,41 +238,61 @@ class PostController extends Controller
         $videos = publishPost::find($id)->postVideos()->get();
         $channels = Api::all()->where('account_type', 'youtube')->where('creator_id', Auth::user()->id);
         $youtubeCategories = youtube_category::all();
-
+        
         if($post){
             return view('main.posts.edit',compact('post','images','videos','youtubeCategories'));
         }
     }
-
+    
     public function update(Request $request,$id)
     {
+        // dd($request);
         $post = publishPost::find($id);
-
         $validator = $request->validate([
             'content' => 'max:5000',
-            'video' => 'mimetypes:video/mov,video/mp4,video/mpg,video/mpeg,video/avi,video/webm',
-            'images' => 'mimetypes: image/png,image/jpg,image/jpeg',
+            // 'content' => !($request->images) && !($request->video) && !($request->oldImages) ? 'required|max:5000' : 'max:5000',
+            'images.*' => function ($attribute, $value, $fail) {
+                $allowedExtensions = ['jpeg', 'jpg', 'png'];
+                $extension = pathinfo($value, PATHINFO_EXTENSION);
+
+                if (!in_array($extension, $allowedExtensions)) {
+                    $fail("The $attribute field must have a valid image extension (jpeg, jpg, png).");
+                }
+            },
+            'videoTitle' => $post->account_type === 'youtube' ? 'required|string' : '',
+            // 'video' => $post->account_type === 'youtube' ? 'required' : '',
         ]);
 
-        $validationRules = [];
+        $validationRules =  [];
 
-        if($request->content == '')
+        if($request->content == '' || $request->content == null)
         {
-            if(!($request->has('images')) && !($request->has('video')) && !($request->oldImages)){
-                $validationRules['content'] = 'required';
-            }
-            else{
-                unset($validationRules['content']);
+            if($post->account_type != 'youtube'){
+                if(!($request->images) && !($request->video) && (!($request->oldImages) || !($request->oldVideos))){
+                    $validationRules['content'] = 'required';
+                }
+                else{
+                    unset($validationRules['content']);
+                }
             }
         }
-
+        
         if($post->account_type == 'youtube'){
-            $validationRules['videoTitle'] = 'required|string';
-            $validationRules['video'] = 'required|file|mimetypes:video/*';
-            $validationRules['content'] = 'max:5000|string';
+            if(!($request->oldVideos)){
+                $validationRules['video'] = 'required';
+            }
         }
 
-        $request->validate($validationRules);
+        $validator =  Validator::make($request->all(), $validationRules);
+
+        if ($validator->fails()) {
+            if ($request->images)
+            {$removeImagesUploaded = $this->postStore->removeImagesUploaded($request->images);}
+            if ($request->video)
+            {$removeVideoUploaded = $this->postStore->removeVideoUploaded($request->video);}
+            
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
 
         $time = $this->postStore->userTime();
         $userTimeNow = $time['userTimeNow'];
@@ -304,19 +327,27 @@ class PostController extends Controller
 
         if ($request->oldImages) {
             $allPostImages = PostImages::where('post_id', $post->id)->get();
-
             if (!empty($allPostImages)) {
                 foreach ($allPostImages as $postImage) {
                     $imagesID[] = $postImage->id;
                 }
             }
-
+            
             $rowsId = array_intersect($request->oldImages, $imagesID);
-
             $imagesToDelete = PostImages::where('post_id', $post->id)
-                ->whereNotIn('id', $rowsId)
-                ->get();
+            ->whereNotIn('id', $rowsId)
+            ->get();
+            $imagesWantToDelete = $imagesToDelete;
             $imagesToDelete->each->delete();
+            $this->removeImageFromStorage($imagesWantToDelete);
+        }
+        else{
+            $imagesToDelete = PostImages::where('post_id', $post->id)->get();
+            if($imagesToDelete){
+                $imagesWantToDelete = $imagesToDelete;
+                $imagesToDelete->each->delete();
+                $this->removeImageFromStorage($imagesWantToDelete);
+            }
         }
 
         if ($request->oldVideos) {
@@ -333,19 +364,26 @@ class PostController extends Controller
             $videosToDelete = PostVideos::where('post_id', $post->id)
                 ->whereNotIn('id', $rowsId)
                 ->get();
+            $videoWantToDelete = $videosToDelete;
             $videosToDelete->each->delete();
+            $this->removeVideoFromStorage($videoWantToDelete);
+        }
+        else{
+            $videosToDelete = PostVideos::where('post_id', $post->id)->get();
+            if($videosToDelete){
+                $videoWantToDelete = $videosToDelete;
+                $videosToDelete->each->delete();
+                $this->removeVideoFromStorage($videoWantToDelete);
+            }
         }
 
-        if($request->file('images') || $request->file('video')){
-
+        if($request->images || $request->video){
             $imgUpload = []; 
-            if($request->file('images')){
-                $images = $request->file('images');
-                $imgUpload = $this->postStore->saveImages($images);
-
+            if($request->images)
+            {
+                $imgUpload = $this->postStore->saveImages($request->images);
                 if (is_array($imgUpload) && !empty($imgUpload)) {
                     foreach ($imgUpload as $img) {
-                        $postImages = PostImages::where('post_id',$post->id)->get();
                         PostImages::create([
                             'post_id' => $post->id,
                             'creator_id' => Auth::user()->id,
@@ -355,10 +393,9 @@ class PostController extends Controller
                 }
             }
 
-            if ($request->hasfile('video'))
+            if ($request->video)
             {
-                $video = $request->file('video');
-                $videoUpload = $this->postStore->saveVideo($video);
+                $videoUpload = $this->postStore->saveVideo($request->video);
                 $storageVideo = $videoUpload['storageVideo'];
 
                 if ($storageVideo) {
@@ -373,20 +410,71 @@ class PostController extends Controller
 
         return back()->with('success', 'Post updated successfully');
     }
-
+    
     public function destroy($postId)
     {
         $post = publishPost::find($postId);
-
-        if ($post && $post->status == 'pending') {
+        
+        if ($post && $post->status == 'pending') 
+        {
+            $images = publishPost::find($postId)->postImages()->get();
+            $videos = publishPost::find($postId)->postVideos()->get();
+            
             $post->deletePostWithVideos();
             $post->deletePostWithImages();
-
             $post->delete();
+            
+            if($images){
+                $this->removeImageFromStorage($images);
+            }
+            if($videos){
+                $this->removeVideoFromStorage($videos);
+            }
             return back()->with('success', 'Post deleted successfully');
         }
         else{
             return back()->with('error', "Post can't remove, it's already published");
+        }
+    }
+
+    public function removeImageFromStorage($imagesWantToDelete){
+        // remove image from storage folder if not app use it again
+        $allImages=[];
+        $allImagesTable = PostImages::all();
+        if (!empty($allImagesTable)) {
+            foreach ($allImagesTable as $img) {
+                $allImages[] = $img->image;
+            }
+
+            foreach ($imagesWantToDelete as $image) {
+                $imgUrl = $image->image;
+                $imgExist = in_array($imgUrl, $allImages);
+                if(!$imgExist){
+                    $rm_urlPath = parse_url($imgUrl, PHP_URL_PATH);
+                    $path = Str::replace('/storage/', '', $rm_urlPath);
+                    unlink(storage_path('app/public/'.$path));
+                }
+            }
+        }
+    }
+
+    public function removeVideoFromStorage($videoWantToDelete){
+        $allVideos=[];
+        $allVideosTable = PostVideos::all();
+        if (!empty($allVideosTable)) {
+            foreach ($allVideosTable as $video) {
+                $allVideos[] = $video->video;
+            }
+
+            foreach ($videoWantToDelete as $video) {
+                $videoUrl = $video->video;
+                $imgExist = in_array($videoUrl, $allVideos);
+                if(!$imgExist){
+                    $rm_urlPath = parse_url($videoUrl, PHP_URL_PATH);
+                    $path = Str::replace('/storage/', '', $rm_urlPath);
+                    unlink(storage_path('app/public/'.$path));
+                }
+            }
         }
     }
 

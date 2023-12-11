@@ -539,6 +539,7 @@ class PostService
         $youtubeSettings = settingsApi::where('appType', 'youtube')->first();
         $client_id = $youtubeSettings['appID'];
         $client_secret = $youtubeSettings['appSecret'];
+        $allUploadsSuccessful = '';
 
         foreach($accountsID as $id){
             $accounts = Api::where('account_type', 'youtube')
@@ -569,6 +570,7 @@ class PostService
 
                 $tags = !empty($requestData->youtubeTags) ? explode(',', $requestData->youtubeTags) : ['tag1', 'tag2'];
                 $category_id = !empty($requestData->youtubeCategory) ? $requestData->youtubeCategory : '22';
+                $category_id ='22';
 
                 if($client->getAccessToken()) {
                     $snippet = new Google_Service_YouTube_VideoSnippet();
@@ -586,6 +588,7 @@ class PostService
                     $video->setSnippet($snippet);
                     $video->setStatus($status);
         
+                    dd($status);
                     try {
                         $obj = $youTubeService->videos->insert(
                             "status,snippet", 
@@ -604,14 +607,20 @@ class PostService
                         // dd ("Stack trace is ".$e->getTraceAsString());
                     }
                 }
-            }   
+            }  
+            
+            if ($allUploadsSuccessful) {
+                return 'postCreated'; // All uploads were successful
+            } else {
+                return 'postFailed'; // At least one upload failed
+            }
         }
        
-        if ($allUploadsSuccessful) {
-            return 'postCreated'; // All uploads were successful
-        } else {
-            return 'postFailed'; // At least one upload failed
-        }
+        // if ($allUploadsSuccessful) {
+        //     return 'postCreated'; // All uploads were successful
+        // } else {
+        //     return 'postFailed'; // At least one upload failed
+        // }
     } 
 
     public function instaPublish($requestData)

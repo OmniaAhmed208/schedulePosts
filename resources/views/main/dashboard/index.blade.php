@@ -243,7 +243,7 @@
                         </div>
 
                         <div class="d-flex justify-content-between p-4 px-3 bg-white">
-                            <div class="postData w-100">${post.content}</div>
+                            <div class="postData w-100">${post.content != null ? post.content : ''}</div>
                             ${postImage ? `<div class="w-50"><img src="${postImage}" alt="Image" class="popup-image w-100"/></div>` : ''}
                             ${postVideo ? `<div class="w-50"><video src="${postVideo}" alt="video" class="popup-image w-100"/></video></div>` : ''}
                         </div>

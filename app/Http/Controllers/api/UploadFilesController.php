@@ -46,7 +46,8 @@ class UploadFilesController extends Controller
                     'type' => 'image',
                 ]);
             }
-            return response()->json(['filenames' => $filenames]);
+
+            return response()->json(['images' => $filenames]);
         }
 
         if ($request->hasFile('video')) {
@@ -59,23 +60,26 @@ class UploadFilesController extends Controller
                 'file' => $filename,
                 'type' => 'video',
             ]);
-            return response()->json(['filename' => $filename]);
+            return response()->json(['video' => $filename]);
         }
 
         return response()->json(['message' => 'No files uploaded']);
     }
 
-
-    public function destroy()
+    public function destroy(Request $request)
     {
-        $tmp_file = UploadFiles::where('file', request()->getContent())->first();
+        $tmp_file = UploadFiles::where('file', $request->filname)->first();
 
         if($tmp_file){
             $user = 'user'.Auth::user()->id;
             $dir = $user . '/' . ($tmp_file->type === 'image' ? 'postImages' : 'postVideo');
             Storage::delete('public/'. $dir . '/' .$tmp_file->file);
             $tmp_file->delete();
-            return response('');
+
+            return response()->json([
+                'message' => 'file deleted successfully',
+                'status' => true
+            ],200);
         }
     }
 }
