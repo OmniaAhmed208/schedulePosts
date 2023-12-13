@@ -72,7 +72,10 @@ class FacebookController extends Controller
                 if($existingApp->account_pic != null){
                     $rm_urlPath = parse_url($existingApp->account_pic, PHP_URL_PATH);
                     $path = Str::replace('/storage/', '', $rm_urlPath);
-                    unlink(storage_path('app/public/'. $path));
+                    $filePath = storage_path('app/public/'. $path);
+                    if (file_exists($filePath)) {
+                        unlink($filePath);
+                    }
                 }
                 
                 $existingApp->update($userData);
@@ -661,7 +664,10 @@ class FacebookController extends Controller
                 if($existingApp->account_pic != null){
                     $rm_urlPath = parse_url($existingApp->account_pic, PHP_URL_PATH);
                     $path = Str::replace('/storage/', '', $rm_urlPath);
-                    unlink(storage_path('app/public/'. $path));
+                    $filePath = storage_path('app/public/'. $path);
+                    if (file_exists($filePath)) {
+                        unlink($filePath);
+                    }
                 }
                 
                 $existingApp->update($userData);

@@ -543,7 +543,10 @@ class PostController extends Controller
                 if(!$imgExist){
                     $rm_urlPath = parse_url($imgUrl, PHP_URL_PATH);
                     $path = Str::replace('/storage/', '', $rm_urlPath);
-                    unlink(storage_path('app/public/'.$path));
+                    $filePath = storage_path('app/public/'. $path);
+                    if (file_exists($filePath)) {
+                        unlink($filePath);
+                    }
                 }
             }
         }
@@ -563,7 +566,10 @@ class PostController extends Controller
                 if(!$imgExist){
                     $rm_urlPath = parse_url($videoUrl, PHP_URL_PATH);
                     $path = Str::replace('/storage/', '', $rm_urlPath);
-                    unlink(storage_path('app/public/'.$path));
+                    $filePath = storage_path('app/public/'. $path);
+                    if (file_exists($filePath)) {
+                        unlink($filePath);
+                    }
                 }
             }
         }

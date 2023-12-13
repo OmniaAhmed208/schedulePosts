@@ -108,7 +108,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         let roleBtns = document.querySelectorAll('[data-bs-target="#userToRoles"]');
         var form = document.getElementById('userToRolesForm');
-
+        
         roleBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 var user = JSON.parse(btn.getAttribute('data-user'));
@@ -124,6 +124,7 @@
 
                 // Populate checkboxes based on userRoles
                 const userRoles = <?php echo json_encode($user_roles); ?>;
+                console.log(userRoles);
                 const checkboxesForUser = document.querySelectorAll(`#userToRoles input[type="checkbox"][name="roles[]"]`);
                 checkboxesForUser.forEach(checkbox => {
                     const roleId = checkbox.value;

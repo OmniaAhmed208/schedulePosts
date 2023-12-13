@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\NewsLetter;
+use App\Models\Subscriber;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Mail\SubscriberEmail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class NewsLetterController extends Controller
@@ -53,6 +56,17 @@ class NewsLetterController extends Controller
             // 'color' => $request->color
         ]);
 
+        $subscribers = Subscriber::all();
+        foreach($subscribers as $subscriber){
+            $newsletter_message = 'New Newsletter at Social Media App';
+            $cc = $subscriber;
+            $bcc = $subscriber;
+            Mail::to($subscriber)
+            ->cc($cc)
+            ->bcc($bcc)
+            ->send(new SubscriberEmail($newsletter_message));
+        }
+
         return back()->with('success','The post created successfully');
     }
 
@@ -82,7 +96,10 @@ class NewsLetterController extends Controller
             if($newsLetter->image != null){
                 $rm_urlPath = parse_url($newsLetter->image, PHP_URL_PATH);
                 $path = Str::replace('/storage/', '', $rm_urlPath);
-                unlink(storage_path('app/public/'.$path));
+                $filePath = storage_path('app/public/'. $path);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
             }
             $image = $request->file('image');
             $filename = time() . '_' . $image->getClientOriginalName();
@@ -108,6 +125,14 @@ class NewsLetterController extends Controller
 
         if($newsLetter != null)
         {
+            if($newsLetter->image != null){
+                $rm_urlPath = parse_url($newsLetter->image, PHP_URL_PATH);
+                $path = Str::replace('/storage/', '', $rm_urlPath);
+                $filePath = storage_path('app/public/'. $path);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+            }
             $newsLetter->delete();
             return back()->with('success','The post deleted successfully');
         }

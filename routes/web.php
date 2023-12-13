@@ -67,6 +67,7 @@ Route::group(['middleware' => ['auth']], function ()
     Route::resource('facebook', FacebookController::class);
     Route::resource('twitter', TwitterController::class);
     Route::resource('youtube', YoutubeController::class);
+    Route::resource('instagram', InstagramController::class);
     Route::resource('youtubeCategories', YoutubeCategoryController::class);
     Route::resource('subscribers', SubscriberController::class)->only(['index'])->middleware('permission:subscribers.all');
     Route::resource('newsLetter', NewsLetterController::class); // permissions in controller

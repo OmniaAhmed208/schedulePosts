@@ -26,7 +26,10 @@ class AccountController extends Controller
         if($account->account_pic != null){
             $rm_urlPath = parse_url($account->account_pic, PHP_URL_PATH);
             $path = Str::replace('/storage/', '', $rm_urlPath);
-            unlink(storage_path('app/public/'. $path));
+            $filePath = storage_path('app/public/'. $path);
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
         }
         
         Api::where('account_id',$userId)->where('creator_id', Auth::user()->id)->delete(); // account_id => unique

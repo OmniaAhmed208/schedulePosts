@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\api;
 
 use App\Models\NewsLetter;
+use App\Models\Subscriber;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Mail\SubscriberEmail;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -57,6 +61,17 @@ class NewsLetterController extends Controller
             'image' => $storageImage
         ]);
 
+        $subscribers = Subscriber::all();
+        foreach($subscribers as $subscriber){
+            $newsletter_message = 'New Newsletter at Social Media App';
+            $cc = $subscriber;
+            $bcc = $subscriber;
+            Mail::to($subscriber)
+            ->cc($cc)
+            ->bcc($bcc)
+            ->send(new SubscriberEmail($newsletter_message));
+        }
+        
         return response()->json([
             'message' => 'The post created successfully',
             'status' => true,
@@ -97,6 +112,7 @@ class NewsLetterController extends Controller
         $storageImage = '';
 
         $oldImage = $newsLetter->oldImage;
+        
         if($oldImage != null){
             $storageImage = $oldImage;
             unset($validationRules['content']);
@@ -106,6 +122,16 @@ class NewsLetterController extends Controller
         {
             unset($validationRules['content']);
             $userFolder = 'user'.Auth::user()->id;
+
+            if($newsLetter->image != null){
+                $rm_urlPath = parse_url($newsLetter->image, PHP_URL_PATH);
+                $path = Str::replace('/storage/', '', $rm_urlPath);
+                $filePath = storage_path('app/public/'. $path);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+            }
+            
             $image = $request->file('image');
             $filename = time() . '_' . $image->getClientOriginalName();
             $image->storeAs('public/'.$userFolder.'/'.'newsLetter', $filename);
@@ -136,6 +162,15 @@ class NewsLetterController extends Controller
                 'message' => 'Post not found',
                 'status' => false
             ],401);
+        }
+
+        if($newsLetter->image != null){
+            $rm_urlPath = parse_url($newsLetter->image, PHP_URL_PATH);
+            $path = Str::replace('/storage/', '', $rm_urlPath);
+            $filePath = storage_path('app/public/'. $path);
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
         }
 
         $newsLetter->delete();

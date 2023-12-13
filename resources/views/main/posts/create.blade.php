@@ -279,7 +279,7 @@
     function displayUploadedVideo(videoName) {
         var container = document.querySelector('.previewSec');
         var video = "{{ asset('storage/user') }}" + "<?php echo $userId?>" +'/postVideo/' + videoName; 
-        var html = `<video src="${video}"></video>
+        var html = `<video src="${video}" controls></video>
         <span aria-hidden="true" style="cursor:pointer;margin: 0 10px;" onclick="destroyFile(this,'${videoName}')">&times;</span>`;
         container.innerHTML += html;
     }
@@ -327,7 +327,7 @@
                 }
             }
         };
-        xhr.send('filname=' + encodeURIComponent(fileName));
+        xhr.send('filename=' + encodeURIComponent(fileName));
     }    
 </script>
 

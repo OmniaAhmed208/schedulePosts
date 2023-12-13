@@ -339,7 +339,10 @@ class UserController extends Controller
             if ($user->image != null) {
                 $rm_urlPath = parse_url($user->image, PHP_URL_PATH);
                 $path = Str::replace('/storage/', '', $rm_urlPath);
-                unlink(storage_path('app/public/' . $path));
+                $filePath = storage_path('app/public/'. $path);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
             }
             $userFolder = 'user'.Auth::user()->id;
             $image = $request->file('image');
@@ -486,6 +489,7 @@ class UserController extends Controller
     public function resetPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'email' => 'required',
             'password' => [
                 'required', 'nullable', 'confirmed', 'min:8', // confirmed ===> password_confirmation
                 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
@@ -500,7 +504,7 @@ class UserController extends Controller
             ], 422);
         }
 
-        $user = User::where('email', $request->user()->email)->first();
+        $user = User::where('email', $request->email)->first();
         // $user = $request->user();
 
         if (!$user) {
@@ -509,7 +513,6 @@ class UserController extends Controller
                 'status' => false,
             ], 401);
         }
-
 
         $user->update([
             'password' => Hash::make($request->password)

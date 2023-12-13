@@ -197,7 +197,10 @@ class UserController extends Controller
             if($user->image != null){
                 $rm_urlPath = parse_url($user->image, PHP_URL_PATH);
                 $path = Str::replace('/storage/', '', $rm_urlPath);
-                unlink(storage_path('app/public/'.$path));
+                $filePath = storage_path('app/public/'. $path);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
             }
             $image = $request->file('image');
             $filename = time() . '_' . $image->getClientOriginalName();

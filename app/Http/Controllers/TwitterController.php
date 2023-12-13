@@ -12,16 +12,27 @@ use Abraham\TwitterOAuth\TwitterOAuth;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Socialite\Facades\Socialite;
 use Abraham\TwitterOAuth\TwitterOAuthException;
+use App\Services\Configurations;
 
 class TwitterController extends Controller
 {
+    protected $configApp;
+
+    public function __construct(Configurations $app)
+    {
+        $this->configApp = $app;
+    }
+
     public function twitterRedirect()
     {
+        $this->configApp->service('twitter');
         return Socialite::driver('twitter')->redirect();
     }
 
     public function twitterCallback(Request $request)
     {
+        $this->configApp->service('twitter');
+
        try{
             $user = Socialite::driver('twitter')->user();
 
@@ -52,7 +63,10 @@ class TwitterController extends Controller
                 if($existingApp->account_pic != null){
                     $rm_urlPath = parse_url($existingApp->account_pic, PHP_URL_PATH);
                     $path = Str::replace('/storage/', '', $rm_urlPath);
-                    unlink(storage_path('app/public/'. $path));
+                    $filePath = storage_path('app/public/'. $path);
+                    if (file_exists($filePath)) {
+                        unlink($filePath);
+                    }
                 }
                 
                 $existingApp->update($userData);

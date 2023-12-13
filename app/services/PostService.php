@@ -25,9 +25,7 @@ use Illuminate\Support\Facades\Storage;
 use Google_Service_YouTube_VideoSnippet;
 use Stevebauman\Location\Facades\Location;
 use Facebook\Exceptions\FacebookSDKException;
-use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 use Facebook\Exceptions\FacebookResponseException;
-use Google\Http\MediaFileUpload;
 
 class PostService 
 {
@@ -61,8 +59,7 @@ class PostService
             ];
         }
     }
-
-
+    
     public function saveImages($images)
     {
         $imgUpload = [];
@@ -532,14 +529,12 @@ class PostService
 
     public function youtubePublish($requestData, $videoPath)
     {
-        // dd($requestData);
         $accountsID = $requestData->accounts_id;
         $refreshToken='';
-
+        
         $youtubeSettings = settingsApi::where('appType', 'youtube')->first();
         $client_id = $youtubeSettings['appID'];
         $client_secret = $youtubeSettings['appSecret'];
-        $allUploadsSuccessful = '';
 
         foreach($accountsID as $id){
             $accounts = Api::where('account_type', 'youtube')
@@ -556,10 +551,9 @@ class PostService
                 $client->setClientSecret($client_secret);
                 $client->setRedirectUri(route('youtube.callback'));
                 $client->setScopes(['https://www.googleapis.com/auth/youtube.upload']);
-                // $client->setScopes([YOUR_DYNAMICALLY_FETCHED_SCOPES]);
                 $allUploadsSuccessful = true;
 
-                $client->fetchAccessTokenWithRefreshToken($refreshToken);
+                $validationToken = $client->fetchAccessTokenWithRefreshToken($refreshToken);
                 $newAccessToken = $client->getAccessToken();
                 $videoPathStorage = storage_path('app/' . $videoPath);
                 // $fullPathToVideo = Str::replace('\\', '/', $videoPathStorage);
@@ -572,6 +566,7 @@ class PostService
                 $category_id = !empty($requestData->youtubeCategory) ? $requestData->youtubeCategory : '22';
                 $category_id ='22';
 
+                // dd($validationToken);
                 if($client->getAccessToken()) {
                     $snippet = new Google_Service_YouTube_VideoSnippet();
                     $snippet->setTitle($requestData->videoTitle);
@@ -587,8 +582,7 @@ class PostService
                     $video = new Google_Service_YouTube_Video();
                     $video->setSnippet($snippet);
                     $video->setStatus($status);
-        
-                    dd($status);
+
                     try {
                         $obj = $youTubeService->videos->insert(
                             "status,snippet", 
@@ -607,21 +601,28 @@ class PostService
                         // dd ("Stack trace is ".$e->getTraceAsString());
                     }
                 }
+                else{
+                    $allUploadsSuccessful = false;
+                }
+
+                if ($allUploadsSuccessful) {
+                    return 'postCreated';
+                } else {
+                    return 'postFailed'; 
+                }
             }  
             
-            if ($allUploadsSuccessful) {
-                return 'postCreated'; // All uploads were successful
-            } else {
-                return 'postFailed'; // At least one upload failed
-            }
         }
-       
-        // if ($allUploadsSuccessful) {
-        //     return 'postCreated'; // All uploads were successful
-        // } else {
-        //     return 'postFailed'; // At least one upload failed
-        // }
     } 
+
+// https://accounts.google.com/o/oauth2/v2/auth?
+// scope=https://www.googleapis.com/auth/youtube.force-ssl&
+// access_type=offline&
+// include_granted_scopes=true&
+// state=state_parameter_passthrough_value&
+// redirect_uri=https://social.evolvetechsys.com/auth/youtube/callback
+// response_type=code&
+// client_id=400800346626-3pj9lb5923bmurej4bk6ql2v2rm29kco.apps.googleusercontent.com
 
     public function instaPublish($requestData)
     {

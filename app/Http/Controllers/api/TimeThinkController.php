@@ -10,9 +10,6 @@ use Illuminate\Support\Facades\Validator;
 
 class TimeThinkController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $timeThink = time_think::where('creator_id', Auth::user()->id)->first();
@@ -25,9 +22,6 @@ class TimeThinkController extends Controller
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -54,17 +48,6 @@ class TimeThinkController extends Controller
         ],200);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         try{
@@ -107,11 +90,4 @@ class TimeThinkController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
 }

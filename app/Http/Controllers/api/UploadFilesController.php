@@ -13,8 +13,9 @@ class UploadFilesController extends Controller
 {
     public function store(Request $request)
     {
-        header('Access-Control-Allow-Origin: *');
+        // header('Access-Control-Allow-Origin: *');
         $filenames = []; // Array to store filenames
+
         if (!Auth::check()) {
             return response()->json(['message' => 'User not authenticated'], 401);
         }
@@ -68,7 +69,7 @@ class UploadFilesController extends Controller
 
     public function destroy(Request $request)
     {
-        $tmp_file = UploadFiles::where('file', $request->filname)->first();
+        $tmp_file = UploadFiles::where('file', $request->filename)->first();
 
         if($tmp_file){
             $user = 'user'.Auth::user()->id;
@@ -81,5 +82,10 @@ class UploadFilesController extends Controller
                 'status' => true
             ],200);
         }
+
+        return response()->json([
+            'file' => $tmp_file,
+            'status' => false
+        ],400);
     }
 }

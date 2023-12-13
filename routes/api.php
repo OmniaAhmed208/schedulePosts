@@ -7,18 +7,17 @@ use App\Http\Controllers\api\CronController;
 use App\Http\Controllers\api\PostController;
 use App\Http\Controllers\api\RoleController;
 use App\Http\Controllers\api\UserController;
-use App\Http\Controllers\api\MediaController;
 use App\Http\Controllers\api\AccountController;
 use App\Http\Controllers\api\ServiceController;
 use App\Http\Controllers\api\TwitterController;
 use App\Http\Controllers\api\YoutubeController;
-use App\Http\Controllers\api\AnalyticsController;
+use App\Http\Controllers\api\FacebookController;
 use App\Http\Controllers\api\DashboardController;
+use App\Http\Controllers\api\InstagramController;
 use App\Http\Controllers\api\TimeThinkController;
 use App\Http\Controllers\api\NewsLetterController;
 use App\Http\Controllers\api\PermissionController;
 use App\Http\Controllers\api\SubscriberController;
-use App\Http\Controllers\api\PublishPostController;
 use App\Http\Controllers\api\UploadFilesController;
 use App\Http\Controllers\api\YoutubeCategoryController;
 use App\Http\Controllers\api\RolesPermissionsController;
@@ -54,21 +53,21 @@ Route::middleware('auth:sanctum')->group(function ()
     Route::post('updatePassword', [UserController::class,'updatePassword']);
 
     Route::post('/uploadFiles', [UploadFilesController::class, 'store'])->middleware('cors');
-    Route::delete('/removeFiles', [UploadFilesController::class, 'destroy'])->middleware('cors');
+    Route::match(['post', 'delete'], '/removeFiles', [UploadFilesController::class, 'destroy'])->middleware('cors');
+    
     Route::resource('users', UserController::class);
     Route::resource('dashboard', DashboardController::class);
-    Route::resource('analytics', AnalyticsController::class);
     Route::resource('categories', YoutubeCategoryController::class);
     Route::resource('accounts', AccountController::class);
     Route::resource('timeThink', TimeThinkController::class);
     Route::resource('posts', PostController::class);
-    Route::resource('publishPosts', PublishPostController::class);
     Route::resource('newsletter', NewsLetterController::class);
     Route::resource('cron', CronController::class);
-    Route::resource('media', MediaController::class);
 
     Route::resource('twitter', TwitterController::class);
     Route::resource('youtube', YoutubeController::class);
+    Route::resource('instagram', InstagramController::class);
+    Route::resource('facebook', FacebookController::class);
     
     Route::resource('services', ServiceController::class);
     Route::get('/users/search/{name}', [UserController::class, 'search']);
