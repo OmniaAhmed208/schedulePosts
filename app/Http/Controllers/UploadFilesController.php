@@ -53,7 +53,7 @@ class UploadFilesController extends Controller
 
     public function destroy(Request $request)
     {
-        $tmp_file = UploadFiles::where('file', $request->filname)->first();
+        $tmp_file = UploadFiles::where('file', $request->filename)->first();
 
         if($tmp_file){
             $user = 'user'.Auth::user()->id;

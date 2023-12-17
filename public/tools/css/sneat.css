@@ -73,15 +73,19 @@
 .youtubeApp-border{border-color: #ff0000 !important}
 .instagramApp-border{ border-color: #dc2743 !important}
 
-.socialAccounts input[type="checkbox"]:not(:checked) + label {
-    filter: grayscale(100%);
-}
-
 
 .socialAccounts .instagramApp span{color:#dc2743 !important;}
 .socialAccounts .facebookApp span{color: #007bff !important;} 
 
-.socialAccounts .user-info img{border: 2px solid #000;width: 70px;}
+.socialAccounts .user-info img{border: 2px solid #000;width: 150px;}
+.socialAccounts .user-info .imgAppProfile{width: 70px !important;}
+
+.socialAccounts .user-info video{border: 2px solid #000;}
+
+.socialAccounts input[type="checkbox"]:not(:checked) + label {filter: grayscale(100%);}
+.socialAccounts input[type="checkbox"]:not(:checked) + label img {border-color: #0000004d;}
+.socialAccounts input[type="checkbox"]:not(:checked) + label video {border-color: #0000004d;filter: contrast(0.5);}
+
 .socialAccounts .user-info p{font-weight: bold;font-size: 16px;}
 .socialAccounts .user-info .info-box-icon{height: 120px}
 .socialAccounts .user-info i{font-size: 20px;background: #fff;}

@@ -13,10 +13,8 @@ return new class extends Migration
     {
         Schema::create('post_videos', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('post_id');
-            $table->foreign('post_id')->references('id')->on('publish_posts')->onUpdate("cascade")->onDelete("cascade");
-            $table->unsignedBigInteger('creator_id');
-            $table->foreign('creator_id')->references('creator_id')->on('publish_posts')->onUpdate("cascade")->onDelete("cascade");
+            $table->foreignId("post_id")->nullable()->constrained("publish_posts")->onDelete("cascade")->onUpdate("cascade");
+            $table->foreignId("creator_id")->nullable()->constrained("users")->onDelete("cascade")->onUpdate("cascade");
             $table->text('video');
             $table->timestamps();
         });

@@ -23,7 +23,7 @@ class UploadFilesController extends Controller
         $validator = Validator::make($request->all(), [
             'images' => 'array',
             'images.*' => 'file|image|mimes:jpeg,jpg,png',
-            'video' => 'file|mimes:video/quicktime,video/mp4,video/mpeg,video/mpg,video/mov,video/avi,video/webm',
+            'video' => 'mimetypes:video/quicktime,video/mp4,video/mpeg,video/mpg,video/mov,video/avi,video/webm',
         ]);
 
         if ($validator->fails()) {

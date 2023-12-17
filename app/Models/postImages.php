@@ -21,5 +21,6 @@ class postImages extends Model
     public function getCreatorIdAttribute()
     {
         return $this->publishPost->creator_id;
+        // return $this->publishPost()->value('creator_id');
     }
 }

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 02, 2023 at 05:08 PM
+-- Generation Time: Dec 14, 2023 at 03:34 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -49,11 +49,11 @@ CREATE TABLE `apis` (
 
 INSERT INTO `apis` (`id`, `creator_id`, `account_type`, `account_id`, `account_name`, `email`, `account_pic`, `account_link`, `token`, `token_secret`, `update_interval`, `created_at`, `updated_at`) VALUES
 (3, 2, 'twitter', '1708817086653386752', 'evolve inc', 'evolve.teck@gmail.com', 'http://192.168.1.15:8000/storage/profile_images/1699446013.png', 'https://twitter.com/EvolveTeck', '1708817086653386752-rrWnFqX4ALKzZMXWgYdhaatcj7Il2f', 'FFgoPOWMuGuI1Zfx5pZBphOEWBPSpyYtS7G4jPPs1K5X0', 3000, '2023-11-07 07:16:11', '2023-11-08 10:20:13'),
-(4, 1, 'twitter', '1708817086653386752', 'evolve inc', 'evolve.teck@gmail.com', 'http://192.168.1.15:8000/storage/profile_images/1701508644.png', 'https://twitter.com/EvolveTeck', '1708817086653386752-rrWnFqX4ALKzZMXWgYdhaatcj7Il2f', 'FFgoPOWMuGuI1Zfx5pZBphOEWBPSpyYtS7G4jPPs1K5X0', 3000, '2023-11-14 11:35:51', '2023-12-02 07:17:25'),
+(4, 1, 'twitter', '1708817086653386752', 'evolve inc', 'evolve.teck@gmail.com', 'http://192.168.1.15:8000/storage/user1/profile_images/1702302925.png', 'https://twitter.com/EvolveTeck', '1708817086653386752-rrWnFqX4ALKzZMXWgYdhaatcj7Il2f', 'FFgoPOWMuGuI1Zfx5pZBphOEWBPSpyYtS7G4jPPs1K5X0', 3000, '2023-11-14 11:35:51', '2023-12-11 11:55:26'),
 (7, 1, 'youtube', 'UCDtui0aBpRnx1eNAzq7eUHQ', 'evovle inc', 'evovle inc', 'https://yt3.ggpht.com/ytc/APkrFKZhta5mRe5QbypayrwKrcYOl2L65mX_uncGM8F4yVLU3GonpgFTrQ6j22XgIdLg=s240-c-k-c0xffffffff-no-rj-mo\r\n', 'https://www.youtube.com/channel/UCDtui0aBpRnx1eNAzq7eUHQ', 'ya29.a0AfB_byB9ZUyzCgAo7b5FlMknnV7SYCrX4pzdzpaoFipC-TEMt6KCD4v-JXsvVoPi_usZwGMVp-agZb8wHLbpiCP8Td-FjN9FBdM-EYMznCVO0FqqpwoxmEwLEttzPlvUHjz-L6KKeMs64dnJuwqwZE6u0apzFxSAyyemaCgYKAW0SARMSFQGOcNnCiGhnaAspFUBNCMqzILsxbQ0171\r\n', '1//03OvEbi37WB3TCgYIARAAGAMSNwF-L9IreW7zjQ2dmbRQsoUx9UwIhY3-n4v--YSy4gw3s6KVuQLvDnRoGJNS0heO13RQr5-rSsQ\r\n', 60, NULL, NULL),
 (8, 1, 'youtube', 'UCFfozYKZZoCfh_Rs9gMujhQ', 'technology', 'technology', 'https://yt3.ggpht.com/ytc/APkrFKZXFiTCCxbhxXfRcKFRhOaYzS0vBwSrqko1PsRT38ibgk9arbawHBA_hpYP5Bx_=s88-c-k-c0x00ffffff-no-rj\r\n', 'https://www.youtube.com/channel/UCFfozYKZZoCfh_Rs9gMujhQ', 'ya29.a0AfB_byCJiJxZ6lXFfiuHU9wnDI8togP2ISuNR6bWnM-lzsI-GGZUQmAxKcsu8tK-6flirobRldhv6E2pDGdeAaC46TsSa_EGWNzOTeN9u91O1AW4OOV9D_URcorH1nzSR5SLqUF_yvFkIEdBnChc7f3VNSINCw6pUc69aCgYKAYISARISFQHGX2MipmLzRLUmzImafsmcvh-y0Q0171', '1//03jU0iAd0UcmKCgYIARAAGAMSNwF-L9IrtNFMW05K7WAZ9EcbQeWoELQywWqbXsGbiwKjNhcFh1iizgAKcKxzDKdHdJ0PP5gzqow', 60, NULL, NULL),
 (11, 1, 'youtube', 'UCH3ydgnuMGdAer1YlZ4HCJQ', 'evolve inc', 'evolve inc', 'https://yt3.ggpht.com/ytc/APkrFKbHW2r9TKDhz8mXpxZfZ0LGEkfvebgxmNOc_PvvxcwubpoW4jBwF-wsZPhx6T7m=s88-c-k-c0x00ffffff-no-rj', 'https:\\/\\/www.youtube.com\\/channel\\/UCH3ydgnuMGdAer1YlZ4HCJQ', 'ya29.a0AfB_byB8ITNsbG3qzvOLVYt_ehB_tSgq2F8b0zoltz6_53V8MafMWaZHWegiC5j6AHF-Yv-fB_u84pof3ANEo15mx43TVnJd4eMV7P9oi0z8wVkiugA2H_77dZFP0aCkz5vHt3r-ffgNJ5ebzCWS-1kZbAdUGsBAtNEOaCgYKAdgSARESFQHGX2MiR3vC9IaDAzznkkk3Idb1lQ0171', '1\\/\\/06bj1xwtcz7fwCgYIARAAGAYSNwF-L9IryCu9vP2V5blvvBI3Xe4K10tAhCB7mbDVD65QoeAxEAhzarVw7R4kgJ8lmJuOP28xkzk', 60, NULL, NULL),
-(12, 1, 'twitter', '1719665953183506432', 'evolve inc', 'evolveinc229@gmail.com', 'http://192.168.1.15:8000/storage/profile_images/1701508668.png', 'https://twitter.com/evolve_inc32', '1719665953183506432-RlFCBFhbNfwBHbR5l30ZzyMyQXhjgk', 'UARlQWfxAUdvi9kRQBNF3w7SgSUSAxqMhXRyj2b3YWalL', 60, '2023-12-02 07:17:48', '2023-12-02 07:17:48');
+(12, 1, 'twitter', '1719665953183506432', 'evolve inc', 'evolveinc229@gmail.com', 'http://192.168.1.15:8000/storage/user1/profile_images/1702303054.png', 'https://twitter.com/evolve_inc32', '1719665953183506432-RlFCBFhbNfwBHbR5l30ZzyMyQXhjgk', 'UARlQWfxAUdvi9kRQBNF3w7SgSUSAxqMhXRyj2b3YWalL', 60, '2023-12-02 07:17:48', '2023-12-11 11:57:34');
 
 -- --------------------------------------------------------
 
@@ -165,10 +165,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (10, '2023_09_06_140331_create_youtube_categories_table', 1),
 (11, '2023_09_06_141453_create_settings_apis_table', 1),
 (12, '2023_09_07_084231_create_publish_posts_table', 1),
-(13, '2023_10_17_133937_create_post_images_table', 1),
 (14, '2023_10_21_124254_create_permission_tables', 1),
 (15, '2023_10_21_145259_create_user_has_roles_table', 1),
-(16, '2023_10_24_131038_create_post_videos_table', 1),
 (17, '2023_07_08_112058_create_messages_table', 2),
 (18, '2023_07_19_081931_update_users', 2),
 (28, '2023_11_07_142535_create_subscribers_table', 3),
@@ -176,7 +174,10 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (31, '2023_11_09_114219_create_news_letters_table', 4),
 (34, '2023_11_11_132322_alter_users_table', 5),
 (35, '2023_11_15_154812_create_media_table', 6),
-(41, '2023_11_21_152744_add_verification_token_to_users_table', 7);
+(41, '2023_11_21_152744_add_verification_token_to_users_table', 7),
+(43, '2023_12_03_093254_create_upload_files_table', 8),
+(45, '2023_10_17_133937_create_post_images_table', 9),
+(47, '2023_10_24_131038_create_post_videos_table', 10);
 
 -- --------------------------------------------------------
 
@@ -224,8 +225,9 @@ CREATE TABLE `news_letters` (
 --
 
 INSERT INTO `news_letters` (`id`, `creator_id`, `title`, `content`, `image`, `color`, `created_at`, `updated_at`) VALUES
-(2, 1, 'A well-known quote, contained in a blockquote element.', '- Someone famous in Source Title', NULL, '#e0f7fc', '2023-11-09 12:37:24', '2023-11-09 12:37:24'),
-(3, 1, 'Card title that wraps to a new line', 'This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.', 'http://192.168.1.15:8000/storage/newsLetter/1700396814_18.jpg', NULL, '2023-11-09 12:37:24', '2023-11-19 10:26:54');
+(45, 1, 'omar', 'osama', 'http://192.168.1.15:8000/storage/user1/newsLetter/1701702692_friend-05.jpg', NULL, '2023-12-04 07:20:38', '2023-12-04 13:11:32'),
+(46, 1, 'as', 'gs', 'http://192.168.1.15:8000/storage/user1/newsLetter/1701688124_team-01.png', NULL, '2023-12-04 09:08:44', '2023-12-04 09:08:44'),
+(47, 1, 'hn', 'asgb', 'http://192.168.1.15:8000/storage/user1/newsLetter/1701696483_course-02.jpg', NULL, '2023-12-04 11:28:03', '2023-12-04 11:28:03');
 
 -- --------------------------------------------------------
 
@@ -345,8 +347,28 @@ INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `n
 (106, 'App\\Models\\User', 31, 'API TOKEN', '7b847596394785f5f3ae2632fbd1214818122f577af67a5cc25d598ea1455297', '[\"*\"]', '2023-11-28 09:56:50', NULL, '2023-11-28 09:23:07', '2023-11-28 09:56:50'),
 (107, 'App\\Models\\User', 31, 'API TOKEN', '2bc3f9e3269adf2c67f934b916129a1c24fb4d96cd961fc750e85e6b2aa78e7b', '[\"*\"]', '2023-11-30 11:13:54', NULL, '2023-11-28 09:29:58', '2023-11-30 11:13:54'),
 (108, 'App\\Models\\User', 31, 'API TOKEN', '5f9c250b96c539e56401ee3497c40909b6d9dfd5a7335d62fb090ed0b4045485', '[\"*\"]', '2023-11-28 13:06:52', NULL, '2023-11-28 11:10:56', '2023-11-28 13:06:52'),
-(127, 'App\\Models\\User', 1, 'API TOKEN', '808ed06c3d27f1f29dae7879db29fc418ba72cfda8f9e06cbd2200e1f1946aa9', '[\"*\"]', '2023-12-02 14:08:14', NULL, '2023-12-02 11:47:02', '2023-12-02 14:08:14'),
-(128, 'App\\Models\\User', 1, 'API TOKEN', '6f20824e44d84f56bf8f52cb79159cd15d6c589cdbb6b725702b371fb0288e03', '[\"*\"]', '2023-12-02 14:01:44', NULL, '2023-12-02 13:44:36', '2023-12-02 14:01:44');
+(149, 'App\\Models\\User', 32, 'API TOKEN', 'bf3cd1279cec5aa30235f740efeef2b941b3c034d032c1b78c8dadc0c75b6e03', '[\"*\"]', NULL, NULL, '2023-12-06 09:34:00', '2023-12-06 09:34:00'),
+(150, 'App\\Models\\User', 33, 'API TOKEN', '9d6a7da7e8f811f1db28a264dd63c04ffbe02ba1923bc360afb72df9cda2ccae', '[\"*\"]', NULL, NULL, '2023-12-06 09:46:03', '2023-12-06 09:46:03'),
+(151, 'App\\Models\\User', 34, 'API TOKEN', 'b6c684e598fd6211140051acb0311a9694fac00344e593ec93aaab523e30ab3a', '[\"*\"]', NULL, NULL, '2023-12-06 09:48:46', '2023-12-06 09:48:46'),
+(152, 'App\\Models\\User', 35, 'API TOKEN', '8d5b60b918c913f78993a4dee1784edc9ae5f1a8f18628e24569cc094fcd547b', '[\"*\"]', NULL, NULL, '2023-12-06 09:52:20', '2023-12-06 09:52:20'),
+(153, 'App\\Models\\User', 36, 'API TOKEN', '426731d5b28acb571eeb3fc926e791ae1a83b2e39095bf7b104eeb8996dd4d67', '[\"*\"]', NULL, NULL, '2023-12-06 10:05:48', '2023-12-06 10:05:48'),
+(154, 'App\\Models\\User', 37, 'API TOKEN', 'f06df5ebed7fa8847e321253812b8da11b557a393bc42e780a5ffa612827849d', '[\"*\"]', NULL, NULL, '2023-12-06 10:07:05', '2023-12-06 10:07:05'),
+(155, 'App\\Models\\User', 38, 'API TOKEN', '66a9c40b0c56ce1d2aedd20bae1b0f416ba4efb1632d5b4be605f72af1ad897c', '[\"*\"]', NULL, NULL, '2023-12-06 10:10:58', '2023-12-06 10:10:58'),
+(156, 'App\\Models\\User', 39, 'API TOKEN', '96816922b6db6de7e42e4d2c8e981ebaac060718c51a38abd6dca94c40d6a0dd', '[\"*\"]', NULL, NULL, '2023-12-06 10:17:00', '2023-12-06 10:17:00'),
+(157, 'App\\Models\\User', 40, 'API TOKEN', '18854b3aa89089d913cbd7f2d9ca63b3a394ecffa9f306c561d421fe38e308cb', '[\"*\"]', NULL, NULL, '2023-12-06 11:20:13', '2023-12-06 11:20:13'),
+(158, 'App\\Models\\User', 41, 'API TOKEN', '24e94a66699f0a0a2bdfaa07880e946f8a42d9e8a1cbb30769af9f8563134fc4', '[\"*\"]', NULL, NULL, '2023-12-06 11:21:09', '2023-12-06 11:21:09'),
+(159, 'App\\Models\\User', 42, 'API TOKEN', '11c746aeb5ede68e269d9492046517e7fd53a4b8de17b23a58500940e4d84a7e', '[\"*\"]', NULL, NULL, '2023-12-06 11:23:05', '2023-12-06 11:23:05'),
+(160, 'App\\Models\\User', 43, 'API TOKEN', 'ad1633ab7861602e69b844375850ae74b240784c8f49a66b8b4b9bd42945084f', '[\"*\"]', NULL, NULL, '2023-12-06 11:24:04', '2023-12-06 11:24:04'),
+(161, 'App\\Models\\User', 44, 'API TOKEN', '950d9945f2eeb0e446d9c395dfa325357fdbf500b3f262bd9a35d55cff0d7e2a', '[\"*\"]', NULL, NULL, '2023-12-06 11:25:14', '2023-12-06 11:25:14'),
+(162, 'App\\Models\\User', 45, 'API TOKEN', 'ca2a965dcb8c1365c82ba17640dc9083e96c35cebd24db691f2e2a3ec48b4338', '[\"*\"]', NULL, NULL, '2023-12-06 11:27:47', '2023-12-06 11:27:47'),
+(165, 'App\\Models\\User', 47, 'API TOKEN', '67304b6ba725d63bb41b071817164f7b5d9801fef70bab05eb9eb5aa706a0c6c', '[\"*\"]', NULL, NULL, '2023-12-06 11:42:32', '2023-12-06 11:42:32'),
+(166, 'App\\Models\\User', 48, 'API TOKEN', '9cf3534ad8b41c83bd386cbbc8f865158a6d50e0c9083a13f8aa4bb787753fce', '[\"*\"]', NULL, NULL, '2023-12-06 11:47:20', '2023-12-06 11:47:20'),
+(167, 'App\\Models\\User', 49, 'API TOKEN', '8bc2ce9fd123c348d04250f9469ceafc5bfa24eab4e20c322624858ac628c8a8', '[\"*\"]', NULL, NULL, '2023-12-06 11:59:21', '2023-12-06 11:59:21'),
+(175, 'App\\Models\\User', 50, 'API TOKEN', 'c9694d33111bd233b6ed097034971b3ea81fc898e8ed6804386ba194f4c0d2a8', '[\"*\"]', '2023-12-06 12:40:23', NULL, '2023-12-06 12:11:55', '2023-12-06 12:40:23'),
+(180, 'App\\Models\\User', 51, 'API TOKEN', '2eb5a266b016e2b4a36c0052116481f64ef993ad78ebcc50f694321be6035c6e', '[\"*\"]', NULL, NULL, '2023-12-06 13:22:55', '2023-12-06 13:22:55'),
+(184, 'App\\Models\\User', 52, 'API TOKEN', '9095cdc4784cf33853ab8fd93633029377ea6b8287b2d9177ee82431d6804cfe', '[\"*\"]', '2023-12-06 13:28:54', NULL, '2023-12-06 13:27:36', '2023-12-06 13:28:54'),
+(213, 'App\\Models\\User', 53, 'API TOKEN', '6684ec5fd35c5e41bcd209d75acaf587417ab3d334ee2e3335b0f823766dda77', '[\"*\"]', '2023-12-09 06:30:00', NULL, '2023-12-07 10:51:24', '2023-12-09 06:30:00'),
+(226, 'App\\Models\\User', 1, 'API TOKEN', '00d51c6933af24b6bd6531bd8493d3beb9af13f7088fc8f69ca5c2779927f08c', '[\"*\"]', '2023-12-11 13:11:55', NULL, '2023-12-11 12:13:19', '2023-12-11 13:11:55');
 
 -- --------------------------------------------------------
 
@@ -368,15 +390,7 @@ CREATE TABLE `post_images` (
 --
 
 INSERT INTO `post_images` (`id`, `post_id`, `creator_id`, `image`, `created_at`, `updated_at`) VALUES
-(5, 7, 1, 'http://192.168.1.15:8000/storage/uploadImages/1699105915_1695127412.png', '2023-11-07 11:15:30', '2023-11-07 11:15:30'),
-(6, 8, 1, 'http://192.168.1.15:8000/storage/uploadImages/1699105915_1695127412.png', '2023-11-07 11:17:09', '2023-11-07 11:17:09'),
-(8, 9, 1, 'http://192.168.1.15:8000/storage/uploadImages/1699443663_1695127412.png', '2023-11-08 09:41:09', '2023-11-08 09:41:09'),
-(13, 12, 1, 'http://192.168.1.15:8000/storage/uploadImages/1699970910_5.jpg', '2023-11-14 12:08:38', '2023-11-14 12:08:38'),
-(14, 12, 1, 'http://192.168.1.15:8000/storage/uploadImages/1699970910_11.jpg', '2023-11-14 12:08:38', '2023-11-14 12:08:38'),
-(15, 13, 1, 'http://192.168.1.15:8000/storage/uploadImages/1699970910_5.jpg', '2023-11-14 12:08:38', '2023-11-14 12:08:38'),
-(16, 13, 1, 'http://192.168.1.15:8000/storage/uploadImages/1699970910_11.jpg', '2023-11-14 12:08:38', '2023-11-14 12:08:38'),
-(23, 36, 1, 'http://192.168.1.15:8000/storage/uploadImages/1701357529_ui.png', '2023-11-30 13:18:52', '2023-11-30 13:18:52'),
-(24, 38, 1, 'http://192.168.1.15:8000/storage/uploadImages/1701360926_ui.png', '2023-11-30 14:15:29', '2023-11-30 14:15:29');
+(2, 73, 1, 'http://192.168.1.15:8000/storage/user1/postImages/1702564335_ui.png', '2023-12-14 12:32:20', '2023-12-14 12:32:20');
 
 -- --------------------------------------------------------
 
@@ -386,19 +400,12 @@ INSERT INTO `post_images` (`id`, `post_id`, `creator_id`, `image`, `created_at`,
 
 CREATE TABLE `post_videos` (
   `id` bigint(20) UNSIGNED NOT NULL,
-  `post_id` bigint(20) UNSIGNED NOT NULL,
-  `creator_id` bigint(20) UNSIGNED NOT NULL,
+  `post_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `creator_id` bigint(20) UNSIGNED DEFAULT NULL,
   `video` text NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `post_videos`
---
-
-INSERT INTO `post_videos` (`id`, `post_id`, `creator_id`, `video`, `created_at`, `updated_at`) VALUES
-(1, 37, 1, 'http://192.168.1.15:8000/storage/uploadVideos/sec.mp4', '2023-11-30 13:26:14', '2023-11-30 13:26:14');
 
 -- --------------------------------------------------------
 
@@ -432,18 +439,10 @@ CREATE TABLE `publish_posts` (
 --
 
 INSERT INTO `publish_posts` (`id`, `creator_id`, `account_type`, `account_id`, `account_name`, `status`, `thumbnail`, `link`, `post_title`, `content`, `youtube_privacy`, `youtube_tags`, `youtube_category`, `scheduledTime`, `tokenApp`, `token_secret`, `created_at`, `updated_at`) VALUES
-(1, 2, 'twitter', '1708817086653386752', 'evolve inc', 'published', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2023-11-09 10:55:57', '1708817086653386752-rrWnFqX4ALKzZMXWgYdhaatcj7Il2f', 'FFgoPOWMuGuI1Zfx5pZBphOEWBPSpyYtS7G4jPPs1K5X0', '2023-11-07 07:17:56', '2023-11-09 06:55:57'),
-(7, 1, 'twitter', '1708817086653386752', 'evolve inc', 'published', NULL, NULL, NULL, 'lklkm', NULL, NULL, NULL, '2023-11-07 15:15:00', '1708817086653386752-rrWnFqX4ALKzZMXWgYdhaatcj7Il2f', 'FFgoPOWMuGuI1Zfx5pZBphOEWBPSpyYtS7G4jPPs1K5X0', '2023-11-07 11:15:30', '2023-11-07 11:15:30'),
-(8, 2, 'twitter', '1708817086653386752', 'evolve inc', 'published', NULL, NULL, NULL, 'test', NULL, NULL, NULL, '2023-11-08 13:09:28', '1708817086653386752-rrWnFqX4ALKzZMXWgYdhaatcj7Il2f', 'FFgoPOWMuGuI1Zfx5pZBphOEWBPSpyYtS7G4jPPs1K5X0', '2023-11-07 11:17:09', '2023-11-07 11:17:09'),
-(9, 2, 'twitter', '1708817086653386752', 'evolve inc', 'published', NULL, NULL, NULL, '', NULL, NULL, NULL, '2023-11-08 17:12:49', '1708817086653386752-rrWnFqX4ALKzZMXWgYdhaatcj7Il2f', 'FFgoPOWMuGuI1Zfx5pZBphOEWBPSpyYtS7G4jPPs1K5X0', '2023-11-08 09:41:09', '2023-11-08 09:41:09'),
-(12, 1, 'twitter', '1708817086653386752', 'evolve inc', 'published', NULL, NULL, NULL, 'text', NULL, NULL, NULL, '2023-11-14 16:08:00', '1708817086653386752-rrWnFqX4ALKzZMXWgYdhaatcj7Il2f', 'FFgoPOWMuGuI1Zfx5pZBphOEWBPSpyYtS7G4jPPs1K5X0', '2023-11-14 12:08:38', '2023-11-14 12:08:38'),
-(13, 1, 'twitter', '1719665953183506432', 'evolve inc', 'published', NULL, NULL, NULL, 'text', NULL, NULL, NULL, '2023-11-14 16:08:00', '1719665953183506432-RlFCBFhbNfwBHbR5l30ZzyMyQXhjgk', 'UARlQWfxAUdvi9kRQBNF3w7SgSUSAxqMhXRyj2b3YWalL', '2023-11-14 12:08:38', '2023-11-14 12:08:38'),
-(20, 1, 'twitter', '1708817086653386752', 'evolve inc', 'published', NULL, NULL, NULL, 'k', NULL, NULL, NULL, '2023-11-30 13:51:00', '1708817086653386752-rrWnFqX4ALKzZMXWgYdhaatcj7Il2f', 'FFgoPOWMuGuI1Zfx5pZBphOEWBPSpyYtS7G4jPPs1K5X0', '2023-11-07 07:17:56', '2023-11-23 09:51:25'),
-(27, 1, 'youtube', '1708817086653386752', 'evolve inc', 'published', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2023-11-09 10:55:57', '1708817086653386752-rrWnFqX4ALKzZMXWgYdhaatcj7Il2f', 'FFgoPOWMuGuI1Zfx5pZBphOEWBPSpyYtS7G4jPPs1K5X0', '2023-11-07 07:17:56', '2023-11-09 06:55:57'),
-(34, 1, 'twitter', '1708817086653386752', 'evolve inc', 'published', NULL, NULL, NULL, 'cgvfgfgfgfgfg', NULL, NULL, NULL, '2023-11-24 15:50', '1708817086653386752-rrWnFqX4ALKzZMXWgYdhaatcj7Il2f', 'FFgoPOWMuGuI1Zfx5pZBphOEWBPSpyYtS7G4jPPs1K5X0', '2023-11-27 11:51:05', '2023-11-27 13:55:25'),
-(36, 1, 'twitter', '1719665953183506432', 'evolve inc', 'published', NULL, NULL, NULL, '', NULL, NULL, NULL, '2023-11-30 17:18:49', '1719665953183506432-RlFCBFhbNfwBHbR5l30ZzyMyQXhjgk', 'UARlQWfxAUdvi9kRQBNF3w7SgSUSAxqMhXRyj2b3YWalL', '2023-11-30 13:18:52', '2023-11-30 13:18:52'),
-(37, 1, 'youtube', 'UCH3ydgnuMGdAer1YlZ4HCJQ', 'evolve inc', 'published', NULL, NULL, 'video1', '', 'public', NULL, 1, '2023-11-30 17:26:12', 'ya29.a0AfB_byB8ITNsbG3qzvOLVYt_ehB_tSgq2F8b0zoltz6_53V8MafMWaZHWegiC5j6AHF-Yv-fB_u84pof3ANEo15mx43TVnJd4eMV7P9oi0z8wVkiugA2H_77dZFP0aCkz5vHt3r-ffgNJ5ebzCWS-1kZbAdUGsBAtNEOaCgYKAdgSARESFQHGX2MiR3vC9IaDAzznkkk3Idb1lQ0171', '1\\/\\/06bj1xwtcz7fwCgYIARAAGAYSNwF-L9IryCu9vP2V5blvvBI3Xe4K10tAhCB7mbDVD65QoeAxEAhzarVw7R4kgJ8lmJuOP28xkzk', '2023-11-30 13:26:14', '2023-11-30 13:26:14'),
-(38, 1, 'twitter', '1708817086653386752', 'evolve inc', 'published', NULL, NULL, NULL, 'ggg', NULL, NULL, NULL, '2023-11-30 18:15:26', '1708817086653386752-rrWnFqX4ALKzZMXWgYdhaatcj7Il2f', 'FFgoPOWMuGuI1Zfx5pZBphOEWBPSpyYtS7G4jPPs1K5X0', '2023-11-30 14:15:29', '2023-11-30 14:15:29');
+(47, 1, 'youtube', 'UCH3ydgnuMGdAer1YlZ4HCJQ', 'evolve inc', 'published', NULL, NULL, 'filepond', '', 'public', NULL, 1, '2023-12-04 17:41:54', 'ya29.a0AfB_byB8ITNsbG3qzvOLVYt_ehB_tSgq2F8b0zoltz6_53V8MafMWaZHWegiC5j6AHF-Yv-fB_u84pof3ANEo15mx43TVnJd4eMV7P9oi0z8wVkiugA2H_77dZFP0aCkz5vHt3r-ffgNJ5ebzCWS-1kZbAdUGsBAtNEOaCgYKAdgSARESFQHGX2MiR3vC9IaDAzznkkk3Idb1lQ0171', '1\\/\\/06bj1xwtcz7fwCgYIARAAGAYSNwF-L9IryCu9vP2V5blvvBI3Xe4K10tAhCB7mbDVD65QoeAxEAhzarVw7R4kgJ8lmJuOP28xkzk', '2023-12-04 13:41:54', '2023-12-04 13:41:54'),
+(48, 1, 'twitter', '1719665953183506432', 'evolve inc', 'pending', NULL, NULL, NULL, '/l;l;', NULL, NULL, NULL, '2023-12-04 17:51:47', '1719665953183506432-RlFCBFhbNfwBHbR5l30ZzyMyQXhjgk', 'UARlQWfxAUdvi9kRQBNF3w7SgSUSAxqMhXRyj2b3YWalL', '2023-12-04 13:51:50', '2023-12-04 13:51:50'),
+(52, 1, 'youtube', 'UCH3ydgnuMGdAer1YlZ4HCJQ', 'evolve inc', 'pending', NULL, NULL, 'filepond', '', 'public', NULL, 1, '2023-12-06 16:05:20', 'ya29.a0AfB_byB8ITNsbG3qzvOLVYt_ehB_tSgq2F8b0zoltz6_53V8MafMWaZHWegiC5j6AHF-Yv-fB_u84pof3ANEo15mx43TVnJd4eMV7P9oi0z8wVkiugA2H_77dZFP0aCkz5vHt3r-ffgNJ5ebzCWS-1kZbAdUGsBAtNEOaCgYKAdgSARESFQHGX2MiR3vC9IaDAzznkkk3Idb1lQ0171', '1\\/\\/06bj1xwtcz7fwCgYIARAAGAYSNwF-L9IryCu9vP2V5blvvBI3Xe4K10tAhCB7mbDVD65QoeAxEAhzarVw7R4kgJ8lmJuOP28xkzk', '2023-12-06 12:05:21', '2023-12-06 12:05:21'),
+(73, 1, 'twitter', '1708817086653386752', 'evolve inc', 'published', 'has file', NULL, NULL, '', NULL, NULL, NULL, '2023-12-14 16:32:17', '1708817086653386752-rrWnFqX4ALKzZMXWgYdhaatcj7Il2f', 'FFgoPOWMuGuI1Zfx5pZBphOEWBPSpyYtS7G4jPPs1K5X0', '2023-12-14 12:32:20', '2023-12-14 12:32:20');
 
 -- --------------------------------------------------------
 
@@ -468,7 +467,7 @@ INSERT INTO `roles` (`id`, `name`, `guard_name`, `color`, `created_at`, `updated
 (1, 'Super Admin', 'web', 'primary', NULL, '2023-11-16 13:04:56'),
 (2, 'user', 'web', 'success', NULL, NULL),
 (3, 'manager', 'web', 'danger', '2023-11-12 07:11:33', '2023-11-12 07:11:33'),
-(4, 'Admin', 'web', 'dark', '2023-11-12 07:55:33', '2023-11-16 13:04:39');
+(4, 'Admin', 'web', 'dark', '2023-11-12 07:55:33', '2023-12-07 08:03:43');
 
 -- --------------------------------------------------------
 
@@ -503,7 +502,6 @@ INSERT INTO `role_has_permissions` (`permission_id`, `role_id`) VALUES
 (12, 1),
 (13, 1),
 (13, 3),
-(13, 4),
 (14, 1),
 (15, 1),
 (16, 1),
@@ -580,10 +578,7 @@ CREATE TABLE `subscribers` (
 --
 
 INSERT INTO `subscribers` (`id`, `email`, `created_at`, `updated_at`) VALUES
-(1, 'admin@gmail.com', '2023-11-09 08:56:26', '2023-11-09 08:56:26'),
-(2, 'user@gmail.com', '2023-11-09 08:56:41', '2023-11-09 08:56:41'),
-(3, 'user2@gmail.com', '2023-11-09 08:56:41', '2023-11-09 08:56:41'),
-(8, 'omar@gmail.com', '2023-11-29 06:56:24', '2023-11-29 06:56:24');
+(1, 'admin@gmail.com', '2023-11-09 08:56:26', '2023-11-09 08:56:26');
 
 -- --------------------------------------------------------
 
@@ -606,10 +601,7 @@ CREATE TABLE `subscriber_requests` (
 --
 
 INSERT INTO `subscriber_requests` (`id`, `subscriber_id`, `service_name`, `reason`, `notes`, `created_at`, `updated_at`) VALUES
-(1, 1, 'v', 'This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.', NULL, '2023-11-09 08:56:26', '2023-11-09 08:56:26'),
-(2, 2, 'v', NULL, NULL, '2023-11-09 08:57:02', '2023-11-09 08:57:02'),
-(3, 1, 'v', NULL, NULL, '2023-11-09 09:04:19', '2023-11-09 09:04:19'),
-(4, 1, 'instagram', NULL, NULL, '2023-11-11 07:38:39', '2023-11-11 07:38:39');
+(4, 1, 'instagram', 'This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.', NULL, '2023-11-11 07:38:39', '2023-11-11 07:38:39');
 
 -- --------------------------------------------------------
 
@@ -632,6 +624,20 @@ CREATE TABLE `time_thinks` (
 INSERT INTO `time_thinks` (`id`, `creator_id`, `time`, `created_at`, `updated_at`) VALUES
 (1, 1, 2, '2023-11-07 07:17:23', '2023-11-07 07:17:23'),
 (2, 2, 2, '2023-11-07 07:17:23', '2023-11-07 07:17:23');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `upload_files`
+--
+
+CREATE TABLE `upload_files` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `type` varchar(255) NOT NULL,
+  `file` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -660,11 +666,9 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `user_type`, `email`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`, `role_for_messages`, `status_for_messages`, `image`, `verification_token`) VALUES
-(1, 'admin', 'admin', 'admin@gmail.com', NULL, '$2y$10$TKQCNYI4Ez2nvn9dr8gWce9wOisr0vV7EvWomqk0QP5Km7Nrkn7rG', 'fj5mV2ouwFATxrjiZytTByUDeJSje0b3OxP2PSd4Jx3jh2IYHJxIMi2ufuy6', '2023-11-07 07:07:42', '2023-12-02 11:51:14', 'admin', 'online', 'http://192.168.1.15:8000/storage/profile_images/1701360539_friend-01.jpg', ''),
+(1, 'admin', 'admin', 'admin@gmail.com', '2023-12-06 14:29:39', '$2y$10$G25i36IIwVEcWQCGH72xouJwUWace206btNG04cbLXxq4K2i/5.MW', 'LkphM1sJLdf0gPeXY9wei1g9gZDMeSdYjV2UGgECOWgA90WAqxnNyAqjlsK2', '2023-11-07 07:07:42', '2023-12-09 10:39:31', 'admin', 'online', 'http://192.168.1.15:8000/storage/user1/profile_images/1702125571_team-01.png', '695202'),
 (2, 'user', 'user', 'user@gmail.com', NULL, '$2y$10$CbTxOypBImvObySujDqqduNj/TYx05GkL6wYEX/Lw.sUy0H3Cllfy', 'gMTC0XPTElODarnEbs5HcgRuhT8VYZ9n8VXdkblhg9ePooMlRhZSUQ83yVCq', '2023-11-07 07:07:42', '2023-11-13 09:32:00', 'user', 'online', '/storage/profile_images/1699875120_7.png', ''),
-(8, 'omar', 'user', 'omar1231234@gmail.com', NULL, '$2y$10$Kd4IXu75/FBpYOAcGtCV5e6k2xJtyhOY//imEEc5wjmNMwzk1Cjxe', NULL, '2023-11-20 09:13:15', '2023-11-20 09:51:41', 'user', 'offline', 'http://192.168.1.15:8000/storage/profile_images/1700481101_1.jpg', ''),
-(9, 'omar', 'user', 'omar123@gmail.com', NULL, '$2y$10$fgwMq5ufmZXtSGqDvtVuKOvPBDCbgMOs6.WkHups7wjLz.lqDSS4i', 'MrreWHOfZ5EeRY0oeXFIKdbCLi6XzNxyttMqI5VEk88twUNBaS8fIId8vYAY', '2023-11-21 06:49:04', '2023-11-22 06:36:07', 'user', 'offline', NULL, ''),
-(31, 'ali5', 'user', 'ali5@gmail.com', NULL, '$2y$10$boQPqhBOQTZJbQy/dJeOq.DzkAfaI8RNImwEpxnGmk5QncTISt3QK', NULL, '2023-11-28 09:22:59', '2023-11-28 12:20:52', 'user', 'offline', NULL, '548718');
+(53, 'ali', 'user', 'ali3@gmail.com', '2023-12-07 06:54:43', '$2y$10$iPp8gV49774w/lponsDIUOdFJbWJNxT7.keBIbPgazKx6mAWYVM9e', NULL, '2023-12-07 06:54:17', '2023-12-07 06:54:43', 'user', 'offline', NULL, '694592');
 
 -- --------------------------------------------------------
 
@@ -686,10 +690,7 @@ CREATE TABLE `user_has_roles` (
 
 INSERT INTO `user_has_roles` (`id`, `user_id`, `role_id`, `created_at`, `updated_at`) VALUES
 (2, 1, 1, NULL, NULL),
-(7, 2, 2, NULL, NULL),
-(14, 8, 2, NULL, NULL),
-(15, 9, 2, NULL, NULL),
-(25, 1, 2, NULL, NULL);
+(41, 53, 2, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -878,6 +879,12 @@ ALTER TABLE `time_thinks`
   ADD KEY `time_thinks_creator_id_foreign` (`creator_id`);
 
 --
+-- Indexes for table `upload_files`
+--
+ALTER TABLE `upload_files`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -936,13 +943,13 @@ ALTER TABLE `messages`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
 
 --
 -- AUTO_INCREMENT for table `news_letters`
 --
 ALTER TABLE `news_letters`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
 
 --
 -- AUTO_INCREMENT for table `permissions`
@@ -954,25 +961,25 @@ ALTER TABLE `permissions`
 -- AUTO_INCREMENT for table `personal_access_tokens`
 --
 ALTER TABLE `personal_access_tokens`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=129;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=227;
 
 --
 -- AUTO_INCREMENT for table `post_images`
 --
 ALTER TABLE `post_images`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `post_videos`
 --
 ALTER TABLE `post_videos`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `publish_posts`
 --
 ALTER TABLE `publish_posts`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=74;
 
 --
 -- AUTO_INCREMENT for table `roles`
@@ -996,13 +1003,13 @@ ALTER TABLE `social_posts`
 -- AUTO_INCREMENT for table `subscribers`
 --
 ALTER TABLE `subscribers`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `subscriber_requests`
 --
 ALTER TABLE `subscriber_requests`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `time_thinks`
@@ -1011,16 +1018,22 @@ ALTER TABLE `time_thinks`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
+-- AUTO_INCREMENT for table `upload_files`
+--
+ALTER TABLE `upload_files`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=352;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
 
 --
 -- AUTO_INCREMENT for table `user_has_roles`
 --
 ALTER TABLE `user_has_roles`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT for table `youtube_categories`
@@ -1060,14 +1073,14 @@ ALTER TABLE `news_letters`
 -- Constraints for table `post_images`
 --
 ALTER TABLE `post_images`
-  ADD CONSTRAINT `post_images_creator_id_foreign` FOREIGN KEY (`creator_id`) REFERENCES `publish_posts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `post_images_creator_id_foreign` FOREIGN KEY (`creator_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `post_images_post_id_foreign` FOREIGN KEY (`post_id`) REFERENCES `publish_posts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `post_videos`
 --
 ALTER TABLE `post_videos`
-  ADD CONSTRAINT `post_videos_creator_id_foreign` FOREIGN KEY (`creator_id`) REFERENCES `publish_posts` (`creator_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `post_videos_creator_id_foreign` FOREIGN KEY (`creator_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `post_videos_post_id_foreign` FOREIGN KEY (`post_id`) REFERENCES `publish_posts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --

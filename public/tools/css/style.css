@@ -46,13 +46,9 @@
 .publishPostContainer .file#videoFile {left: -38px;height: 23px;}
 .publishPostContainer .file input[type='file']{opacity: 0;cursor: pointer;}
 .publishPostContainer .postLink{cursor:pointer}
-.publishPostContainer .previewSec img{width: 50px; margin: 10px 0 -20px;border-radius: 6px;}
-.publishPostContainer .previewSec video{width:50px;height:50px;margin-bottom: -33px;}
+.publishPostContainer .previewSec img{width: 100px; margin: 10px 0 -20px;border-radius: 6px;}
+.publishPostContainer .previewSec video{width:170px;margin: 9px 0 -22px;}
 /* .publishPostContainer .previewSec video{width:200px;margin-bottom: -33px;} */
-
-
-
-
 
 .postsPage #nav-tab{border-bottom: 0;}
 .postsPage .nav-tabs .nav-link {

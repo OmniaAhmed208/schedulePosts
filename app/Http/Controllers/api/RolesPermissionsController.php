@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\api;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
+use App\Http\Controllers\Controller;
 use Spatie\Permission\Models\Permission;
+use Illuminate\Support\Facades\Validator;
 
 class RolesPermissionsController extends Controller
 {
@@ -15,6 +16,26 @@ class RolesPermissionsController extends Controller
         $roles = Role::all();
         $permissions = Permission::all();
         $role_has_permissions = DB::table('role_has_permissions')->get();
+        
+        $result = [];
+
+        foreach ($roles as $role){
+            $rolePermissions = [];
+
+            foreach ($role_has_permissions as $item){
+                if ($role->id == $item->role_id){
+                    $permission = $permissions->find($item->permission_id)->name;
+                    $rolePermissions[] = $permission;
+                }
+            }
+
+            $data = [
+                'role' => $role->name,
+                'permissions' => $rolePermissions
+            ];
+
+            $result[] = $data;
+        }
 
         $pages = $permissions->map(function ($permission) {
             return explode('.', $permission->name)[0];
@@ -23,9 +44,9 @@ class RolesPermissionsController extends Controller
         return response()->json([
             'data' => [
                 'roles' => $roles,
-                'permissions' => $permissions,
-                'role_has_permissions' => $role_has_permissions,
-                'pages' => $pages
+                'data' => $result,
+                'pages' => $pages,
+                'permissions' => $permissions
             ],
             'status' => true
         ],200);
@@ -33,7 +54,20 @@ class RolesPermissionsController extends Controller
 
     public function assignRoleToPermissions(Request $request,$role_id)
     {
-        $permissions = $request->permission;
+        $validator = Validator::make($request->all(), [
+            'permissions' => 'required|array', 
+            'permissions.*' => 'exists:permissions,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation error',
+                'errors' => $validator->errors(),
+                'status' => false
+            ], 422);
+        }
+
+        $permissions = $request->permissions;
         $permission_id = '';
 
         if($permissions){
@@ -76,6 +110,7 @@ class RolesPermissionsController extends Controller
 
         return response()->json([
             'message' => "The role assigned to permissions successfully",
+            'permissions' => $permissions,
             'status' => true
         ],200);
     }

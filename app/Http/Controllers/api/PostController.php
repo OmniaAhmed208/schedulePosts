@@ -112,6 +112,10 @@ class PostController extends Controller
             }
         }
 
+        if($request->images || $request->video){
+            unset($validationRules['content']);
+        }
+
         $validator = Validator::make($request->all(), $validationRules);
         if($validator->fails()){
             if ($request->images)
@@ -181,13 +185,12 @@ class PostController extends Controller
             $account['content'] = $request->content ?? '';
             $account['link'] = $request->link;
             $account['scheduledTime'] = $postTime;
-
+            if($request->images || $request->video){
+                $account['thumbnail'] = 'has file';
+            }
             $allAccountsData[] = $account;
         }
 
-        if($request->images || $request->video){
-            $account['thumbnail'] = 'has file';
-        }
 
         $allServices = settingsApi::all();
         $services = [];
@@ -217,15 +220,15 @@ class PostController extends Controller
         if (!empty($data)) {
             foreach ($data as $attributes) {
 
-                $post = new publishPost(); // Create a new instance of publishPost model
-                $post->fill($attributes); // Set the attributes for the model
-                $post->save(); // Save the model to the database
+                $post = new publishPost();
+                $post->fill($attributes);
+                $post->save();
 
                 if (is_array($imgUpload) && !empty($imgUpload)) {
                     foreach ($imgUpload as $img) {
                         DB::table("post_images")->insert([
                             'post_id' => $post->id,
-                            'creator_id' => Auth::user()->id,
+                            'creator_id' => $request->user()->id,
                             'image' => $img,
                             'created_at' => now(),
                             'updated_at' => now()
@@ -236,7 +239,7 @@ class PostController extends Controller
                 if ($storageVideo) {
                     DB::table("post_videos")->insert([
                         'post_id' => $post->id,
-                        'creator_id' => Auth::user()->id,
+                        'creator_id' => $request->user()->id,
                         'video' => $storageVideo,
                         'created_at' => now(),
                         'updated_at' => now()
