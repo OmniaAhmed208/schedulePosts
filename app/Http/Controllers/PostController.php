@@ -251,9 +251,7 @@ class PostController extends Controller
     }
     
     public function update(Request $request,$id)
-    {
-        // dd($request->oldImages);
-        
+    {        
         $post = publishPost::find($id);
         $validator = $request->validate([
             'content' => 'max:5000',
@@ -320,12 +318,13 @@ class PostController extends Controller
         ]);
 
         $post['scheduledTime'] = $post->scheduledTime;
-
-        if($request->accoutType == 'youtube'){
-            $post['post_title'] = $request->videoTitle;
-            $post['youtube_privacy'] = $request->youtubePrivacy;
-            $post['youtube_tags'] = $request->youtubeTags;
-            $post['youtube_category'] = $request->youtubeCategory;
+        if ($post->account_type == 'youtube') {
+            $post->update([
+                'post_title' => $request->videoTitle,
+                'youtube_privacy' => $request->youtubePrivacy,
+                'youtube_tags' => $request->youtubeTags,
+                'youtube_category' => $request->youtubeCategory,
+            ]);
         }
 
         $imagesID = [];$videosID = [];
