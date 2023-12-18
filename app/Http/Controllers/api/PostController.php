@@ -54,16 +54,11 @@ class PostController extends Controller
         ]);
 
         if($validator->fails()){            
-            if ($request->images)
-            {$removeImagesUploaded = $this->postStore->removeImagesUploaded($request->images);}
-            if ($request->video)
-            {$removeVideoUploaded = $this->postStore->removeVideoUploaded($request->video);}
-            
             return response()->json([
                 'message' => 'Validation error',
                 'errors' => $validator->errors(),
                 'status' => false
-            ],200);
+            ],422);
         }
         
         $accountsID = $request->accounts_id;
@@ -118,16 +113,16 @@ class PostController extends Controller
 
         $validator = Validator::make($request->all(), $validationRules);
         if($validator->fails()){
-            if ($request->images)
-            {$removeImagesUploaded = $this->postStore->removeImagesUploaded($request->images);}
-            if ($request->video)
-            {$removeVideoUploaded = $this->postStore->removeVideoUploaded($request->video);}
+            // if ($request->images)
+            // {$removeImagesUploaded = $this->postStore->removeImagesUploaded($request->images);}
+            // if ($request->video)
+            // {$removeVideoUploaded = $this->postStore->removeVideoUploaded($request->video);}
             
             return response()->json([
                 'message' => 'Validation error',
                 'errors' => $validator->errors(),
                 'status' => false
-            ],200);
+            ],422);
         }
 
         $imgUpload = []; $publishPosts = [];
@@ -304,12 +299,7 @@ class PostController extends Controller
                 'videoTitle' => $post->account_type === 'youtube' ? 'required|string' : '',
             ]);
 
-            if($validator->fails()){            
-                if ($request->images)
-                {$removeImagesUploaded = $this->postStore->removeImagesUploaded($request->images);}
-                if ($request->video)
-                {$removeVideoUploaded = $this->postStore->removeVideoUploaded($request->video);}
-                
+            if($validator->fails()){                            
                 return response()->json([
                     'message' => 'Validation error',
                     'errors' => $validator->errors(),
@@ -347,7 +337,6 @@ class PostController extends Controller
                 ],422);
             }
 
-
             $time = $this->postStore->userTime();
             $userTimeNow = $time['userTimeNow'];
             $oldTime = $post->scheduledTime;
@@ -383,6 +372,8 @@ class PostController extends Controller
             $imagesID = [];$videosID = [];
 
             if ($request->oldImages) {
+                $oldImagesArray = is_array($request->oldImages) ? $request->oldImages : json_decode($request->oldImages, true);
+
                 $allPostImages = PostImages::where('post_id', $post->id)->get();
 
                 if (!empty($allPostImages)) {
@@ -391,7 +382,7 @@ class PostController extends Controller
                     }
                 }
 
-                $rowsId = array_intersect($request->oldImages, $imagesID);
+                $rowsId = array_intersect($oldImagesArray, $imagesID);
 
                 $imagesToDelete = PostImages::where('post_id', $post->id)
                     ->whereNotIn('id', $rowsId)
@@ -410,6 +401,8 @@ class PostController extends Controller
             }
 
             if ($request->oldVideos) {
+                $oldVideosArray = is_array($request->oldVideos) ? $request->oldVideos : json_decode($request->oldVideos, true);
+
                 $allPostVideos = PostVideos::where('post_id', $post->id)->get();
 
                 if (!empty($allPostVideos)) {
@@ -418,7 +411,7 @@ class PostController extends Controller
                     }
                 }
 
-                $rowsId = array_intersect($request->oldVideos, $videosID);
+                $rowsId = array_intersect($oldVideosArray, $videosID);
 
                 $videosToDelete = PostVideos::where('post_id', $post->id)
                     ->whereNotIn('id', $rowsId)

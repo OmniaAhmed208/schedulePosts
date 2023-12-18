@@ -67,10 +67,10 @@ class PostService
             $user = 'user'.Auth::user()->id;
 
             $tmp_file = UploadFiles::where('file',$image)->first();
-            $dir = $user.'/'.'postImages';
-            $storageImage = url('storage/' . $dir . '/'. $tmp_file->file);
-            $imgUpload[] = $storageImage;
             if($tmp_file){
+                $dir = $user.'/'.'postImages';
+                $storageImage = url('storage/' . $dir . '/'. $tmp_file->file);
+                $imgUpload[] = $storageImage;
                 $tmp_file->delete();
             }
             
@@ -88,39 +88,34 @@ class PostService
         foreach ($images as $image) {
             $user = 'user'.Auth::user()->id;
             $tmp_file = UploadFiles::where('file',$image)->first();
-            $dir = $user.'/'.'postImages';
-            Storage::delete('public/'. $dir .'/'.$tmp_file->file);
-            $tmp_file->delete();
+            
+            if($tmp_file){
+                $dir = $user.'/'.'postImages';
+                $filePath = storage_path('app/public/'. $dir .'/'.$tmp_file->file);
+                if (file_exists($filePath)) {
+                    Storage::delete('public/'. $dir .'/'.$tmp_file->file);
+                }
+
+                $tmp_file->delete();
+            }
         }  
         return true;
     }
 
     public function saveVideo($video)
     {
-
         $user = 'user'.Auth::user()->id;
 
         $tmp_file = UploadFiles::where('file',$video)->first();
-
-        $dir = $user.'/'.'postVideo';
-        $OriginalVideo = 'public/'.$dir. '/' . $tmp_file->file;
-        $youtubeVideoPath = $OriginalVideo; // for youtube
-        $twitterVideoPath = storage_path('app/'. $OriginalVideo); 
-        $storageVideo = url('storage/' . $dir . '/'. $tmp_file->file);
-        
+        $youtubeVideoPath = '';$twitterVideoPath = ''; $storageVideo='';
         if($tmp_file){
+            $dir = $user.'/'.'postVideo';
+            $OriginalVideo = 'public/'.$dir. '/' . $tmp_file->file;
+            $youtubeVideoPath = $OriginalVideo; // for youtube
+            $twitterVideoPath = storage_path('app/'. $OriginalVideo); 
+            $storageVideo = url('storage/' . $dir . '/'. $tmp_file->file);
             $tmp_file->delete();
         }
-        // $filename = $video->getClientOriginalName();
-        // $storagePath = 'public/uploadVideos';
-        // if (!Storage::exists($storagePath)) {
-        //     Storage::makeDirectory($storagePath);
-        // }
-        // $video->storeAs($storagePath, $filename);
-        // $OriginalVideo = $storagePath . '/' . $filename;
-        // $youtubeVideoPath = $OriginalVideo; // for youtube
-        // $twitterVideoPath = storage_path('app/'. $OriginalVideo); 
-        // $storageVideo = url('storage/uploadVideos/'. $filename);
         return [
             'youtubeVideoPath' => $youtubeVideoPath,
             'twitterVideoPath' => $twitterVideoPath,
@@ -132,9 +127,16 @@ class PostService
     {
         $user = 'user'.Auth::user()->id;
         $tmp_file = UploadFiles::where('file',$vidoe)->first();
-        $dir = $user.'/'.'postVideo';
-        Storage::delete('public/'. $dir .'/'.$tmp_file->file);
-        $tmp_file->delete();
+        
+        if($tmp_file){
+            $dir = $user.'/'.'postVideo';
+            $filePath = storage_path('app/public/'. $dir .'/'.$tmp_file->file);
+            if (file_exists($filePath)) {
+                Storage::delete('public/'. $dir .'/'.$tmp_file->file);
+            }
+
+            $tmp_file->delete();
+        }
         return true;
     }
 

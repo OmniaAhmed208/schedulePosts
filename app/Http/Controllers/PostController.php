@@ -252,11 +252,11 @@ class PostController extends Controller
     
     public function update(Request $request,$id)
     {
-        // dd($request);
+        // dd($request->oldImages);
+        
         $post = publishPost::find($id);
         $validator = $request->validate([
             'content' => 'max:5000',
-            // 'content' => !($request->images) && !($request->video) && !($request->oldImages) ? 'required|max:5000' : 'max:5000',
             'images.*' => function ($attribute, $value, $fail) {
                 $allowedExtensions = ['jpeg', 'jpg', 'png'];
                 $extension = pathinfo($value, PATHINFO_EXTENSION);
@@ -266,7 +266,6 @@ class PostController extends Controller
                 }
             },
             'videoTitle' => $post->account_type === 'youtube' ? 'required|string' : '',
-            // 'video' => $post->account_type === 'youtube' ? 'required' : '',
         ]);
 
         $validationRules =  [];
@@ -332,6 +331,8 @@ class PostController extends Controller
         $imagesID = [];$videosID = [];
 
         if ($request->oldImages) {
+            $oldImagesArray = is_array($request->oldImages) ? $request->oldImages : json_decode($request->oldImages, true);
+            // dd(json_decode($request->oldImages));
             $allPostImages = PostImages::where('post_id', $post->id)->get();
             if (!empty($allPostImages)) {
                 foreach ($allPostImages as $postImage) {
@@ -339,7 +340,7 @@ class PostController extends Controller
                 }
             }
             
-            $rowsId = array_intersect($request->oldImages, $imagesID);
+            $rowsId = array_intersect($oldImagesArray, $imagesID);
             $imagesToDelete = PostImages::where('post_id', $post->id)
             ->whereNotIn('id', $rowsId)
             ->get();
@@ -506,6 +507,4 @@ class PostController extends Controller
 
         return view('AdminSocialMedia.publishPost',compact('pages'));
     }
-
-
 }
