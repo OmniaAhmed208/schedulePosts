@@ -26,7 +26,7 @@ class PostController extends Controller
         $this->postStore = $post;
     }
 
-    public function index() // to show youtubeCategories in create post
+    public function index()
     {
         $youtubeCategories = youtube_category::all();
         return response()->json([
