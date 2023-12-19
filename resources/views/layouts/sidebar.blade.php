@@ -17,7 +17,7 @@
     <ul class="menu-inner py-1">
       <!-- Dashboards -->
         <li class="menu-item active">
-            <a href="{{ route('dashboard.index') }}" class="menu-link">
+            <a href="{{ url('/') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-home-circle"></i>
                 <div data-i18n="Dashboards">Dashboard</div>
             </a>
@@ -64,14 +64,14 @@
             </li>
         @endcan
 
-        @can('pages.link')
+        {{-- @can('pages.link') --}}
             <li class="menu-item">
                 <a href="{{ route('rolePermissions.index') }}" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-lock-open-alt"></i>
                     <div data-i18n="createPost">Roles & Permissions</div>
                 </a>
             </li>    
-        @endcan
+        {{-- @endcan --}}
 
         <li class="menu-item">
             <a href="{{ url('policy') }}" class="menu-link">
@@ -84,7 +84,7 @@
         @can('pages.link')
             <li class="menu-header small text-uppercase"><span class="menu-header-text">Users</span></li>
             <li class="menu-item">
-                <a href="{{route('users.index')}}" class="menu-link">
+                <a href="{{url('users')}}" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-user"></i>
                     <div data-i18n="createPost">Users</div>
                 </a>

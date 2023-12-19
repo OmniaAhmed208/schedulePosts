@@ -23,6 +23,10 @@ class PostController extends Controller
 
     public function __construct(PostService $post)
     {
+        $this->middleware('permission:posts.create')->only(['store']);
+        $this->middleware('permission:posts.edit')->only(['update']);
+        $this->middleware('permission:posts.delete')->only('destroy');
+        
         $this->postStore = $post;
     }
 

@@ -11,11 +11,12 @@ use Carbon\Carbon;
 
 class RolesPermissionsController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('permission:roles.assign_roles_to_user')->only(['assignUserToRoles']);
-        $this->middleware('permission:roles.assign_role_to_permissions')->only(['assignRoleToPermissions']);
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware('permission:roles.show')->only(['index']);
+    //     $this->middleware('permission:roles.assign_roles_to_user')->only(['assignUserToRoles']);
+    //     $this->middleware('permission:roles.assign_role_to_permissions')->only(['assignRoleToPermissions']);
+    // }
 
     public function index(Request $request)
     {

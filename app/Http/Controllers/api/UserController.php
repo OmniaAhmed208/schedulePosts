@@ -5,20 +5,16 @@ namespace App\Http\Controllers\api;
 use App\Models\Api;
 use App\Models\User;
 use App\Mail\VerifyEmail;
-use App\Models\PublishPost;
 use App\Models\settingsApi;
 use Illuminate\Support\Str;
 use App\Mail\ForgetPassword;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
-use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use App\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller

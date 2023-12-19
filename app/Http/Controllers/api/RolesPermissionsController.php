@@ -10,7 +10,7 @@ use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Validator;
 
 class RolesPermissionsController extends Controller
-{
+{    
     public function index()
     {
         $roles = Role::all();

@@ -7,13 +7,6 @@ use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
-
-    public function __construct()
-    {
-        $this->middleware('permission:roles.add')->only(['store']);
-        $this->middleware('permission:roles.edit')->only(['update']);
-    }
-
     public function store(Request $request)
     {
         $validator = $request->validate(['role'=>'required']);

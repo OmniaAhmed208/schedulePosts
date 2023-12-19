@@ -10,11 +10,17 @@ use App\Mail\SubscriberEmail;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class NewsLetterController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:newsletter.create')->only(['store']);
+        $this->middleware('permission:newsletter.edit')->only(['update']);
+        $this->middleware('permission:newsletter.delete')->only('destroy');
+    }
+    
     public function index()
     {
         $newsLetter = NewsLetter::all();

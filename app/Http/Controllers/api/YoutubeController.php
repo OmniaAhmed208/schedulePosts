@@ -2,16 +2,13 @@
 
 namespace App\Http\Controllers\api;
 
-use Exception;
 use Google_Client;
 use App\Models\Api;
 use App\Models\settingsApi;
 use Illuminate\Support\Str;
-use App\Models\social_posts;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
 class YoutubeController extends Controller

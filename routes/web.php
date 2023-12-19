@@ -48,7 +48,6 @@ Route::post('/passwordCode', [UserController::class,'passwordCode']);
 Route::post('/resetPassword', [UserController::class,'resetPassword']);
 
 Auth::routes();
-
 Route::group(['middleware' => ['auth']], function ()
 {
     Route::post('/test', [DashboardController::class, 'test'])->name('test');
@@ -58,26 +57,37 @@ Route::group(['middleware' => ['auth']], function ()
     
     Route::post('/uploadFiles', [UploadFilesController::class, 'store']);
     Route::match(['post', 'delete'], '/removeFiles', [UploadFilesController::class, 'destroy']);
-
-    Route::resource('services', ServiceController::class)->middleware('permission:services');
-    Route::resource('users', UserController::class);
+    
     Route::resource('dashboard', DashboardController::class)->only(['show'])->middleware('permission:dashboard.forEachUser');
+    
+    Route::resource('users', UserController::class);
+    Route::get('users', [UserController::class,'index'])->middleware('permission:users.all');
+    
+    Route::resource('services', ServiceController::class)->middleware('permission:services');
     Route::resource('accounts', AccountController::class);
     Route::resource('posts', PostController::class);
+    Route::resource('subscribers', SubscriberController::class)->only(['index'])->middleware('permission:subscribers.all');
+    Route::resource('newsLetter', NewsLetterController::class); // permissions in controller
+
     Route::resource('facebook', FacebookController::class);
     Route::resource('twitter', TwitterController::class);
     Route::resource('youtube', YoutubeController::class);
     Route::resource('instagram', InstagramController::class);
     Route::resource('youtubeCategories', YoutubeCategoryController::class);
-    Route::resource('subscribers', SubscriberController::class)->only(['index'])->middleware('permission:subscribers.all');
-    Route::resource('newsLetter', NewsLetterController::class); // permissions in controller
     Route::resource('media', MediaController::class);
 
-    Route::resource('rolePermissions', RolesPermissionsController::class);
-    Route::post('/assignRoleToPermissions/{role_id}', [RolesPermissionsController::class, 'assignRoleToPermissions']);
-    Route::post('/assignUserToRoles/{userId}', [RolesPermissionsController::class, 'assignUserToRoles']);
+    Route::resource('rolePermissions', RolesPermissionsController::class)->only(['index'])->middleware('permission:roles.show');
+    Route::post('/assignRoleToPermissions/{role_id}', [RolesPermissionsController::class, 'assignRoleToPermissions'])
+    ->middleware('permission:roles.assign_role_to_permissions');
+    Route::post('/assignUserToRoles/{userId}', [RolesPermissionsController::class, 'assignUserToRoles'])
+    ->middleware('permission:roles.assign_roles_to_user');
 
-    Route::resource('roles', RoleController::class);
+    Route::resource('roles', RoleController::class)->only(['store', 'update'])
+    ->middleware([
+        'users.store' => 'permission:roles.add',
+        'users.update' => 'permission:roles.edit',
+    ]);
+
     Route::resource('permissions', PermissionController::class);
 
     Route::post('/getPages', [FacebookController::class, 'getPages'])->name('getPages');

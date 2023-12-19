@@ -3,7 +3,6 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Laravel\Socialite\Facades\Socialite;
-use App\Http\Controllers\api\CronController;
 use App\Http\Controllers\api\PostController;
 use App\Http\Controllers\api\RoleController;
 use App\Http\Controllers\api\UserController;
@@ -14,7 +13,6 @@ use App\Http\Controllers\api\YoutubeController;
 use App\Http\Controllers\api\FacebookController;
 use App\Http\Controllers\api\DashboardController;
 use App\Http\Controllers\api\InstagramController;
-use App\Http\Controllers\api\TimeThinkController;
 use App\Http\Controllers\api\NewsLetterController;
 use App\Http\Controllers\api\PermissionController;
 use App\Http\Controllers\api\SubscriberController;
@@ -44,7 +42,7 @@ Route::post('/passwordCode', [UserController::class,'passwordCode']);
 Route::post('/resetPassword', [UserController::class,'resetPassword']);
 
 Route::get('newsletter', [NewsLetterController::class,'index']);
-Route::resource('subscribers', SubscriberController::class);
+Route::post('subscribers', [SubscriberController::class,'store']);
 
 Route::middleware('auth:sanctum')->group(function ()
 {
@@ -55,28 +53,37 @@ Route::middleware('auth:sanctum')->group(function ()
     Route::post('/uploadFiles', [UploadFilesController::class, 'store'])->middleware('cors');
     Route::match(['post', 'delete'], '/removeFiles', [UploadFilesController::class, 'destroy'])->middleware('cors');
     
-    Route::resource('users', UserController::class);
     Route::resource('dashboard', DashboardController::class);
-    Route::resource('categories', YoutubeCategoryController::class);
+    Route::get('dashboard/{id}', [DashboardController::class,'show'])->middleware('permission:dashboard.forEachUser');
+    
+    Route::resource('users', UserController::class);
+    Route::get('users', [UserController::class,'index'])->middleware('permission:users.all');
+    Route::get('/users/search/{name}', [UserController::class, 'search']);
+    Route::get('subscribers', [SubscriberController::class,'index'])->middleware('permission:subscribers.all');
+    
+    Route::resource('services', ServiceController::class)->middleware('permission:services');
     Route::resource('accounts', AccountController::class);
-    Route::resource('timeThink', TimeThinkController::class);
     Route::resource('posts', PostController::class);
-    Route::resource('newsletter', NewsLetterController::class);
-    Route::resource('cron', CronController::class);
-
+    Route::resource('newsletter', NewsLetterController::class); // permissions in controller
+    
     Route::resource('twitter', TwitterController::class);
-    Route::resource('youtube', YoutubeController::class);
     Route::resource('instagram', InstagramController::class);
     Route::resource('facebook', FacebookController::class);
+    Route::resource('youtube', YoutubeController::class);
+    Route::resource('categories', YoutubeCategoryController::class);
     
-    Route::resource('services', ServiceController::class);
-    Route::get('/users/search/{name}', [UserController::class, 'search']);
-    Route::resource('roles', RoleController::class);
-    Route::resource('permissions', PermissionController::class);
+    Route::resource('roles', RoleController::class)->only(['store', 'update'])
+    ->middleware([
+        'users.store' => 'permission:roles.add',
+        'users.update' => 'permission:roles.edit',
+    ]);
 
-    Route::resource('rolePermissions', RolesPermissionsController::class);
-    Route::post('/assignUserToRoles/{userId}', [RolesPermissionsController::class, 'assignUserToRoles']);
-    Route::post('/assignRoleToPermissions/{role_id}', [RolesPermissionsController::class, 'assignRoleToPermissions']);
+    Route::resource('permissions', PermissionController::class);
+    Route::resource('rolePermissions', RolesPermissionsController::class)->only(['index'])->middleware('permission:roles.show');
+    Route::post('/assignUserToRoles/{userId}', [RolesPermissionsController::class, 'assignUserToRoles'])
+    ->middleware('permission:roles.assign_roles_to_user');
+    Route::post('/assignRoleToPermissions/{role_id}', [RolesPermissionsController::class, 'assignRoleToPermissions'])
+    ->middleware('permission:roles.assign_role_to_permissions');
 });
 
 // Route::group(['middleware' => ['admin','auth:sanctum']], function () {});

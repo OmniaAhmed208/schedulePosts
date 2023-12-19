@@ -50,8 +50,9 @@
 
                 {{-- add subscribe --}}
                 <div class="modal fade" id="addSubscribe" tabindex="-1" aria-hidden="true">
-                    <form id="addSubscribeForm" action="{{ route('subscribers.store') }}" method="post" enctype="multipart/form-data">
+                    <form id="addSubscribeForm" action="{{ url('subscribers') }}" method="post" enctype="multipart/form-data">
                         @csrf
+                        @method('post')
                         <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -77,8 +78,9 @@
 
                 {{-- add service --}}
                 <div class="modal fade" id="addService" tabindex="-1" aria-hidden="true">
-                    <form id="addServiceForm" action="{{ route('subscribers.store') }}" method="post" enctype="multipart/form-data">
+                    <form id="addServiceForm" action="{{ url('subscribers') }}" method="post" enctype="multipart/form-data">
                         @csrf
+                        @method('post')
                         <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
                             <div class="modal-header">

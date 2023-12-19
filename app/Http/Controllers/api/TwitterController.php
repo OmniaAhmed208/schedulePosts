@@ -15,8 +15,6 @@ use Illuminate\Support\Facades\Storage;
 use Laravel\Socialite\Facades\Socialite;
 use Abraham\TwitterOAuth\TwitterOAuthException;
 
-use function PHPUnit\Framework\fileExists;
-
 class TwitterController extends Controller
 {
     protected $configApp;
