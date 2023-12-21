@@ -232,15 +232,6 @@ class UserController extends Controller
             }
 
             $user = User::where('email', $request->email)->first();
-
-            // Check if the user's email is verified
-            // if (!$user || !$user->email_verified_at) {
-            //     return response()->json([
-            //         'message' => 'Email not verified',
-            //         'status' => false
-            //     ], 401);
-            // }
-
             return response()->json([
                 'message' => 'User logged in successfully',
                 'token' => $user->createToken("API TOKEN")->plainTextToken,

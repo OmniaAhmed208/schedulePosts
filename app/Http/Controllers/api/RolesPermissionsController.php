@@ -40,7 +40,7 @@ class RolesPermissionsController extends Controller
         $pages = $permissions->map(function ($permission) {
             return explode('.', $permission->name)[0];
         })->unique();
-
+        
         return response()->json([
             'data' => [
                 'roles' => $roles,
@@ -51,6 +51,53 @@ class RolesPermissionsController extends Controller
             'status' => true
         ],200);
     }
+
+
+    public function checkPermission()  
+    {
+        $p = 'users.all';
+        $roles = Role::all();
+        $permissions = Permission::all();
+        $role_has_permissions = DB::table('role_has_permissions')->get();
+        $userRoles = DB::table('user_has_roles')->where('user_id', request()->user()->id)->get();
+        
+        $result = [];
+        $userRolesId = [];
+
+        // check permission assigned to user
+        $userRoles = DB::table('user_has_roles')->where('user_id', request()->user()->id)->get();
+        $userRolesId = [];
+        foreach($userRoles as $userRole){
+            $userRolesId[] = $userRole->role_id;
+        }
+
+        foreach ($userRolesId as $roleId){
+            $rolePermissions = [];
+            foreach ($role_has_permissions as $item){
+                if ($roleId == $item->role_id){
+                    $permission = $permissions->find($item->permission_id)->name;
+                    $rolePermissions[] = $permission;
+                }
+            }
+
+            $data = [
+                $rolePermissions
+            ];
+            $result[] = $data;
+        }
+
+        foreach($result as $permission){
+            $permissionUser = $permission;
+        }
+        
+        return response()->json([
+            'data' => [
+                'userRole' => $permissionUser,
+            ],
+            'status' => true
+        ],200);
+    }
+
 
     public function assignRoleToPermissions(Request $request,$role_id)
     {

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Laravel\Socialite\Facades\Socialite;
 use App\Http\Controllers\api\PostController;
@@ -32,6 +33,9 @@ use App\Http\Controllers\api\RolesPermissionsController;
 */
 
 //public routes
+Auth::routes();
+Route::get('/home', [DashboardController::class, 'index'])->name('admin.index');
+
 Route::post('/auth/login', [UserController::class,'login']);
 
 Route::post('/auth/register',[UserController::class,'register']);
@@ -40,7 +44,6 @@ Route::post('email_verification', [UserController::class,'email_verification']);
 Route::post('/forgetPassword', [UserController::class,'forgetPassword']);
 Route::post('/passwordCode', [UserController::class,'passwordCode']);
 Route::post('/resetPassword', [UserController::class,'resetPassword']);
-
 Route::get('newsletter', [NewsLetterController::class,'index']);
 Route::post('subscribers', [SubscriberController::class,'store']);
 
@@ -64,7 +67,11 @@ Route::middleware('auth:sanctum')->group(function ()
     Route::resource('services', ServiceController::class)->middleware('permission:services');
     Route::resource('accounts', AccountController::class);
     Route::resource('posts', PostController::class);
-    Route::resource('newsletter', NewsLetterController::class); // permissions in controller
+
+    // Route::resource('newsletter', NewsLetterController::class); // permissions in controller
+    Route::post('newsletter', [NewsLetterController::class, 'store']);
+    Route::put('newsletter', [NewsLetterController::class, 'update']);
+    Route::delete('newsletter', [NewsLetterController::class, 'destroy']);
     
     Route::resource('twitter', TwitterController::class);
     Route::resource('instagram', InstagramController::class);
@@ -72,11 +79,7 @@ Route::middleware('auth:sanctum')->group(function ()
     Route::resource('youtube', YoutubeController::class);
     Route::resource('categories', YoutubeCategoryController::class);
     
-    Route::resource('roles', RoleController::class)->only(['store', 'update'])
-    ->middleware([
-        'users.store' => 'permission:roles.add',
-        'users.update' => 'permission:roles.edit',
-    ]);
+    Route::resource('roles', RoleController::class);
 
     Route::resource('permissions', PermissionController::class);
     Route::resource('rolePermissions', RolesPermissionsController::class)->only(['index'])->middleware('permission:roles.show');
@@ -84,6 +87,8 @@ Route::middleware('auth:sanctum')->group(function ()
     ->middleware('permission:roles.assign_roles_to_user');
     Route::post('/assignRoleToPermissions/{role_id}', [RolesPermissionsController::class, 'assignRoleToPermissions'])
     ->middleware('permission:roles.assign_role_to_permissions');
+    Route::get('checkPermission', [RolesPermissionsController::class, 'checkPermission']);
+
 });
 
 // Route::group(['middleware' => ['admin','auth:sanctum']], function () {});
