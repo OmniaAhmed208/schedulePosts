@@ -13,16 +13,27 @@ use Illuminate\Support\Facades\Storage;
 
 class YoutubeController extends Controller
 {
-    public function show(string $channelId)
+    public function redirectToYoutube()
     {
-        $api_id = Api::where('account_id',$channelId)->where('creator_id', Auth::user()->id)->first();
-        $youtubePosts = Api::find($api_id['id'])->social_posts()->get();
+        $youtubeSettings = settingsApi::where('appType', 'youtube')->first(); 
+        $client_id = $youtubeSettings['appID'];
+        $client_secret = $youtubeSettings['appSecret'];
         
-        return response()->json([
-            'message' => 'Channel found',
-            'data' => $youtubePosts,
-            'status' => true
-        ],200);
+        $client = new Google_Client();
+        $client->setClientId($client_id);
+        $client->setClientSecret($client_secret);
+        // $client->setAuthConfig(Config::get('services.youtube'));
+        $client->setAccessType('offline');
+        $client->setApprovalPrompt('force');
+        $client->setScopes([
+            'https://www.googleapis.com/auth/youtube.force-ssl',
+        ]);
+    
+        // Set the redirect URI
+        $client->setRedirectUri(route('youtube.callback'));
+    
+        $authUrl = $client->createAuthUrl();
+        return redirect($authUrl);
     }
 
     public function YoutubeCallback(Request $request)
@@ -151,24 +162,15 @@ class YoutubeController extends Controller
         }  
     } 
 
-    public function redirectToYoutube2()
+    public function show(string $channelId)
     {
-        $youtubeSettings = settingsApi::where('appType', 'youtube')->first(); 
-        $client_id = $youtubeSettings['appID'];
-        $client_secret = $youtubeSettings['appSecret'];
+        $api_id = Api::where('account_id',$channelId)->where('creator_id', Auth::user()->id)->first();
+        $youtubePosts = Api::find($api_id['id'])->social_posts()->get();
         
-        $client = new Google_Client();
-        $client->setClientId($client_id);
-        $client->setClientSecret($client_secret);
-        // $client->setAuthConfig(Config::get('services.youtube'));
-        $client->setAccessType('offline');
-        $client->setApprovalPrompt('force');
-        $client->setScopes([
-            'https://www.googleapis.com/auth/youtube.force-ssl',
-        ]);
-        // Set the redirect URI
-        $client->setRedirectUri(route('youtube.callback'));
-        $authUrl = $client->createAuthUrl();
-        return redirect($authUrl);
+        return response()->json([
+            'message' => 'Channel found',
+            'data' => $youtubePosts,
+            'status' => true
+        ],200);
     }
 }
