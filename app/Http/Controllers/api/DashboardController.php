@@ -2,91 +2,112 @@
 
 namespace App\Http\Controllers\api;
 
-use App\Models\Api;
 use App\Models\User;
-use App\Models\publishPost;
 use App\Models\settingsApi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
     public function index()
     {
         $servicesCount = settingsApi::count();
-        $allServices = settingsApi::all();
+        $startDate = now()->subDays(7);
+        
+        $userData = Cache::remember('dashboard_' . Auth::user()->id, now()->addMinutes(10), function () use ($startDate) {
+            return User::with([
+                'publishPosts',
+            ])
+            ->withCount([
+                'apis as registeredAppCount' => function ($query) {
+                    $query->select(DB::raw('COUNT(DISTINCT account_type)'));
+                },
+                'publishPosts as count_all_posts',
+                'publishPosts as publishPostsCount' => function ($query) use ($startDate) {
+                    $query->where('status', 'published')
+                        ->where('scheduledTime', '>=', $startDate);
+                },
+            ])->find(Auth::user()->id);
+        });
 
-        $user = user::where('id', Auth::user()->id)->first();
-
-        $registeredAppCount = Api::distinct()->where('creator_id', Auth::user()->id)->count('account_type');
-        $count_all_posts = publishPost::where('creator_id', Auth::user()->id)->count(); // publish & pending
-
-        $startDate = now()->subDays(7); // last 7 days ==> chart js
-        $publishPostCount_for_lastWeek = publishPost::where('status', 'published')->where('creator_id', Auth::user()->id)
-        ->where('scheduledTime', '>=', $startDate)->count();
-
-        $allPosts = PublishPost::where('creator_id', Auth::user()->id)->with(['postImages', 'postVideos'])->get();
-        $posts = [];
-
-        foreach ($allPosts as $post) {
-            $postImages = $post->postImages;
-            $postVideos = $post->postVideos;
-
-            $posts[] = [
-                'post' => $post,
+        $publishPosts = $userData->publishPosts->load(['postImages', 'postVideos']);
+        $postsData = $publishPosts->map(function ($post) 
+        {
+            $postImage = $post->postImages->isNotEmpty() ? $post->postImages[0] : null;
+            return [
+                'id' => $post->id,
+                'content' => $post->content,
+                'account_type' => $post->account_type,
+                'account_name' => $post->account_name,
+                'status' => $post->status,
+                'scheduledTime' => $post->scheduledTime,
+                'postImage' => $postImage ? $postImage->image : null,
             ];
-        }
+        });
 
+        $data = [
+            'name' => $userData->name,
+            'email' => $userData->email,
+            'email_verified_at' => $userData->email_verified_at,
+            'user_type' => $userData->user_type,
+            'image' => $userData->image,
+            'registeredAppCount' => $userData->registeredAppCount,
+            'count_all_posts' => $userData->count_all_posts,
+            'servicesCount' => $servicesCount,
+            'publish_post_count_for_lastWeek' => $userData->publishPostsCount,
+            'posts' => $postsData,
+        ];
+        
         return response()->json([
-            'data' => [
-                'user' => $user,
-                'registeredAppCount' => $registeredAppCount,
-                'servicesCount' => $servicesCount,
-                'publish_post_count_for_lastWeek' => $publishPostCount_for_lastWeek, //count,
-                'count_all_posts' => $count_all_posts,
-                'allPosts' => $posts
-            ],
+            'data' => $data,
             'status' => true
         ],200);
+
     }
 
     public function show(string $id) // show dashboard for each user to admin
     {
-        $user = User::find($id);
-
-        $count_all_posts = PublishPost::where('creator_id', $id)->count();
-        $appCount = Api::distinct()->where('creator_id', $id)->count('account_type');
-        $servicesCount = settingsApi::count();
-
-        // $userApps = App\Models\Api::where('creator_id', $userId)->distinct()->pluck('account_type'); // App of user regesterd in
-        $allApps = settingsApi::all(); // all App on website
 
         $startDate = now()->subDays(7);
-        $publishPostCount_for_lastWeek = PublishPost::where('scheduledTime', '>=', $startDate)->where('status', 'published')
-        ->where('creator_id', $id)->count();
 
-        $allPosts = PublishPost::all()->where('creator_id', $id);
+        $userData = Cache::remember('dashboard_' . $id, now()->addMinutes(10), function () use ($startDate) {
+            return User::withCount([
+                'apis as registeredAppCount' => function ($query) {
+                    $query->select(DB::raw('COUNT(DISTINCT account_type)'));
+                },
+                'publishPosts as allPosts',
+                'publishPosts as lastPublishPosts' => function ($query) use ($startDate) {
+                    $query->where('status', 'published')
+                        ->where('scheduledTime', '>=', $startDate);
+                },
+            ]);
+        })->find($id);
 
-        if($user == null){
+        if ($userData == null) {
             return response()->json([
                 'message' => 'User not found',
                 'status' => false
-            ],401);
+            ], 401);
         }
 
+        $allApps = settingsApi::pluck('appType')->toArray();
+
+        $data = [
+            'name' => $userData->name,
+            'registeredAppCount' => $userData->registeredAppCount,
+            'count_all_posts' => $userData->allPosts,
+            'servicesCount' => count($allApps),
+            'publish_post_count_for_lastWeek' => $userData->lastPublishPosts,
+            'allApps' => $allApps,
+        ];
+
         return response()->json([
-            'message' => 'User found',
-            'data' => [
-                'user'=> $user,
-                'registeredAppCount' => $appCount,
-                'servicesCount' => $servicesCount,
-                'publish_post_count_for_lastWeek' => $publishPostCount_for_lastWeek, //count,
-                'count_all_posts' => $count_all_posts,
-                'allPosts' => $allPosts,
-                'allApps' => $allApps
-            ],
+            'data' => $data,
             'status' => true
-        ],200);
+        ], 200);
+     
     }
 }

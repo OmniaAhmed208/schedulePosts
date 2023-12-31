@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\Api;
+use App\Models\User;
 use App\Models\PostImages;
 use App\Models\PostVideos;
 use App\Models\publishPost;
@@ -32,11 +33,10 @@ class PostController extends Controller
 
     public function create()
     {
-        $userApps = Api::where('creator_id', Auth::user()->id)->distinct()->pluck('account_type'); // App of user regesterd in
-        $userAccounts = Api::all()->where('creator_id', Auth::user()->id);
-        $channels = Api::all()->where('account_type', 'youtube')->where('creator_id', Auth::user()->id);
+        $user = User::with(['apis'])->find(Auth::user()->id);
+        $userAccounts = $user->apis; 
         $youtubeCategories = youtube_category::all();
-        return view('main.posts.create',compact('userApps','userAccounts','channels','youtubeCategories'));
+        return view('main.posts.create',compact('userAccounts','youtubeCategories'));
     }
 
     public function store(Request $request)
@@ -62,9 +62,11 @@ class PostController extends Controller
         $accountsData = [];
 
         $validationRules['content'] = 'required';
+        $user = User::with(['apis'])->find(Auth::user()->id);
 
-        foreach($accountsID as $id){
-            $accounts = Api::where('account_id',$id)->where('creator_id', Auth::user()->id)->get();
+        foreach($accountsID as $id)
+        {
+            $accounts = $user->apis->where('account_id',$id);
             foreach($accounts as $account){
                 $account_type = $account->account_type;
                 if($account_type == 'youtube'){
@@ -88,7 +90,7 @@ class PostController extends Controller
                 }
 
                 $accountData = [
-                    'creator_id'=> Auth::user()->id,
+                    'creator_id'=> $user->id,
                     'account_type' => $account->account_type,
                     'account_id' => $account->account_id,
                     'account_name' => $account->account_name,
@@ -243,10 +245,20 @@ class PostController extends Controller
 
     public function edit(Request $request,$id)
     {
-        $post = publishPost::find($id);
-        $images = publishPost::find($id)->postImages()->get();
-        $videos = publishPost::find($id)->postVideos()->get();
-        $channels = Api::all()->where('account_type', 'youtube')->where('creator_id', Auth::user()->id);
+        $user = User::with([
+                'publishPosts' => function ($query) use ($id) {
+                $query->where('id', $id)->with(['postImages', 'postVideos']);
+                }, 
+                'apis' => function ($query){
+                    $query->where('account_type', 'youtube');
+                }
+            ]
+        )->find(Auth::user()->id);
+        
+        $post = $user->publishPosts->first();
+        $images = $post->postImages;
+        $videos = $post->postVideos;
+        $channels = $user->apis;        
         $youtubeCategories = youtube_category::all();
         
         if($post){
@@ -423,21 +435,20 @@ class PostController extends Controller
     
     public function destroy($postId)
     {
-        $post = publishPost::find($postId);
-        
-        if ($post && $post->status == 'pending') 
-        {
-            $images = publishPost::find($postId)->postImages()->get();
-            $videos = publishPost::find($postId)->postVideos()->get();
-            
+        $post = PublishPost::with(['postImages', 'postVideos'])->find($postId);
+
+        if ($post && $post->status == 'pending') {
+            $images = $post->postImages;
+            $videos = $post->postVideos;
+
             $post->deletePostWithVideos();
             $post->deletePostWithImages();
             $post->delete();
-            
-            if($images){
+
+            if ($images) {
                 $this->removeImageFromStorage($images);
             }
-            if($videos){
+            if ($videos) {
                 $this->removeVideoFromStorage($videos);
             }
             return back()->with('success', 'Post deleted successfully');

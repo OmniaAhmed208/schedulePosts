@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api;
 
 use Carbon\Carbon;
 use App\Models\api;
+use App\Models\User;
 use App\Models\postImages;
 use App\Models\postVideos;
 use App\Models\PublishPost;
@@ -15,6 +16,7 @@ use App\Models\youtube_category;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 
 class PostController extends Controller
@@ -66,16 +68,19 @@ class PostController extends Controller
         }
         
         $accountsID = $request->accounts_id;
-        $accountsType = []; $account_type = '';
-        $accounts = '';
-        $validationRules = [];
+        $accountsType = []; $account_type = ''; 
         $accountsData = []; $accountData='';
+        $accounts = '';
+        $validationRules = []; 
         
         $validationRules['content'] = 'required';
+        
+        $user = User::with(['apis'])->find(Auth::user()->id);
 
         if($accountsID != null){
             foreach($accountsID as $id){
-                $accounts = Api::where('account_id',$id)->where('creator_id', Auth::user()->id)->get();
+                $accounts = $user->apis->where('account_id',$id);
+                // $accounts = Api::where('account_id',$id)->where('creator_id', Auth::user()->id)->get();
                 foreach($accounts as $account){
                     $account_type = $account->account_type;
                     if($account_type == 'youtube'){
@@ -247,6 +252,7 @@ class PostController extends Controller
             }
         }
 
+        Cache::forget('dashboard_' . $request->user()->id);
         return response()->json([
             'data' => $messages,
             'status' => true
@@ -279,7 +285,6 @@ class PostController extends Controller
     public function update(Request $request,$id)
     {
         try{
-            // $post = PublishPost::where('id', $id)->where('creator_id', Auth::user()->id)->first();
             $post = publishPost::find($id);
 
             if($post == null){
@@ -470,16 +475,12 @@ class PostController extends Controller
                 }
             }
 
+            Cache::forget('dashboard_' . request()->user()->id);
             return response()->json([
                 'message' => 'Post updated successfully',
                 'data' => $post,
                 'status' => true
             ], 200);
-
-            // return response()->json([
-            //     'message' => "Can't edit or remove because it already published",
-            //     'status' => true
-            // ],200);
         }
         catch(\Throwable $th){
             return response()->json([
@@ -491,8 +492,8 @@ class PostController extends Controller
 
     public function destroy(string $id)
     {
-        $post = PublishPost::find($id);
-
+        $post = PublishPost::with(['postImages', 'postVideos'])->find($id);
+        
         if($post == null){
             return response()->json([
                 'message' => 'Post not found',
@@ -500,23 +501,22 @@ class PostController extends Controller
             ],404);
         }
 
-        if($post && $post->status == 'pending'){
-
-            $images = publishPost::find($id)->postImages()->get();
-            $videos = publishPost::find($id)->postVideos()->get();
+        if ($post && $post->status == 'pending') {
+            $images = $post->postImages;
+            $videos = $post->postVideos;
 
             $post->deletePostWithVideos();
             $post->deletePostWithImages();
-
             $post->delete();
 
-            if($images){
+            if ($images) {
                 $this->removeImageFromStorage($images);
             }
-            if($videos){
+            if ($videos) {
                 $this->removeVideoFromStorage($videos);
             }
 
+            Cache::forget('dashboard_' . request()->user()->id);
             return response()->json([
                 'message' => 'Post deleted successfully',
                 'status' => true

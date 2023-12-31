@@ -124,7 +124,7 @@
                             </section>
 
                             <div class="rounded d-flex justify-content-end">
-                                @if ($userApps->isNotEmpty())
+                                @if ($userAccounts->isNotEmpty())
                                     <button type="submit" class="btn publishBtn float-right border border-info px-4">Publish</button>
                                 @endif
                             </div>

@@ -14,11 +14,23 @@ class ServiceController extends Controller
 {
     public function index()
     {
-        $youtubeCategories = youtube_category::all();
-        $services = settingsApi::all();
+        $youtubeCategories = youtube_category::get()->map(function($query){
+            return [
+                "category_id" => $query->category_id,
+                "category_name" => $query->category_name
+            ];
+        });
+
+        $services = settingsApi::get()->map(function($query){
+            return [
+                "appType" => $query->appType,
+                "appID" => $query->appID,
+                "appSecret" => $query->appSecret,
+                "apiKey" => $query->apiKey
+            ];
+        });
 
         return response()->json([
-            'message' => count($services).' services exist',
             'data' => [
                 'services' => $services,
                 'youtubeCategories' => $youtubeCategories
@@ -55,7 +67,7 @@ class ServiceController extends Controller
             }
             
             $settingsData = [
-                'creator_id'=> User::where('user_type','admin')->first()->id,
+                'creator_id'=> request()->user()->id,
                 'appType' => $appType,
                 'appID' => $request->appID,
                 'appSecret' => $request->appSecret,

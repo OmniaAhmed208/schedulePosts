@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
@@ -23,36 +24,33 @@ class UserController extends Controller
     {
         $users = User::with(['roles' => function ($query) {
             $query->select('color', 'name');
-        }])->get();
-        
-        $userData = [];
-        
-        foreach ($users as $user) {
-            $id = $user->id;
-            $name = $user->name;
-            $email = $user->email;
-            $rolesData = [];
-
-            foreach ($user->roles as $role) {
-                $rolesData[] = [
+        }])->get()
+        ->map(function ($user) {
+            return [
+                'id'    => $user->id,
+                'name'  => $user->name,
+                'email' => $user->email,
+                'roles' => $user->roles->map( function($role) 
+                {
+                    return [
                     'role' => $role->name,
                     'color' => $role->color,
-                ];
-            }
-        
-            $userData[] = [
-                'id' => $id,
-                'name' => $name,
-                'email' => $email,
-                'roles' => $rolesData,
+                    ];
+                })
             ];
-        }
+        })->toArray();
         
-        $roles = Role::all();
+        $roles = Role::all()->map( function($role) 
+        {
+            return [
+            'id' => $role->id,
+            'name' => $role->name,
+            'color' => $role->color,
+            ];
+        });
         
         return response()->json([
-            'message' => count($users) . ' users found',
-            'users' => $userData,
+            'users' => $users,
             'roles' => $roles,
             'status' => true
         ], 200);
@@ -65,9 +63,8 @@ class UserController extends Controller
                 'name' => 'required',
                 'email' => 'required|email|unique:users,email',
                 'password' => [
-                    'required', 'nullable', 'confirmed',
-                    //  'min:8', // confirmed ===> password_confirmation,
-                    //'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
+                    'required', 'nullable', 'confirmed', // confirmed ===> password_confirmation,
+                     'min:8', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
                 ],
             ]);
             //  At least one lowercase letter, At least one uppercase letter, At least one digit, At least one special character
@@ -147,10 +144,10 @@ class UserController extends Controller
 
             $role = Role::where('name', 'user')->first();
             DB::table('user_has_roles')
-                ->insert([
-                    'role_id' => $role->id,
-                    'user_id' => $user->id,
-                ]);
+            ->insert([
+                'role_id' => $role->id,
+                'user_id' => $user->id,
+            ]);
 
             return response()->json([
                 'message' => 'email verified successfully',
@@ -307,22 +304,14 @@ class UserController extends Controller
             ], 404);
         }
 
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'image' => 'mimes:jpg,jpeg,png'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation error',
-                'errors' => $validator->errors(),
-                'status' => false
-            ], 422);
-        }
-
+        $validationRules = [];
+        $validationRules['name'] = 'required';
+        
         $storageImage = $user->image;
 
-        if ($request->hasFile('image')) {
+        if ($request->hasFile('image')) 
+        {
+            $validationRules['image'] = 'required';
             if ($user->image != null) {
                 $rm_urlPath = parse_url($user->image, PHP_URL_PATH);
                 $path = Str::replace('/storage/', '', $rm_urlPath);
@@ -337,14 +326,26 @@ class UserController extends Controller
             $image->storeAs('public/'.$userFolder.'/'.'profile_images', $filename);
             $storageImage = url('storage/'.$userFolder.'/'.'profile_images/' . $filename);
         }
+        
         if ($request->reset_image == 1) {
             $storageImage = null;
+        }
+
+        $validator = Validator::make($request->all(),$validationRules);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation error',
+                'errors' => $validator->errors(),
+                'status' => false
+            ], 422);
         }
 
         $user->update([
             'name' => $request->name,
             'image' => $storageImage
         ]);
+
+        Cache::forget('dashboard_' . $user->id);
 
         return response()->json([
             'message' => 'User updated successfully',

@@ -3,24 +3,37 @@
 namespace App\Http\Controllers\api;
 
 use App\Models\Api;
+use App\Models\User;
 use App\Models\settingsApi;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class AccountController extends Controller
 {
     public function index()
     {
-        $apiAccounts = Api::all()->where('creator_id', Auth::user()->id);
-        $services = settingsApi::all(); // all services
+        $accounts = User::with(['apis'])->find(request()->user()->id);
+        
+        $data = [
+            'name' => $accounts->name,
+            'email' => $accounts->email,
+            'image' => $accounts->image,
+            'accounts' => $accounts->apis->map(function ($api) {
+                return [
+                    'account_type' => $api->account_type,
+                    'account_id' => $api->account_id,
+                    'account_name' => $api->account_name,
+                    'account_pic' => $api->account_pic,
+                    'account_link' => $api->account_link,
+                    'email' => $api->email,
+                ];
+            }),
+        ];
 
         return response()->json([
-            'message' => count($services).' services exist',
-            'data' => [
-                'apiAccounts' => $apiAccounts,
-                'services' => $services
-            ],
+            'account' => $data,
             'status' => true
         ],200);
     }
@@ -28,13 +41,13 @@ class AccountController extends Controller
     public function destroy(string $accountId)
     {
         try{
-            $account = Api::where('account_id',$accountId)->where('creator_id', Auth::user()->id)->first();
+            $account = Api::where('account_id',$accountId)->where('creator_id', request()->user()->id)->first();
 
             if($account == null){
                 return response()->json([
                     'message' => 'Account not found',
                     'status' => false
-                ],401);
+                ],404);
             }
 
             $account->delete();
