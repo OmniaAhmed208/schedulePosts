@@ -20,7 +20,7 @@ class SettingsApiServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {        
-        $services = settingsApi::all();
+        $services = settingsApi::get(['appType', 'appID', 'appSecret', 'apiKey']);
 
         if (!empty($services)) 
         {
@@ -36,9 +36,6 @@ class SettingsApiServiceProvider extends ServiceProvider
                 'redirect' => 'https://www.google.com.eg/instagram/public/login/instagram/callback',
             ];
     
-            // INSTAGRAM_CLIENT_ID= 961436048312260
-            // INSTAGRAM_CLIENT_SECRET= a43ca3ea9793b904157e2092a8b34677
-    
             $TwitterConfig = [
                 'client_id' => null, // TWITTER_CONSUMER_KEY
                 'client_secret' => null, // TWITTER_CONSUMER_SECRET
@@ -49,7 +46,6 @@ class SettingsApiServiceProvider extends ServiceProvider
                 'client_id' => null, // GOOGLE_CLIENT_ID
                 'client_secret' => null, // GOOGLE_CLIENT_SECRET
                 'api_key' => null, // YOUTUBE_API_KEY
-                // 'redirect' => 'http://localhost/e-commerce/Social/schedual-posts/auth/youtube/callback',
                 'redirect' => 'https://social.evolvetechsys.com/auth/youtube/callback',
             ];
 

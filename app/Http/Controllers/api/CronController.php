@@ -1,89 +1,58 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Http\Controllers\api;
 
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Exception;
 use Carbon\Carbon;
-use Google_Client;
 use App\Models\Api;
 use Facebook\Facebook;
+use App\Models\time_think;
 use App\Models\PublishPost;
 use App\Models\settingsApi;
-use Google_Service_YouTube;
 use Illuminate\Support\Str;
-use Illuminate\Http\Request;
-use App\Services\PostService;
 use Thujohn\Twitter\tmhOAuth;
-use Illuminate\Console\Command;
-use Google_Service_YouTube_Video;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Abraham\TwitterOAuth\TwitterOAuth;
-use Google_Service_YouTube_VideoStatus;
-use Google_Service_YouTube_VideoSnippet;
 use Facebook\Exceptions\FacebookSDKException;
 use Facebook\Exceptions\FacebookResponseException;
 
-class PostStatus extends Command
+class CronController extends Controller
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'post:status';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'publish pending posts';
-
-    /**
-     * Execute the console command.
-     */
-
-    protected $postStore;
-
-    public function __construct(PostService $post)
+    public function index()
     {
-        parent::__construct();
-        $this->postStore = $post;
-    }
+        $postStatus = PublishPost::get()->where('status','pending');
+        $time_table = time_think::where('creator_id', Auth::user()->id)->first();
 
-    public function handle()
-    {
-        $time = $this->postStore->userTime();
-        $userTimeNow = $time['userTimeNow'];
+        $now = Carbon::now();
+        $diff_time = $time_table->time;
+        $newDateTime = $now->copy()->addHours($diff_time);
 
-        $postStatus = DB::table("publish_posts")->where('status','pending')->get();
-        
+        $dateNow = $newDateTime->format('Y-m-d H:i');
         $funRes = '';
         $results = [];
 
         foreach($postStatus as $post){
-            $dateNow = Carbon::parse($userTimeNow);
+            $dateNow = Carbon::parse($dateNow);
             $datePost = Carbon::parse($post->scheduledTime);
 
             if($datePost->lte($dateNow)){
-                echo 'post < now' . '<br> <br>';
 
                 switch($post->account_type) {
                     case('facebook'):
                         $funRes = $this->facePublish($post->pageName, $post->tokenApp, $post->postData, $post->link, $post->image);
                         break;
-         
+
                     case('instagram'):
                         $funRes = $this->instaPublish($post->tokenApp, $post->postData, $post->image);
                         break;
-                    
+
                     case('twitter'):
-                        // $funRes = $this->twitterPublish($post->tokenApp, $post->token_secret, $post->postData);
                         $funRes = $this->twitterPublish($post);
                         break;
-         
+
                     case('youtube'):
                         $funRes = $this->youtubePublish($post);
                         break;
@@ -94,14 +63,15 @@ class PostStatus extends Command
 
                 $results[] = ['funRes' => $funRes, 'postData' => $post];
             }
-            else{
-                echo 'post > now' . '<br> <br>';
-            }
-        }   
+
+        }
 
         $returnData = $this->returnedRes($results);
+        return response()->json([
+            'data' => $returnData,
+            'status' => true
+        ],200);
 
-        $this->info('Success');
     }
 
     public function returnedRes($funRes)
@@ -147,7 +117,7 @@ class PostStatus extends Command
         $desiredPage = null;
 
         foreach ($pages as $page) {
-            if ($page['name'] === $pageName) 
+            if ($page['name'] === $pageName)
             {
                 $desiredPage = $page;
                 $pageToken = $desiredPage['access_token'];
@@ -161,16 +131,16 @@ class PostStatus extends Command
             'app_secret' => config('services.facebook.client_secret'),
             'default_graph_version' => 'v12.0', // Use the appropriate version
         ]);
-        
+
         $fb->setDefaultAccessToken($token);
-        
+
         $permissions = ['pages_manage_posts','pages_manage_ads','pages_manage_cta','pages_manage_metadata'];
 
         try {
 
             $url = "https://graph.facebook.com/v12.0/{$pageId}/feed";
 
-            if ($image != null) 
+            if ($image != null)
             {
                 $filename = Str::replace('postImages\\', '', $image);
 
@@ -192,7 +162,7 @@ class PostStatus extends Command
                     'access_token' => $pageToken,
                 ]);
             }
-            
+
             $responseData = $response->json();
 
             return true;
@@ -224,11 +194,11 @@ class PostStatus extends Command
                     'caption' => $caption,
                     'access_token' => $accessToken,
                 ]);
-                
+
                 if ($mediaResponse->successful()) {
                     $mediaData = $mediaResponse->json();
                     $mediaId = $mediaData['id'];
-                   
+
                     $publishResponse = Http::post("https://graph.facebook.com/v17.0/{$pageId}/media_publish", [
                         'creation_id' => $mediaId,
                         'access_token' => $accessToken,
@@ -251,7 +221,7 @@ class PostStatus extends Command
             return $e->getMessage();
         }
     }
- 
+
     public function twitterPublish($post)
     {   
         $account_id = $post->account_id;

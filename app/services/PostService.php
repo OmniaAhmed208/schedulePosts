@@ -31,7 +31,9 @@ class PostService
 {
     public function userTime()
     {
-        // $currentUrl = request()->url(); //if (parse_url($currentUrl, PHP_URL_SCHEME) === 'https') {}
+        // $currentUrl = request()->url(); 
+        //if (parse_url($currentUrl, PHP_URL_SCHEME) === 'https') {}
+
         $ip = '';
         if (request()->isSecure()) {
             $ip = request()->ip(); // Dynamic IP address get
@@ -45,7 +47,7 @@ class PostService
             $userTimezoneString = $data->timezone;
             $userTz = new DateTimeZone($userTimezoneString);
             $userNow = new DateTime('now', $userTz);
-            $userTimeNow = $userNow->format('Y-m-d H:i:s'); // "2023-11-26 17:01:38"
+            $userTimeNow = $userNow->format('Y-m-d H:i:s'); // ex: "2023-11-26 17:01:38"
             $currentTime = Carbon::now($userTimezoneString)->format('Y-m-d H:i:s');
 
             return [
@@ -73,12 +75,6 @@ class PostService
                 $imgUpload[] = $storageImage;
                 $tmp_file->delete();
             }
-            
-            // $filename = time() . '_' . $image->getClientOriginalName(); // Generate a unique filename
-            // $image->storeAs('public/uploadImages', $filename); // Store the file with the unique filename
-            // // $localFilePath = storage_path('uploadImages/' . $filename); // Get the local file path (fullPath)
-            // $storageImage = url('storage/uploadImages/'. $filename);
-            // $imgUpload[] = $storageImage;
         }
         return $imgUpload;
     }
@@ -142,12 +138,12 @@ class PostService
 
     public function publishPost($requestData, $images, $youtubeVideoPath, $twitterVideoPath)
     {
-        $services = []; $account_type='';
-        $allServices = settingsApi::all();
-        $services = [];
-        foreach($allServices as $service){
-            $services[] = $service['appType'];
-        }
+        $account_type='';
+
+        $services = settingsApi::get(['appType'])->map(function($query){
+            return $query->appType;
+        })
+        ->toArray();
 
         $accountsID = $requestData->accounts_id;
         $selectedApps=[];
@@ -193,118 +189,12 @@ class PostService
  
         $appResults = [];
         foreach ($data as [$appType, $appRes]) {
-            $appResults[$appType] = $appRes; // associative array
+            $appResults[$appType] = $appRes;
         }
 
         return $appResults;
     }
  
-    // public function facePublish($requestData,$img)
-    // {
-    //     // dd($requestData);
-    //     $faceToken = '';
-    //     $pageName = $requestData->page;
-    //     $pageToken = null; 
-    //     $pageId = null;
-    //     $urlImage = '';
-
-    //     $response = Http::get("https://graph.facebook.com/v12.0/me/accounts?access_token={$faceToken}");
-    //     $pages = $response->json()['data'];
-
-    //     $desiredPage = null;
-
-    //     foreach ($pages as $page) {
-    //         if ($page['name'] === $pageName) {
-    //             $desiredPage = $page;
-    //             $pageToken = $desiredPage['access_token'];
-    //             $pageId = $desiredPage['id'];
-    //             break;
-    //         }
-    //     }
-
-    //     $fb = new Facebook([
-    //         'app_id' => config('services.facebook.client_id'),
-    //         'app_secret' => config('services.facebook.client_secret'),
-    //         'default_graph_version' => 'v12.0', // Use the appropriate version
-    //     ]);
-        
-    //     $fb->setDefaultAccessToken($pageToken);
-        
-    //     $permissions = 
-    //     [
-    //         'pages_show_list',
-    //         'pages_read_engagement',
-    //         'pages_manage_posts',
-    //         'pages_manage_ads',
-    //         'pages_manage_cta',
-    //         'pages_manage_metadata'
-    //     ];
-        
-    //     try {
-
-    //         $url = "https://graph.facebook.com/v12.0/{$pageId}/feed";
-
-    //         // if (!empty($images)) {
-    //         //     foreach ($images as $img) {
-    //         //         $filename = Str::replace('postImages\\', '', $img);
-    //         //         $response = Http::attach(
-    //         //             'source',
-    //         //             file_get_contents($img),
-    //         //             $filename
-    //         //         )->post("https://graph.facebook.com/v12.0/{$pageId}/photos", [
-    //         //             'message' => $requestData->content,
-    //         //             'privacy' => '{"value": "EVERYONE"}',
-    //         //             'access_token' => $pageToken,
-    //         //         ]);
-    //         //     }
-    //         // }
-
-    //         // if (!empty($images)) {
-    //         //     $attachedMedia = [];
-    //         //     foreach ($images as $img) {
-    //         //         $filename = Str::replace('postImages\\', '', $img);
-    //         //         $attachedMedia[] = [
-    //         //             'media_type' => 'IMAGE',
-    //         //             'media' => [
-    //         //                 'file' => file_get_contents($img),
-    //         //                 'filename' => $filename,
-    //         //             ],
-    //         //         ];
-    //         //     }
-    //         // }
-
-    //         if ($img != null) {
-    //             $filename = Str::replace('postImages\\', '', $img);
-    //             $response = Http::attach(
-    //                 'source',
-    //                 file_get_contents($img),
-    //                 $filename
-    //             )->post("https://graph.facebook.com/v12.0/{$pageId}/photos", [
-    //                 'message' => $requestData->content,
-    //                 'privacy' => '{"value": "EVERYONE"}',
-    //                 'access_token' => $pageToken,
-    //             ]);
-    //         }
-    //         else {
-    //             $response = Http::post($url, [
-    //                 'message' => $requestData->content,
-    //                 'link' => $requestData->link,
-    //                 // 'privacy' => '{"value": "EVERYONE"}',
-    //                 'access_token' => $pageToken,
-    //             ]);
-    //         }
-            
-    //         $response = $response->json();
-
-    //         return 'postCreated';
-
-    //     } catch(FacebookResponseException $e) {
-    //         return 'Graph returned an error: ' . $e->getMessage();
-    //     } catch(FacebookSDKException $e) {
-    //         return 'Facebook SDK returned an error: ' . $e->getMessage();
-    //     }
-    // }
-
     public function facePublish($requestData,$imgPaths)
     {
         // dd($requestData);
@@ -594,9 +484,9 @@ class PostService
                                 "mimeType" => "video/*"
                             )
                         );
-                        $videoId = $obj->id;
-                        $videoLink = "https://www.youtube.com/watch?v=" . $videoId;
-                        dd($videoLink);
+                        // $videoId = $obj->id;
+                        // $videoLink = "https://www.youtube.com/watch?v=" . $videoId;
+                        // dd($videoLink);
                     } catch(Google_Service_Exception $e) {
                         $allUploadsSuccessful = false;
                         dd ("Caught Google service Exception ".$e->getCode(). " message is ".$e->getMessage(). " <br>");
@@ -616,15 +506,6 @@ class PostService
             
         }
     } 
-
-// https://accounts.google.com/o/oauth2/v2/auth?
-// scope=https://www.googleapis.com/auth/youtube.force-ssl&
-// access_type=offline&
-// include_granted_scopes=true&
-// state=state_parameter_passthrough_value&
-// redirect_uri=https://social.evolvetechsys.com/auth/youtube/callback
-// response_type=code&
-// client_id=400800346626-3pj9lb5923bmurej4bk6ql2v2rm29kco.apps.googleusercontent.com
 
     public function instaPublish($requestData)
     {
@@ -693,7 +574,6 @@ class PostService
         }
     }
 
-    // publish on multiple channel in same time   
     public function checkVideoStatus($videoId)
     {
         $youtubeSettings = settingsApi::where('appType', 'youtube')->first();          
@@ -706,10 +586,8 @@ class PostService
         $client->setState($state);
         $youtube = new Google_Service_YouTube($client);
 
-        // Define the part(s) you want to retrieve (in this case, we want status)
         $part = 'status';
 
-        // Call the videos->list method with the video ID and part(s) specified
         $videoResponse = $youtube->videos->listVideos($part, array('id' => $videoId));
 
         // Check if there is a valid response
@@ -722,14 +600,11 @@ class PostService
             $privacyStatus = $status->privacyStatus;
 
             if ($uploadStatus === 'processed' && $privacyStatus === 'public') {
-                // The video has been successfully published and is public.
                 return "Video is published and public.";
             } else {
-                // The video is not yet processed, or it's not public.
                 return "Video is not yet processed or not public.";
             }
         } else {
-            // No video found with the provided ID.
             return "Video not found.";
         }
     }
